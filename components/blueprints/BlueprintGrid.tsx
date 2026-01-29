@@ -12,6 +12,11 @@ type BlueprintItem = {
   imageFile: string;
 };
 
+type CommunityMember = {
+  id: string;
+  name: string;
+};
+
 type BlueprintGridProps = {
   items: BlueprintItem[];
 };
@@ -20,6 +25,14 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
   const { identity, ready, clearIdentity } = useLocalIdentity();
   const [owned, setOwned] = useState<Set<string>>(() => new Set());
   const [query, setQuery] = useState("");
+  const [communityMembers, setCommunityMembers] = useState<CommunityMember[]>(
+    []
+  );
+  const [ownershipByItem, setOwnershipByItem] = useState<
+    Record<string, string[]>
+  >({});
+  const [viewerId, setViewerId] = useState<string | null>(null);
+  const [activeItem, setActiveItem] = useState<BlueprintItem | null>(null);
 
   const ordered = useMemo(() => {
     return [...items].sort((a, b) => a.name.localeCompare(b.name));
@@ -51,6 +64,9 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
       .then((payload) => {
         if (!payload?.ownedBlueprints) return;
         setOwned(new Set(payload.ownedBlueprints));
+        setViewerId(payload.viewerId ?? null);
+        setCommunityMembers(payload.community?.members ?? []);
+        setOwnershipByItem(payload.ownershipByItem ?? {});
       })
       .catch(() => null);
 
@@ -79,14 +95,75 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
   const toggleOwned = (name: string) => {
     setOwned((prev) => {
       const next = new Set(prev);
-      if (next.has(name)) {
-        next.delete(name);
-      } else {
+      const willOwn = !next.has(name);
+      if (willOwn) {
         next.add(name);
+      } else {
+        next.delete(name);
+      }
+      if (viewerId) {
+        setOwnershipByItem((prevOwnership) => {
+          const current = new Set(prevOwnership[name] ?? []);
+          if (willOwn) {
+            current.add(viewerId);
+          } else {
+            current.delete(viewerId);
+          }
+          return { ...prevOwnership, [name]: Array.from(current) };
+        });
       }
       persistOwned(next);
       return next;
     });
+  };
+
+  const getInitials = (name: string) => {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return "??";
+    if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  };
+
+  const renderRosterRow = (
+    members: CommunityMember[],
+    variant: "has" | "needs"
+  ) => {
+    if (!members.length) {
+      return (
+        <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-muted/70">
+          NONE
+        </span>
+      );
+    }
+    const visible = members.slice(0, 4);
+    const extra = members.length - visible.length;
+    return (
+      <div className="flex flex-wrap items-center justify-end gap-1">
+        {visible.map((member) => (
+          <span
+            key={member.id}
+            className={cn(
+              "flex h-4 w-4 items-center justify-center border text-[9px] font-semibold uppercase tracking-[0.12em]",
+              variant === "has"
+                ? "border-accent/70 text-accent"
+                : "border-frame2 text-muted"
+            )}
+          >
+            {getInitials(member.name)}
+          </span>
+        ))}
+        {extra > 0 ? (
+          <span className="flex h-4 items-center border border-frame2 px-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-muted">
+            +{extra}
+          </span>
+        ) : null}
+      </div>
+    );
+  };
+
+  const buildMemberList = (memberIds: string[]) => {
+    if (!communityMembers.length) return [];
+    return communityMembers.filter((member) => memberIds.includes(member.id));
   };
 
   return (
@@ -126,7 +203,7 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
                   type="button"
                   aria-pressed={isOwned}
                   title={item.name}
-                  onClick={() => toggleOwned(item.name)}
+                  onClick={() => setActiveItem(item)}
                   className={cn(
                     "group relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-[8px] border bg-panel2/80 transition",
                     "hover:border-accent/70 hover:bg-panel2/90",
@@ -183,6 +260,99 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
           </div>
         </div>
       </div>
+
+      {activeItem ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-8">
+          <button
+            type="button"
+            aria-label="Close overlay"
+            className="absolute inset-0 cursor-default"
+            onClick={() => setActiveItem(null)}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative z-10 w-full max-w-sm"
+          >
+            <div className="arc-panel arc-corners overflow-hidden">
+              <div className="arc-panel-header">
+                <div>
+                  <p className="hud-label">Blueprint</p>
+                  <h3 className="text-base font-semibold uppercase tracking-[0.12em]">
+                    {activeItem.name.replace(/\s*Blueprint\s*$/i, "")}
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="hud-label">
+                    {owned.has(activeItem.name) ? "Owned" : "Needed"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveItem(null)}
+                    className="h-6 w-6 border border-frame2 text-xs font-semibold uppercase tracking-[0.12em] text-muted"
+                  >
+                    X
+                  </button>
+                </div>
+              </div>
+              <div className="border-t border-frame2 bg-panel/80 px-4 py-4">
+                {communityMembers.length ? (
+                  <div>
+                    <div className="hud-label">Needs Item</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(() => {
+                        const ownedIds = new Set(
+                          ownershipByItem[activeItem.name] ?? []
+                        );
+                        const members = communityMembers.filter((member) => {
+                          if (viewerId && member.id === viewerId) return false;
+                          return !ownedIds.has(member.id);
+                        });
+                        if (!members.length) {
+                          return (
+                            <span className="text-[11px] uppercase tracking-[0.12em] text-muted">
+                              All synced
+                            </span>
+                          );
+                        }
+                        return members.map((member) => (
+                          <span
+                            key={member.id}
+                            className="border border-frame2 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted"
+                          >
+                            {member.name}
+                          </span>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-[11px] uppercase tracking-[0.12em] text-muted">
+                    No crew link. Join a community to sync ownership.
+                  </div>
+                )}
+                <div className="mt-5 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toggleOwned(activeItem.name);
+                      setActiveItem(null);
+                    }}
+                    className={cn(
+                      "h-9 flex-1 border px-3 text-xs font-semibold uppercase tracking-[0.12em] transition",
+                      owned.has(activeItem.name)
+                        ? "border-frame2 text-muted hover:border-accent/60"
+                        : "border-accent/70 text-text hover:border-accent"
+                    )}
+                  >
+                    {owned.has(activeItem.name) ? "Need" : "Found"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }

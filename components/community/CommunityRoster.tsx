@@ -27,6 +27,11 @@ export function CommunityRoster() {
   const [community, setCommunity] = useState<Community | null>(null);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
+  const [removeError, setRemoveError] = useState("");
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [confirmMember, setConfirmMember] = useState<CommunityMember | null>(
+    null
+  );
   const [origin, setOrigin] = useState("");
   const [name, setName] = useState("");
 
@@ -144,6 +149,35 @@ export function CommunityRoster() {
     }
   };
 
+  const onRemove = async (memberId: string) => {
+    if (!identity || !community || removingId) return;
+    setRemoveError("");
+    setRemovingId(memberId);
+    try {
+      const res = await fetch("/api/community/remove", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-arc-token": identity.token,
+        },
+        body: JSON.stringify({ memberId }),
+      });
+      const payload = await res.json().catch(() => null);
+      if (!res.ok) {
+        setRemoveError(payload?.error ?? "Removal failed");
+        setRemovingId(null);
+        return false;
+      }
+      setCommunity(payload?.community ?? null);
+      setRemovingId(null);
+      return true;
+    } catch {
+      setRemoveError("Removal failed");
+      setRemovingId(null);
+      return false;
+    }
+  };
+
   if (!ready) {
     return (
       <div className="border-t border-frame2 px-4 py-5 text-sm uppercase tracking-[0.08em] text-muted">
@@ -250,21 +284,116 @@ export function CommunityRoster() {
       <div className="mt-6">
         <div className="hud-label">Members</div>
         <div className="mt-3 divide-y divide-frame2 border border-frame2">
-          <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-2 bg-panel2 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+          <div className="grid grid-cols-[minmax(0,1fr)_120px_120px] gap-2 bg-panel2 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
             <span>Operator</span>
             <span className="text-right">Status</span>
+            <span className="text-right">Action</span>
           </div>
           {community.members.map((member) => (
             <div
               key={member.id}
-              className="grid grid-cols-[minmax(0,1fr)_120px] items-center gap-2 px-3 py-2 text-xs uppercase tracking-[0.12em]"
+              className="grid grid-cols-[minmax(0,1fr)_120px_120px] items-center gap-2 px-3 py-2 text-xs uppercase tracking-[0.12em]"
             >
               <span>{member.name}</span>
               <span className="text-right text-accent">Synced</span>
+              <div className="text-right">
+                <Button
+                  type="button"
+                  variant="default"
+                  className="px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-warn hover:border-warn/70"
+                  aria-label={`Remove ${member.name}`}
+                  disabled={removingId === member.id}
+                  onClick={() => {
+                    setRemoveError("");
+                    setConfirmMember(member);
+                  }}
+                >
+                  Unlink
+                </Button>
+              </div>
             </div>
           ))}
         </div>
+        {removeError ? (
+          <div className="mt-3 text-[11px] uppercase tracking-[0.08em] text-warn">
+            {removeError}
+          </div>
+        ) : null}
       </div>
+      {confirmMember ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-8">
+          <button
+            type="button"
+            aria-label="Close confirmation"
+            className="absolute inset-0 cursor-default"
+            onClick={() => setConfirmMember(null)}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative z-10 w-full max-w-sm"
+          >
+            <div className="arc-panel arc-corners overflow-hidden">
+              <div className="arc-panel-header">
+                <div>
+                  <p className="hud-label">Confirm Removal</p>
+                  <h3 className="text-base font-semibold uppercase tracking-[0.12em]">
+                    Unlink Operator
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="hud-label">Action</span>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmMember(null)}
+                    className="h-6 w-6 border border-frame2 text-xs font-semibold uppercase tracking-[0.12em] text-muted"
+                  >
+                    X
+                  </button>
+                </div>
+              </div>
+              <div className="border-t border-frame2 bg-panel/80 px-4 py-4">
+                <div className="text-[11px] uppercase tracking-[0.12em] text-muted">
+                  Remove operator from crew?
+                </div>
+                <div className="mt-2 text-sm font-semibold uppercase tracking-[0.14em] text-text">
+                  {confirmMember.name}
+                </div>
+                {removeError ? (
+                  <div className="mt-3 text-[11px] uppercase tracking-[0.08em] text-warn">
+                    {removeError}
+                  </div>
+                ) : null}
+                <div className="mt-5 flex items-center justify-between gap-3">
+                  <Button
+                    type="button"
+                    variant="default"
+                    className="h-9 flex-1 border-frame2 text-muted hover:border-accent/60"
+                    onClick={() => setConfirmMember(null)}
+                    disabled={removingId === confirmMember.id}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    className="h-9 flex-1 border-warn/70 text-text hover:border-warn"
+                    onClick={async () => {
+                      const success = await onRemove(confirmMember.id);
+                      if (success) setConfirmMember(null);
+                    }}
+                    disabled={removingId === confirmMember.id}
+                  >
+                    {removingId === confirmMember.id
+                      ? "Unlinking"
+                      : "Confirm"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

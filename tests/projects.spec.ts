@@ -55,6 +55,9 @@ test("blueprint project persists owned state", async ({ page }) => {
     );
   });
   await firstBlueprint.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.getByRole("button", { name: "Found" }).click();
+  await expect(page.getByRole("dialog")).toBeHidden();
   await persistRequest;
   await expect(firstBlueprint).toHaveAttribute("aria-pressed", "true");
 
@@ -80,6 +83,70 @@ test("blueprint project persists owned state", async ({ page }) => {
     "Vanguard"
   );
   await expect(firstBlueprint).toHaveAttribute("aria-pressed", "true");
+});
+
+test("blueprint tiles show community ownership", async ({ page, browser }) => {
+  await login(page, "Vanguard");
+
+  await page.getByRole("link", { name: "Community", exact: true }).click();
+  await expect(page.getByText("Roster")).toBeVisible();
+  await page.getByLabel("Community Name").fill("Echo Node");
+  await page.getByRole("button", { name: "Create Community" }).click();
+  await expect(page.getByText("Echo Node")).toBeVisible();
+  const inviteLink = await page.getByLabel("Invite link").inputValue();
+
+  const context = await browser.newContext();
+  const invitePage = await context.newPage();
+  await invitePage.goto(inviteLink);
+  await expect(invitePage.getByText("ARC// AUTH LINK")).toBeVisible();
+  await invitePage.getByLabel("Operator Name").fill("Nomad");
+  await invitePage.getByRole("button", { name: "Link Uplink" }).click();
+  await expect(invitePage.getByText("Echo Node")).toBeVisible();
+
+  await page.getByRole("link", { name: "Start", exact: true }).click();
+  await page.waitForResponse((response) => {
+    return (
+      response.url().includes("/api/blueprints") &&
+      response.request().method() === "GET" &&
+      response.ok()
+    );
+  });
+
+  const firstBlueprint = page.getByRole("button", { name: /Blueprint/i }).first();
+  const itemName = await firstBlueprint.getAttribute("title");
+  const persistRequest = page.waitForResponse((response) => {
+    return (
+      response.url().includes("/api/blueprints") &&
+      response.request().method() === "PATCH" &&
+      response.ok()
+    );
+  });
+  await firstBlueprint.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.getByRole("button", { name: "Found" }).click();
+  await persistRequest;
+  await expect(firstBlueprint).toHaveAttribute("aria-pressed", "true");
+
+  await invitePage.goto("/");
+  await invitePage.waitForResponse((response) => {
+    return (
+      response.url().includes("/api/blueprints") &&
+      response.request().method() === "GET" &&
+      response.ok()
+    );
+  });
+
+  const targetBlueprint = itemName
+    ? invitePage.getByRole("button", { name: itemName })
+    : invitePage.getByRole("button", { name: /Blueprint/i }).first();
+  await targetBlueprint.click();
+  await expect(invitePage.getByText("Needs Item")).toBeVisible();
+  await expect(invitePage.getByRole("dialog")).not.toContainText("Nomad");
+  await invitePage.getByRole("dialog").screenshot({
+    path: "test-results/blueprint-community-tile.png",
+  });
+
+  await context.close();
 });
 
 test("auth creates token in localStorage and shows in menu", async ({ page }) => {
@@ -191,4 +258,48 @@ test("community creation and invite link join", async ({ page, browser }) => {
     invitePage.getByRole("main").getByText("Vanguard", { exact: true })
   ).toBeVisible();
   await context.close();
+});
+
+test("community members can remove operators", async ({ page, browser }) => {
+  await login(page, "Vanguard");
+
+  await page.getByRole("link", { name: "Community", exact: true }).click();
+  await expect(page.getByText("Roster")).toBeVisible();
+  await page.getByLabel("Community Name").fill("Echo Node");
+  await page.getByRole("button", { name: "Create Community" }).click();
+  await expect(page.getByText("Echo Node")).toBeVisible();
+  const inviteLink = await page.getByLabel("Invite link").inputValue();
+
+  const context = await browser.newContext();
+  const invitePage = await context.newPage();
+  await invitePage.goto(inviteLink);
+  await expect(invitePage.getByText("ARC// AUTH LINK")).toBeVisible();
+  await invitePage.getByLabel("Operator Name").fill("Nomad");
+  await invitePage.getByRole("button", { name: "Link Uplink" }).click();
+  await expect(invitePage.getByText("Echo Node")).toBeVisible();
+  await context.close();
+
+  await page.reload();
+  await expect(
+    page.getByRole("main").getByText("Nomad", { exact: true })
+  ).toBeVisible();
+
+  const removeRequest = page.waitForResponse((response) => {
+    return (
+      response.url().includes("/api/community/remove") &&
+      response.request().method() === "POST" &&
+      response.ok()
+    );
+  });
+  await page.getByRole("button", { name: "Remove Nomad" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.getByRole("button", { name: "Confirm", exact: true }).click();
+  await removeRequest;
+
+  await expect(
+    page.getByRole("main").getByText("Nomad", { exact: true })
+  ).toBeHidden();
+  await page.getByRole("main").screenshot({
+    path: "test-results/community-remove.png",
+  });
 });

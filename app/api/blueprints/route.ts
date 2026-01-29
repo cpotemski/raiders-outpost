@@ -1,5 +1,6 @@
 import { prisma } from "../../../lib/prisma";
 import { loadArcItems } from "../../../lib/arc-items";
+import { getCommunityForUser } from "../../../lib/community";
 
 export const runtime = "nodejs";
 
@@ -94,7 +95,48 @@ export const GET = async (request: Request) => {
     .filter((item) => (item.userProgress[0]?.quantityOwned ?? 0) > 0)
     .map((item) => item.itemName);
 
-  return Response.json({ ownedBlueprints });
+  const community = await getCommunityForUser(user.id);
+
+  if (!community) {
+    return Response.json({ ownedBlueprints, viewerId: user.id });
+  }
+
+  const members = [...community.members]
+    .map((member) => ({ id: member.id, name: member.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const memberIds = members.map((member) => member.id);
+
+  const communityItems = await prisma.projectItem.findMany({
+    where: { stageId },
+    select: {
+      itemName: true,
+      userProgress: {
+        where: { userId: { in: memberIds } },
+        select: { userId: true, quantityOwned: true },
+      },
+    },
+  });
+
+  const ownershipByItem = communityItems.reduce<Record<string, string[]>>(
+    (acc, item) => {
+      acc[item.itemName] = item.userProgress
+        .filter((progress) => progress.quantityOwned > 0)
+        .map((progress) => progress.userId);
+      return acc;
+    },
+    {}
+  );
+
+  return Response.json({
+    ownedBlueprints,
+    viewerId: user.id,
+    community: {
+      id: community.id,
+      name: community.name,
+      members,
+    },
+    ownershipByItem,
+  });
 };
 
 export const PATCH = async (request: Request) => {
