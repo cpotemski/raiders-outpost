@@ -6,9 +6,7 @@ import { cn } from "../../lib/cn";
 import { Chip } from "../ui/Chip";
 
 const tabs = [
-  { href: "/", label: "Overview" },
-  { href: "/items", label: "Items" },
-  { href: "/squad", label: "Squad" },
+  { href: "/", label: "Start" },
 ];
 
 export function TopNav() {
@@ -24,7 +22,7 @@ export function TopNav() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="text-sm font-semibold uppercase tracking-[0.2em] text-text">
-            ARC // NEEDS
+            ARC // Raiders Outpost
           </span>
           <span className="hud-label">Community Exchange</span>
         </div>

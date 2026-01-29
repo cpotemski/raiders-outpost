@@ -4,6 +4,7 @@ import path from "node:path";
 export type ArcItem = {
   name: string;
   rarity: string;
+  itemType: string;
   imageFile: string;
 };
 
