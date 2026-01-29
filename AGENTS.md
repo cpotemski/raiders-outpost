@@ -5,6 +5,7 @@
 - Baue nur das, was explizit gefordert ist. Keine zusätzlichen Seiten, Features, Libraries, Animationen oder “nice to have”.
 - UI strikt im Arc-HUD/Blueprint Stil: nutze vorhandene Tokens/Klassen (`bg-arc-grid`, `arc-panel`, `arc-panel-header`, `hud-label`, `arc-corners`). Keine pill buttons, keine bunten Gradients, keine SaaS-Card-Optik.
 - Wenn etwas unklar ist: konservativ entscheiden und die einfachste Lösung wählen.
+- Features, die du implementierst, immer mit Playwright-Tests abdecken und wenn möglich einmal visuell prüfen.
 
 ## Ziel
 Baue eine Web-App (Companion App) die sich visuell wie “Arc Raiders” anfühlt: gritty sci-fi, minimal, UI wie ein In-Game Terminal/HUD. Kein “Startup-Dashboard”. User pflegen dort welche Items sie **brauchen**

@@ -9,10 +9,6 @@ const getToken = (request: Request) => {
   return request.headers.get("x-arc-token")?.trim() ?? "";
 };
 
-const getName = (request: Request) => {
-  return request.headers.get("x-arc-name")?.trim() ?? "";
-};
-
 const ensureBlueprintProject = async () => {
   let project = await prisma.project.findUnique({
     where: { slug: PROJECT_SLUG },
@@ -67,22 +63,14 @@ const ensureBlueprintProject = async () => {
 
 export const GET = async (request: Request) => {
   const token = getToken(request);
-  const name = getName(request);
   if (!token) {
     return Response.json({ error: "Missing token" }, { status: 401 });
   }
 
-  let user = await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { token },
     select: { id: true },
   });
-
-  if (!user && name) {
-    user = await prisma.user.create({
-      data: { name, token },
-      select: { id: true },
-    });
-  }
 
   if (!user) {
     return Response.json({ error: "Unknown token" }, { status: 404 });
@@ -111,7 +99,6 @@ export const GET = async (request: Request) => {
 
 export const PATCH = async (request: Request) => {
   const token = getToken(request);
-  const name = getName(request);
   if (!token) {
     return Response.json({ error: "Missing token" }, { status: 401 });
   }
@@ -125,17 +112,10 @@ export const PATCH = async (request: Request) => {
     return Response.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  let user = await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { token },
     select: { id: true },
   });
-
-  if (!user && name) {
-    user = await prisma.user.create({
-      data: { name, token },
-      select: { id: true },
-    });
-  }
 
   if (!user) {
     return Response.json({ error: "Unknown token" }, { status: 404 });
@@ -148,27 +128,40 @@ export const PATCH = async (request: Request) => {
   });
 
   const ownedSet = new Set(ownedBlueprints);
+  const ownedItemIds = items
+    .filter((item) => ownedSet.has(item.itemName))
+    .map((item) => item.id);
+  const stageItemIds = items.map((item) => item.id);
 
-  await prisma.$transaction(
-    items.map((item) =>
+  const deleteWhere = {
+    userId: user.id,
+    projectItemId: { in: stageItemIds },
+    ...(ownedItemIds.length
+      ? { NOT: { projectItemId: { in: ownedItemIds } } }
+      : {}),
+  };
+
+  await prisma.$transaction([
+    prisma.userProjectItem.deleteMany({ where: deleteWhere }),
+    ...ownedItemIds.map((projectItemId) =>
       prisma.userProjectItem.upsert({
         where: {
           userId_projectItemId: {
             userId: user.id,
-            projectItemId: item.id,
+            projectItemId,
           },
         },
         update: {
-          quantityOwned: ownedSet.has(item.itemName) ? 1 : 0,
+          quantityOwned: 1,
         },
         create: {
           userId: user.id,
-          projectItemId: item.id,
-          quantityOwned: ownedSet.has(item.itemName) ? 1 : 0,
+          projectItemId,
+          quantityOwned: 1,
         },
       })
-    )
-  );
+    ),
+  ]);
 
   return Response.json({ ownedBlueprints });
 };

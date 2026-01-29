@@ -9,17 +9,39 @@ export function AuthGate() {
   const { identity, ready, saveIdentity } = useLocalIdentity();
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   if (!ready || identity) return null;
 
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting) return;
     const trimmed = name.trim();
     if (!trimmed) {
       setError("Name required");
       return;
     }
-    saveIdentity(trimmed);
+    setError("");
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmed, create: true }),
+      });
+      const payload = await res.json().catch(() => null);
+      if (!res.ok || !payload?.user?.token) {
+        setError("Auth failed");
+        return;
+      }
+      const nextName =
+        typeof payload.user.name === "string" ? payload.user.name : trimmed;
+      saveIdentity(nextName, payload.user.token);
+    } catch {
+      setError("Auth failed");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -60,7 +82,12 @@ export function AuthGate() {
             )}
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <Button variant="primary" type="submit" className="px-5">
+            <Button
+              variant="primary"
+              type="submit"
+              className="px-5"
+              disabled={submitting}
+            >
               Link Uplink
             </Button>
             <span className="hud-label">SCANNING CACHE...</span>

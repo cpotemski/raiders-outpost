@@ -55,11 +55,11 @@ export function useLocalIdentity() {
     };
   }, []);
 
-  const saveIdentity = useCallback((nameInput: string) => {
+  const saveIdentity = useCallback((nameInput: string, tokenInput?: string) => {
     if (typeof window === "undefined") return null;
     const name = nameInput.trim();
     if (!name) return null;
-    const token = localStorage.getItem(TOKEN_KEY) ?? generateToken();
+    const token = tokenInput?.trim() || localStorage.getItem(TOKEN_KEY) || generateToken();
     localStorage.setItem(NAME_KEY, name);
     localStorage.setItem(TOKEN_KEY, token);
     window.dispatchEvent(new Event(UPDATE_EVENT));

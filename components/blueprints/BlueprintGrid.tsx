@@ -17,7 +17,7 @@ type BlueprintGridProps = {
 };
 
 export function BlueprintGrid({ items }: BlueprintGridProps) {
-  const { identity, ready } = useLocalIdentity();
+  const { identity, ready, clearIdentity } = useLocalIdentity();
   const [owned, setOwned] = useState<Set<string>>(() => new Set());
   const [query, setQuery] = useState("");
 
@@ -41,7 +41,13 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
       headers: { "x-arc-token": identity.token, "x-arc-name": identity.name },
       signal: controller.signal,
     })
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => {
+        if (res.status === 401 || res.status === 404) {
+          clearIdentity();
+          return null;
+        }
+        return res.ok ? res.json() : null;
+      })
       .then((payload) => {
         if (!payload?.ownedBlueprints) return;
         setOwned(new Set(payload.ownedBlueprints));
@@ -49,7 +55,7 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
       .catch(() => null);
 
     return () => controller.abort();
-  }, [identity, ready]);
+  }, [clearIdentity, identity, ready]);
 
   const persistOwned = (next: Set<string>) => {
     if (!identity) return;
@@ -61,7 +67,13 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
         "x-arc-name": identity.name,
       },
       body: JSON.stringify({ ownedBlueprints: Array.from(next) }),
-    }).catch(() => null);
+    })
+      .then((res) => {
+        if (res.status === 401 || res.status === 404) {
+          clearIdentity();
+        }
+      })
+      .catch(() => null);
   };
 
   const toggleOwned = (name: string) => {
