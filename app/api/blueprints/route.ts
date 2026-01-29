@@ -1,0 +1,174 @@
+import { prisma } from "../../../lib/prisma";
+import { loadArcItems } from "../../../lib/arc-items";
+
+export const runtime = "nodejs";
+
+const PROJECT_SLUG = "blueprints";
+
+const getToken = (request: Request) => {
+  return request.headers.get("x-arc-token")?.trim() ?? "";
+};
+
+const getName = (request: Request) => {
+  return request.headers.get("x-arc-name")?.trim() ?? "";
+};
+
+const ensureBlueprintProject = async () => {
+  let project = await prisma.project.findUnique({
+    where: { slug: PROJECT_SLUG },
+    include: { stages: true },
+  });
+
+  if (!project) {
+    project = await prisma.project.create({
+      data: {
+        name: "Blueprint Cache",
+        slug: PROJECT_SLUG,
+        stages: {
+          create: {
+            name: "Stage 01",
+            sortOrder: 1,
+          },
+        },
+      },
+      include: { stages: true },
+    });
+  }
+
+  let stage = project.stages.find((entry) => entry.sortOrder === 1);
+  if (!stage) {
+    stage = await prisma.projectStage.create({
+      data: {
+        projectId: project.id,
+        name: "Stage 01",
+        sortOrder: 1,
+      },
+    });
+  }
+
+  const payload = await loadArcItems();
+  const blueprintNames = payload.items
+    .filter((item) => item.itemType === "Blueprint")
+    .map((item) => item.name);
+
+  if (blueprintNames.length) {
+    await prisma.projectItem.createMany({
+      data: blueprintNames.map((name) => ({
+        stageId: stage.id,
+        itemName: name,
+        quantityRequired: 1,
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  return { projectId: project.id, stageId: stage.id };
+};
+
+export const GET = async (request: Request) => {
+  const token = getToken(request);
+  const name = getName(request);
+  if (!token) {
+    return Response.json({ error: "Missing token" }, { status: 401 });
+  }
+
+  let user = await prisma.user.findUnique({
+    where: { token },
+    select: { id: true },
+  });
+
+  if (!user && name) {
+    user = await prisma.user.create({
+      data: { name, token },
+      select: { id: true },
+    });
+  }
+
+  if (!user) {
+    return Response.json({ error: "Unknown token" }, { status: 404 });
+  }
+
+  const { stageId } = await ensureBlueprintProject();
+
+  const items = await prisma.projectItem.findMany({
+    where: { stageId },
+    select: {
+      itemName: true,
+      quantityRequired: true,
+      userProgress: {
+        where: { userId: user.id },
+        select: { quantityOwned: true },
+      },
+    },
+  });
+
+  const ownedBlueprints = items
+    .filter((item) => (item.userProgress[0]?.quantityOwned ?? 0) > 0)
+    .map((item) => item.itemName);
+
+  return Response.json({ ownedBlueprints });
+};
+
+export const PATCH = async (request: Request) => {
+  const token = getToken(request);
+  const name = getName(request);
+  if (!token) {
+    return Response.json({ error: "Missing token" }, { status: 401 });
+  }
+
+  const body = await request.json().catch(() => null);
+  const ownedBlueprints = Array.isArray(body?.ownedBlueprints)
+    ? body.ownedBlueprints.filter((entry) => typeof entry === "string")
+    : null;
+
+  if (!ownedBlueprints) {
+    return Response.json({ error: "Invalid payload" }, { status: 400 });
+  }
+
+  let user = await prisma.user.findUnique({
+    where: { token },
+    select: { id: true },
+  });
+
+  if (!user && name) {
+    user = await prisma.user.create({
+      data: { name, token },
+      select: { id: true },
+    });
+  }
+
+  if (!user) {
+    return Response.json({ error: "Unknown token" }, { status: 404 });
+  }
+
+  const { stageId } = await ensureBlueprintProject();
+  const items = await prisma.projectItem.findMany({
+    where: { stageId },
+    select: { id: true, itemName: true },
+  });
+
+  const ownedSet = new Set(ownedBlueprints);
+
+  await prisma.$transaction(
+    items.map((item) =>
+      prisma.userProjectItem.upsert({
+        where: {
+          userId_projectItemId: {
+            userId: user.id,
+            projectItemId: item.id,
+          },
+        },
+        update: {
+          quantityOwned: ownedSet.has(item.itemName) ? 1 : 0,
+        },
+        create: {
+          userId: user.id,
+          projectItemId: item.id,
+          quantityOwned: ownedSet.has(item.itemName) ? 1 : 0,
+        },
+      })
+    )
+  );
+
+  return Response.json({ ownedBlueprints });
+};

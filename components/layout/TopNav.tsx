@@ -4,10 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "../../lib/cn";
 import { Chip } from "../ui/Chip";
+import { UserMenu } from "../auth/UserMenu";
 
-const tabs = [
-  { href: "/", label: "Start" },
-];
+const tabs = [{ href: "/", label: "Start" }];
 
 export function TopNav() {
   const pathname = usePathname();
@@ -32,7 +31,7 @@ export function TopNav() {
               key={tab.href}
               href={tab.href}
               className={cn(
-                "rounded-[12px] border px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] transition",
+                "rounded-[10px] border px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] transition",
                 isActive(tab.href)
                   ? "border-accent bg-accent/10 text-text"
                   : "border-frame text-muted hover:border-accent/70"
@@ -42,7 +41,10 @@ export function TopNav() {
             </Link>
           ))}
         </div>
-        <Chip variant="good">Synced</Chip>
+        <div className="flex items-center gap-3">
+          <UserMenu />
+          <Chip variant="good">Synced</Chip>
+        </div>
       </div>
     </div>
   );

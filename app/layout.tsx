@@ -4,6 +4,8 @@ import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { TopNav } from "../components/layout/TopNav";
 import { cn } from "../lib/cn";
+import { AuthGate } from "../components/auth/AuthGate";
+import { IdentitySync } from "../components/auth/IdentitySync";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -39,6 +41,8 @@ export default function RootLayout({
           <TopNav />
           <main className="flex-1">{children}</main>
         </div>
+        <IdentitySync />
+        <AuthGate />
       </body>
     </html>
   );

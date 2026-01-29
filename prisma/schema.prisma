@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  token     String   @unique
+  projectItems UserProjectItem[]
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  stages    ProjectStage[]
+  createdAt DateTime @default(now())
+}
+
+model ProjectStage {
+  id        String   @id @default(uuid())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  name      String
+  sortOrder Int
+  items     ProjectItem[]
+}
+
+model ProjectItem {
+  id               String   @id @default(uuid())
+  stage            ProjectStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  stageId          String
+  itemName         String
+  quantityRequired Int
+  userProgress     UserProjectItem[]
+
+  @@unique([stageId, itemName])
+}
+
+model UserProjectItem {
+  id            String   @id @default(uuid())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  projectItem   ProjectItem @relation(fields: [projectItemId], references: [id], onDelete: Cascade)
+  projectItemId String
+  quantityOwned Int      @default(0)
+
+  @@unique([userId, projectItemId])
+}

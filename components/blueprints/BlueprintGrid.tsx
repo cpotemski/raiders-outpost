@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import blueprintBg from "../../blueprint-bg.webp";
 import { cn } from "../../lib/cn";
+import { useLocalIdentity } from "../auth/useLocalIdentity";
 
 type BlueprintItem = {
   name: string;
@@ -16,6 +17,7 @@ type BlueprintGridProps = {
 };
 
 export function BlueprintGrid({ items }: BlueprintGridProps) {
+  const { identity, ready } = useLocalIdentity();
   const [owned, setOwned] = useState<Set<string>>(() => new Set());
   const [query, setQuery] = useState("");
 
@@ -29,6 +31,39 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
     return ordered.filter((item) => item.name.toLowerCase().includes(q));
   }, [ordered, query]);
 
+  useEffect(() => {
+    if (!ready || !identity) return;
+
+    const controller = new AbortController();
+
+    fetch("/api/blueprints", {
+      method: "GET",
+      headers: { "x-arc-token": identity.token, "x-arc-name": identity.name },
+      signal: controller.signal,
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((payload) => {
+        if (!payload?.ownedBlueprints) return;
+        setOwned(new Set(payload.ownedBlueprints));
+      })
+      .catch(() => null);
+
+    return () => controller.abort();
+  }, [identity, ready]);
+
+  const persistOwned = (next: Set<string>) => {
+    if (!identity) return;
+    fetch("/api/blueprints", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-arc-token": identity.token,
+        "x-arc-name": identity.name,
+      },
+      body: JSON.stringify({ ownedBlueprints: Array.from(next) }),
+    }).catch(() => null);
+  };
+
   const toggleOwned = (name: string) => {
     setOwned((prev) => {
       const next = new Set(prev);
@@ -37,6 +72,7 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
       } else {
         next.add(name);
       }
+      persistOwned(next);
       return next;
     });
   };
