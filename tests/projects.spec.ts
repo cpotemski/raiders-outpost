@@ -89,9 +89,21 @@ test("auth creates token in localStorage and shows in menu", async ({ page }) =>
   expect(identity.name).toBe("Vanguard");
   expect(identity.token).toBeTruthy();
 
+  const generateResponse = page.waitForResponse((response) => {
+    return (
+      response.url().includes("/api/auth/code") &&
+      response.request().method() === "POST"
+    );
+  });
   await page.getByRole("button", { name: /Operator/i }).click();
-  await expect(page.getByText("Access Token")).toBeVisible();
-  await expect(page.getByText(identity.token ?? "")).toBeVisible();
+  await expect(page.getByText("Auth Code")).toBeVisible();
+  const response = await generateResponse;
+  if (!response.ok()) {
+    const body = await response.text();
+    throw new Error(`Auth code generation failed: ${response.status()} ${body}`);
+  }
+  const codeField = page.getByLabel("Auth code value");
+  await expect(codeField).toHaveText(/^[A-Z0-9]{8}$/);
 });
 
 test("logout clears local identity and returns to auth gate", async ({ page }) => {
@@ -120,6 +132,34 @@ test("unknown token is cleared and auth gate appears", async ({ page }) => {
   const identity = await getLocalIdentity(page);
   expect(identity.name).toBeFalsy();
   expect(identity.token).toBeFalsy();
+});
+
+test("auth code links existing account", async ({ page, browser }) => {
+  await login(page, "Atlas");
+  const generateResponse = page.waitForResponse((response) => {
+    return (
+      response.url().includes("/api/auth/code") &&
+      response.request().method() === "POST"
+    );
+  });
+  await page.getByRole("button", { name: /Operator/i }).click();
+  const response = await generateResponse;
+  if (!response.ok()) {
+    const body = await response.text();
+    throw new Error(`Auth code generation failed: ${response.status()} ${body}`);
+  }
+  const code = await page.getByLabel("Auth code value").textContent();
+  expect(code).toMatch(/^[A-Z0-9]{8}$/);
+
+  const context = await browser.newContext();
+  const secondPage = await context.newPage();
+  await secondPage.goto("/");
+  await expect(secondPage.getByText("ARC// AUTH LINK")).toBeVisible();
+  await secondPage.getByRole("button", { name: "Use Code" }).click();
+  await secondPage.getByLabel("Auth Code").fill(code ?? "");
+  await secondPage.getByRole("button", { name: "Link Uplink" }).click();
+  await expect(secondPage.getByText("Atlas")).toBeVisible();
+  await context.close();
 });
 
 test("community creation and invite link join", async ({ page, browser }) => {

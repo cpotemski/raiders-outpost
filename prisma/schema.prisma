@@ -13,6 +13,7 @@ model User {
   token     String   @unique
   projectItems UserProjectItem[]
   communityMembership CommunityMember?
+  authCodes AuthCode[]
   createdAt DateTime @default(now())
 }
 
@@ -72,4 +73,13 @@ model CommunityMember {
   joinedAt    DateTime  @default(now())
 
   @@unique([communityId, userId])
+}
+
+model AuthCode {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
