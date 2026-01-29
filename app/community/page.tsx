@@ -1,5 +1,6 @@
 import { Panel } from "../../components/ui/Panel";
 import { CommunityRoster } from "../../components/community/CommunityRoster";
+import { Suspense } from "react";
 
 export default function CommunityPage() {
   return (
@@ -13,7 +14,15 @@ export default function CommunityPage() {
         </div>
         <span className="hud-label">ARC//</span>
       </div>
-      <CommunityRoster />
+      <Suspense
+        fallback={
+          <div className="border-t border-frame2 px-4 py-5 text-sm uppercase tracking-[0.08em] text-muted">
+            Scanning cache...
+          </div>
+        }
+      >
+        <CommunityRoster />
+      </Suspense>
     </Panel>
   );
 }

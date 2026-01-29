@@ -147,7 +147,9 @@ export const PATCH = async (request: Request) => {
 
   const body = await request.json().catch(() => null);
   const ownedBlueprints = Array.isArray(body?.ownedBlueprints)
-    ? body.ownedBlueprints.filter((entry) => typeof entry === "string")
+    ? body.ownedBlueprints.filter(
+        (entry: unknown): entry is string => typeof entry === "string"
+      )
     : null;
 
   if (!ownedBlueprints) {
