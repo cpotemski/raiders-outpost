@@ -6,7 +6,10 @@ import { cn } from "../../lib/cn";
 import { Chip } from "../ui/Chip";
 import { UserMenu } from "../auth/UserMenu";
 
-const tabs = [{ href: "/", label: "Start" }];
+const tabs = [
+  { href: "/", label: "Start" },
+  { href: "/community", label: "Community" },
+];
 
 export function TopNav() {
   const pathname = usePathname();

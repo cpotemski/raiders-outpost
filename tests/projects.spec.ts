@@ -18,16 +18,16 @@ const getLocalIdentity = async (page: Page) => {
   );
 };
 
-const login = async (page: Page) => {
+const login = async (page: Page, name = "Vanguard") => {
   await page.goto("/");
   await page.evaluate(() => {
     localStorage.clear();
   });
   await page.reload();
   await expect(page.getByText("ARC// AUTH LINK")).toBeVisible();
-  await page.getByLabel("Operator Name").fill("Vanguard");
+  await page.getByLabel("Operator Name").fill(name);
   await page.getByRole("button", { name: "Link Uplink" }).click();
-  await expect(page.getByText("Vanguard")).toBeVisible();
+  await expect(page.getByText(name)).toBeVisible();
 };
 
 test.afterAll(async () => {
@@ -120,4 +120,35 @@ test("unknown token is cleared and auth gate appears", async ({ page }) => {
   const identity = await getLocalIdentity(page);
   expect(identity.name).toBeFalsy();
   expect(identity.token).toBeFalsy();
+});
+
+test("community creation and invite link join", async ({ page, browser }) => {
+  await login(page, "Vanguard");
+
+  await page.getByRole("link", { name: "Community", exact: true }).click();
+  await expect(page.getByText("Roster")).toBeVisible();
+  await page.getByLabel("Community Name").fill("Echo Node");
+  await page.getByRole("button", { name: "Create Community" }).click();
+  await expect(page.getByText("Echo Node")).toBeVisible();
+  await expect(
+    page.getByRole("main").getByText("Vanguard", { exact: true })
+  ).toBeVisible();
+
+  const inviteLink = await page.getByLabel("Invite link").inputValue();
+  expect(inviteLink).toContain("/community?invite=");
+
+  const context = await browser.newContext();
+  const invitePage = await context.newPage();
+  await invitePage.goto(inviteLink);
+  await expect(invitePage.getByText("ARC// AUTH LINK")).toBeVisible();
+  await invitePage.getByLabel("Operator Name").fill("Nomad");
+  await invitePage.getByRole("button", { name: "Link Uplink" }).click();
+  await expect(
+    invitePage.getByRole("main").getByText("Nomad", { exact: true })
+  ).toBeVisible();
+  await expect(invitePage.getByText("Echo Node")).toBeVisible();
+  await expect(
+    invitePage.getByRole("main").getByText("Vanguard", { exact: true })
+  ).toBeVisible();
+  await context.close();
 });
