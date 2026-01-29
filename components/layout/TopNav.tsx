@@ -21,20 +21,20 @@ export function TopNav() {
 
   return (
     <div className="arc-panel arc-corners px-4 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
           <span className="text-sm font-semibold uppercase tracking-[0.2em] text-text">
             ARC // Raiders Outpost
           </span>
           <span className="hud-label">Community Exchange</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {tabs.map((tab) => (
             <Link
               key={tab.href}
               href={tab.href}
               className={cn(
-                "rounded-[10px] border px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] transition",
+                "rounded-[6px] border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] transition",
                 isActive(tab.href)
                   ? "border-accent bg-accent/10 text-text"
                   : "border-frame text-muted hover:border-accent/70"

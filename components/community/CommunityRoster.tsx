@@ -284,7 +284,7 @@ export function CommunityRoster() {
       <div className="mt-6">
         <div className="hud-label">Members</div>
         <div className="mt-3 divide-y divide-frame2 border border-frame2">
-          <div className="grid grid-cols-[minmax(0,1fr)_120px_120px] gap-2 bg-panel2 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+          <div className="hidden grid-cols-[minmax(0,1fr)_120px_120px] gap-2 bg-panel2 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted sm:grid">
             <span>Operator</span>
             <span className="text-right">Status</span>
             <span className="text-right">Action</span>
@@ -292,11 +292,19 @@ export function CommunityRoster() {
           {community.members.map((member) => (
             <div
               key={member.id}
-              className="grid grid-cols-[minmax(0,1fr)_120px_120px] items-center gap-2 px-3 py-2 text-xs uppercase tracking-[0.12em]"
+              className="flex flex-col gap-2 px-3 py-2 text-xs uppercase tracking-[0.12em] sm:grid sm:grid-cols-[minmax(0,1fr)_120px_120px] sm:items-center sm:gap-2"
             >
               <span>{member.name}</span>
-              <span className="text-right text-accent">Synced</span>
-              <div className="text-right">
+              <div className="flex items-center justify-between gap-3 sm:justify-end">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted sm:hidden">
+                  Status
+                </span>
+                <span className="text-right text-accent">Synced</span>
+              </div>
+              <div className="flex items-center justify-between gap-3 sm:justify-end">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted sm:hidden">
+                  Action
+                </span>
                 <Button
                   type="button"
                   variant="default"

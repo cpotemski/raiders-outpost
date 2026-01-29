@@ -34,17 +34,82 @@ test.afterAll(async () => {
   await prisma.$disconnect();
 });
 
+test("seo metadata is present", async ({ page }) => {
+  await page.goto("/");
+  await expect(page).toHaveTitle("ARC // Raiders Outpost");
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+    "content",
+    /Companion HUD/i
+  );
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+    "content",
+    "ARC // Raiders Outpost"
+  );
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+    "content",
+    "summary"
+  );
+});
+
+test("mobile layout avoids horizontal overflow", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/");
+  await expect(page.getByText("ARC// AUTH LINK")).toBeVisible();
+  await expect
+    .poll(async () => {
+      return page.evaluate(() => {
+        return (
+          document.documentElement.scrollWidth >
+          document.documentElement.clientWidth
+        );
+      });
+    })
+    .toBeFalsy();
+
+  await page.getByLabel("Operator Name").fill("Vanguard");
+  await page.getByRole("button", { name: "Link Uplink" }).click();
+  await expect(page.getByText("Found")).toBeVisible();
+  await expect
+    .poll(async () => {
+      return page.evaluate(() => {
+        return (
+          document.documentElement.scrollWidth >
+          document.documentElement.clientWidth
+        );
+      });
+    })
+    .toBeFalsy();
+
+  await page.getByRole("link", { name: "Community", exact: true }).click();
+  await expect(page.getByText("Roster")).toBeVisible();
+  await expect
+    .poll(async () => {
+      return page.evaluate(() => {
+        return (
+          document.documentElement.scrollWidth >
+          document.documentElement.clientWidth
+        );
+      });
+    })
+    .toBeFalsy();
+  await page.getByRole("main").screenshot({
+    path: "test-results/mobile-community.png",
+  });
+});
+
 test("blueprint project persists owned state", async ({ page }) => {
   await login(page);
   const identity = await getLocalIdentity(page);
   expect(identity.token).toBeTruthy();
-  await page.waitForResponse((response) => {
+  const loadResponse = page.waitForResponse((response) => {
     return (
       response.url().includes("/api/blueprints") &&
       response.request().method() === "GET" &&
       response.ok()
     );
   });
+  await page.reload();
+  await loadResponse;
 
   const firstBlueprint = page.getByRole("button", { name: /Blueprint/i }).first();
   const persistRequest = page.waitForResponse((response) => {

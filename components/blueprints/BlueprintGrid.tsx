@@ -168,21 +168,21 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
 
   return (
     <>
-      <div className="arc-panel-header">
+      <div className="arc-panel-header flex-col items-start gap-3 sm:flex-row sm:items-center">
         <div>
           <p className="hud-label">Blueprints</p>
           <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
             Found
           </h2>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:justify-end">
           <label className="relative">
             <span className="sr-only">Quicksearch</span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="SEARCH..."
-              className="h-8 w-44 border-b border-frame2 bg-transparent px-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-text placeholder:text-muted/70 focus:border-accent/60 focus:outline-none"
+              className="h-8 w-28 border-b border-frame2 bg-transparent px-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-text placeholder:text-muted/70 focus:border-accent/60 focus:outline-none sm:w-44"
             />
           </label>
           <span className="hud-label">

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
@@ -19,8 +19,45 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ARC // Raiders Outpost",
-  description: "Exchange items with your Squad",
+  title: {
+    default: "ARC // Raiders Outpost",
+    template: "%s | ARC // Raiders Outpost",
+  },
+  description:
+    "Companion HUD for tracking needed ARC Raiders items and syncing blueprint ownership with your crew.",
+  applicationName: "ARC // Raiders Outpost",
+  keywords: [
+    "ARC Raiders",
+    "outpost",
+    "blueprints",
+    "item tracker",
+    "community",
+    "crew",
+  ],
+  robots: {
+    index: true,
+    follow: true,
+  },
+  openGraph: {
+    title: "ARC // Raiders Outpost",
+    description:
+      "Companion HUD for tracking needed ARC Raiders items and syncing blueprint ownership with your crew.",
+    type: "website",
+    locale: "de_DE",
+    siteName: "ARC // Raiders Outpost",
+  },
+  twitter: {
+    card: "summary",
+    title: "ARC // Raiders Outpost",
+    description:
+      "Companion HUD for tracking needed ARC Raiders items and syncing blueprint ownership with your crew.",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#080c1a",
 };
 
 export default function RootLayout({
