@@ -171,9 +171,6 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
       <div className="arc-panel-header flex-col items-start gap-3 sm:flex-row sm:items-center">
         <div>
           <p className="hud-label">Blueprints</p>
-          <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
-            Found
-          </h2>
         </div>
         <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:justify-end">
           <label className="relative">

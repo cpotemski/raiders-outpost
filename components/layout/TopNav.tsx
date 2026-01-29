@@ -1,9 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "../../lib/cn";
-import { Chip } from "../ui/Chip";
 import { UserMenu } from "../auth/UserMenu";
 
 const tabs = [
@@ -22,13 +22,15 @@ export function TopNav() {
   return (
     <div className="arc-panel arc-corners px-4 py-3">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
-          <span className="text-sm font-semibold uppercase tracking-[0.2em] text-text">
-            ARC // Raiders Outpost
-          </span>
-          <span className="hud-label">Community Exchange</span>
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+            <span className="text-sm font-semibold uppercase tracking-[0.2em] text-text">
+              ARC // Raiders Outpost
+            </span>
+            <span className="hud-label">Community Exchange</span>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2">
           {tabs.map((tab) => (
             <Link
               key={tab.href}
@@ -43,10 +45,7 @@ export function TopNav() {
               {tab.label}
             </Link>
           ))}
-        </div>
-        <div className="flex items-center gap-3">
           <UserMenu />
-          <Chip variant="good">Synced</Chip>
         </div>
       </div>
     </div>

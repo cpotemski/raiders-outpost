@@ -49,6 +49,17 @@ test("seo metadata is present", async ({ page }) => {
     "content",
     "summary"
   );
+  await expect(page.locator('link[rel="icon"][sizes="32x32"]')).toHaveAttribute(
+    "href",
+    "/favicon-32x32.png"
+  );
+  await expect(
+    page.locator('link[rel="icon"][sizes="16x16"]')
+  ).toHaveAttribute("href", "/favicon-16x16.png");
+  await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute(
+    "href",
+    "/apple-touch-icon.png"
+  );
 });
 
 test("mobile layout avoids horizontal overflow", async ({ page }) => {

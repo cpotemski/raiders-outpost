@@ -103,7 +103,7 @@ export function UserMenu() {
         )}
       >
         <div>
-          <div className="hud-label">Operator</div>
+          {/* <div className="hud-label">Operator</div> */}
           <div className="text-xs font-semibold uppercase tracking-[0.12em]">
             {identity?.name ?? "No Signal"}
           </div>
