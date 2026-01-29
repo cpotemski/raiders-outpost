@@ -17,10 +17,17 @@ type BlueprintGridProps = {
 
 export function BlueprintGrid({ items }: BlueprintGridProps) {
   const [owned, setOwned] = useState<Set<string>>(() => new Set());
+  const [query, setQuery] = useState("");
 
   const ordered = useMemo(() => {
     return [...items].sort((a, b) => a.name.localeCompare(b.name));
   }, [items]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return ordered;
+    return ordered.filter((item) => item.name.toLowerCase().includes(q));
+  }, [ordered, query]);
 
   const toggleOwned = (name: string) => {
     setOwned((prev) => {
@@ -43,15 +50,26 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
             Found
           </h2>
         </div>
-        <span className="hud-label">
-          {owned.size}/{ordered.length}
-        </span>
+        <div className="flex items-center gap-3">
+          <label className="relative">
+            <span className="sr-only">Quicksearch</span>
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="SEARCH..."
+              className="h-8 w-44 border-b border-frame2 bg-transparent px-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-text placeholder:text-muted/70 focus:border-accent/60 focus:outline-none"
+            />
+          </label>
+          <span className="hud-label">
+            {owned.size}/{ordered.length}
+          </span>
+        </div>
       </div>
 
       <div className="relative arc-noise">
         <div className="border-t border-frame2 bg-panel/80 px-4 py-5">
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
-            {ordered.map((item) => {
+            {filtered.map((item) => {
               const isOwned = owned.has(item.name);
               const label = item.name.replace(/\s*Blueprint\s*$/i, "");
               return (
