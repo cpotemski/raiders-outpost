@@ -1,18 +1,16 @@
 import { Panel } from "../components/ui/Panel";
+import { BlueprintGrid } from "../components/blueprints/BlueprintGrid";
+import { loadArcItems } from "../lib/arc-items";
 
-export default function StartPage() {
+export default async function StartPage() {
+  const payload = await loadArcItems();
+  const blueprints = payload.items.filter(
+    (item) => item.itemType === "Blueprint"
+  );
+
   return (
-    <Panel>
-      <div className="arc-panel-header">
-        <div>
-          <p className="hud-label">System</p>
-          <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
-            Start
-          </h2>
-        </div>
-        <span className="hud-label">Idle</span>
-      </div>
-      <div className="px-4 py-6 text-sm text-muted">SCANNING CACHE...</div>
+    <Panel className="overflow-hidden">
+      <BlueprintGrid items={blueprints} />
     </Panel>
   );
 }

@@ -82,3 +82,11 @@ body {
     linear-gradient(var(--frame), var(--frame)) right 10px top 10px / 1px 14px no-repeat;
   opacity: .9;
 }
+
+/* Clamp for small HUD labels */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
