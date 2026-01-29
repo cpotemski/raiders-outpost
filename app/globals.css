@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* aus deinen Screens abgeleitet (dunkles navy/anthrazit + off-white) */
+  --bg: #080c1a;       /* near-black navy */
+  --panel: #091028;    /* blueprint surface */
+  --panel2: #0b1433;   /* leicht heller für Layer */
+  --frame: rgba(232, 224, 208, 0.16);  /* dünne helle Linien */
+  --frame2: rgba(232, 224, 208, 0.10);
+  --text: #e8e0d0;     /* “ARC”-offwhite */
+  --muted: rgba(232, 224, 208, 0.70);
+
+  --accent: #48c7d6;   /* kaltes HUD-cyan */
+  --warn: #f2b24a;     /* amber */
+  --good: #79d48a;
+  --bad: #ff5b5b;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* Blueprint Grid Overlay (sehr subtil) */
+.bg-arc-grid {
+  background-image:
+    linear-gradient(to right, rgba(72,199,214,0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(72,199,214,0.08) 1px, transparent 1px),
+    radial-gradient(closest-side, rgba(255,255,255,0.04), transparent 60%);
+  background-size: 32px 32px, 32px 32px, 1200px 1200px;
+  background-position: center;
+}
+
+/* Noise (subtil, wirkt sofort “ingame”) */
+.arc-noise::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .08;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E");
+}
+
+/* HUD Labels */
+.hud-label {
+  @apply text-xs uppercase tracking-[0.08em];
+  color: var(--muted);
+}
+
+/* Panel */
+.arc-panel {
+  @apply relative rounded-[12px] border;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent 42%), var(--panel);
+  border-color: var(--frame);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.35) inset, 0 10px 30px rgba(0,0,0,.45);
+}
+
+/* Panel Header Bar */
+.arc-panel-header {
+  @apply flex items-center justify-between px-4 py-3 border-b;
+  border-color: var(--frame2);
+  background: rgba(0,0,0,.18);
+}
+
+/* “Corner ticks” (optional, sehr Arc) */
+.arc-corners::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--frame), var(--frame)) left 10px top 10px / 14px 1px no-repeat,
+    linear-gradient(var(--frame), var(--frame)) left 10px top 10px / 1px 14px no-repeat,
+    linear-gradient(var(--frame), var(--frame)) right 10px top 10px / 14px 1px no-repeat,
+    linear-gradient(var(--frame), var(--frame)) right 10px top 10px / 1px 14px no-repeat;
+  opacity: .9;
+}

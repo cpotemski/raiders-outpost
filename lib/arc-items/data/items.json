@@ -1,0 +1,2626 @@
+{
+  "scrapedAt": "2026-01-29T10:48:46.052Z",
+  "count": 524,
+  "items": [
+    {
+      "name": "Acoustic Guitar",
+      "rarity": "Legendary",
+      "imageFile": "acoustic-guitar.webp"
+    },
+    {
+      "name": "Adrenaline Shot",
+      "rarity": "Common",
+      "imageFile": "adrenaline-shot.webp"
+    },
+    {
+      "name": "Advanced ARC Powercell",
+      "rarity": "Rare",
+      "imageFile": "advanced-arc-powercell.webp"
+    },
+    {
+      "name": "Advanced Electrical Components",
+      "rarity": "Rare",
+      "imageFile": "advanced-electrical-components.webp"
+    },
+    {
+      "name": "Advanced Mechanical Components",
+      "rarity": "Rare",
+      "imageFile": "advanced-mechanical-components.webp"
+    },
+    {
+      "name": "Agave",
+      "rarity": "Uncommon",
+      "imageFile": "agave.webp"
+    },
+    {
+      "name": "Agave Juice",
+      "rarity": "Common",
+      "imageFile": "agave-juice.webp"
+    },
+    {
+      "name": "Air Freshener",
+      "rarity": "Uncommon",
+      "imageFile": "air-freshener.webp"
+    },
+    {
+      "name": "Alarm Clock",
+      "rarity": "Rare",
+      "imageFile": "alarm-clock.webp"
+    },
+    {
+      "name": "Alien Duck",
+      "rarity": "Uncommon",
+      "imageFile": "alien-duck.webp"
+    },
+    {
+      "name": "Ancient Fort Security Code",
+      "rarity": "Common",
+      "imageFile": "ancient-fort-security-code.webp"
+    },
+    {
+      "name": "Angled Grip I",
+      "rarity": "Common",
+      "imageFile": "angled-grip-i.webp"
+    },
+    {
+      "name": "Angled Grip II",
+      "rarity": "Uncommon",
+      "imageFile": "angled-grip-ii.webp"
+    },
+    {
+      "name": "Angled Grip II Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "angled-grip-ii-recipe.webp"
+    },
+    {
+      "name": "Angled Grip III",
+      "rarity": "Rare",
+      "imageFile": "angled-grip-iii.webp"
+    },
+    {
+      "name": "Angled Grip III Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "angled-grip-iii-recipe.webp"
+    },
+    {
+      "name": "Antiseptic",
+      "rarity": "Rare",
+      "imageFile": "antiseptic.webp"
+    },
+    {
+      "name": "Anvil Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "anvil-recipe.webp"
+    },
+    {
+      "name": "Anvil I",
+      "rarity": "Uncommon",
+      "imageFile": "anvil-i.webp"
+    },
+    {
+      "name": "Anvil II",
+      "rarity": "Uncommon",
+      "imageFile": "anvil-ii.webp"
+    },
+    {
+      "name": "Anvil III",
+      "rarity": "Uncommon",
+      "imageFile": "anvil-iii.webp"
+    },
+    {
+      "name": "Anvil IV",
+      "rarity": "Uncommon",
+      "imageFile": "anvil-iv.webp"
+    },
+    {
+      "name": "Anvil Splitter",
+      "rarity": "Legendary",
+      "imageFile": "anvil-splitter.webp"
+    },
+    {
+      "name": "Aphelion Rifle",
+      "rarity": "Legendary",
+      "imageFile": "aphelion-rifle.webp"
+    },
+    {
+      "name": "Aphelion Rifle Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "aphelion-rifle-blueprint.webp"
+    },
+    {
+      "name": "Apricot",
+      "rarity": "Uncommon",
+      "imageFile": "apricot.webp"
+    },
+    {
+      "name": "ARC Alloy",
+      "rarity": "Uncommon",
+      "imageFile": "arc-alloy.webp"
+    },
+    {
+      "name": "ARC Circuitry",
+      "rarity": "Rare",
+      "imageFile": "arc-circuitry.webp"
+    },
+    {
+      "name": "ARC Coolant",
+      "rarity": "Rare",
+      "imageFile": "arc-coolant.webp"
+    },
+    {
+      "name": "ARC Flex Rubber",
+      "rarity": "Rare",
+      "imageFile": "arc-flex-rubber.webp"
+    },
+    {
+      "name": "ARC Motion Core",
+      "rarity": "Rare",
+      "imageFile": "arc-motion-core.webp"
+    },
+    {
+      "name": "ARC Performance Steel",
+      "rarity": "Rare",
+      "imageFile": "arc-performance-steel.webp"
+    },
+    {
+      "name": "ARC Powercell",
+      "rarity": "Common",
+      "imageFile": "arc-powercell.webp"
+    },
+    {
+      "name": "ARC Synthetic Resin",
+      "rarity": "Rare",
+      "imageFile": "arc-synthetic-resin.webp"
+    },
+    {
+      "name": "ARC Thermo Lining",
+      "rarity": "Rare",
+      "imageFile": "arc-thermo-lining.webp"
+    },
+    {
+      "name": "Arpeggio I",
+      "rarity": "Uncommon",
+      "imageFile": "arpeggio-i.webp"
+    },
+    {
+      "name": "Arpeggio II",
+      "rarity": "Uncommon",
+      "imageFile": "arpeggio-ii.webp"
+    },
+    {
+      "name": "Arpeggio III",
+      "rarity": "Uncommon",
+      "imageFile": "arpeggio-iii.webp"
+    },
+    {
+      "name": "Arpeggio IV",
+      "rarity": "Uncommon",
+      "imageFile": "arpeggio-iv.webp"
+    },
+    {
+      "name": "Assorted Seeds",
+      "rarity": "Common",
+      "imageFile": "assorted-seeds.webp"
+    },
+    {
+      "name": "Aviator (Outfit)",
+      "rarity": "Unknown",
+      "imageFile": "aviator-outfit.webp"
+    },
+    {
+      "name": "Bag (Radio Renegade Variant)",
+      "rarity": "Common",
+      "imageFile": "bag-radio-renegade-variant.webp"
+    },
+    {
+      "name": "Banana (Backpack Charm)",
+      "rarity": "Unknown",
+      "imageFile": "banana-backpack-charm.webp"
+    },
+    {
+      "name": "Bandage",
+      "rarity": "Common",
+      "imageFile": "bandage.webp"
+    },
+    {
+      "name": "Barricade Kit",
+      "rarity": "Uncommon",
+      "imageFile": "barricade-kit.webp"
+    },
+    {
+      "name": "Barricade Kit Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "barricade-kit-recipe.webp"
+    },
+    {
+      "name": "Bastion Cell",
+      "rarity": "Epic",
+      "imageFile": "bastion-part.webp"
+    },
+    {
+      "name": "Battery",
+      "rarity": "Uncommon",
+      "imageFile": "battery.webp"
+    },
+    {
+      "name": "Bettina Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "bettina-blueprint.webp"
+    },
+    {
+      "name": "Bettina I",
+      "rarity": "Epic",
+      "imageFile": "bettina-i.webp"
+    },
+    {
+      "name": "Bettina II",
+      "rarity": "Epic",
+      "imageFile": "bettina-ii.webp"
+    },
+    {
+      "name": "Bettina III",
+      "rarity": "Epic",
+      "imageFile": "bettina-iii.webp"
+    },
+    {
+      "name": "Bettina IV",
+      "rarity": "Epic",
+      "imageFile": "bettina-iv.webp"
+    },
+    {
+      "name": "Bicycle Pump",
+      "rarity": "Rare",
+      "imageFile": "bicycle-pump.webp"
+    },
+    {
+      "name": "Binoculars",
+      "rarity": "Common",
+      "imageFile": "binoculars.webp"
+    },
+    {
+      "name": "Bison Driver",
+      "rarity": "Rare",
+      "imageFile": "bison-driver.webp"
+    },
+    {
+      "name": "Black (Hiker Colour)",
+      "rarity": "Common",
+      "imageFile": "black-hiker-colour.webp"
+    },
+    {
+      "name": "Black & White (Origin Color)",
+      "rarity": "Common",
+      "imageFile": "black-and-white-origin-color.webp"
+    },
+    {
+      "name": "Black Eye (Face Style)",
+      "rarity": "Unknown",
+      "imageFile": "black-eye-face-style.webp"
+    },
+    {
+      "name": "Blaze Grenade",
+      "rarity": "Rare",
+      "imageFile": "blaze-grenade.webp"
+    },
+    {
+      "name": "Blaze Grenade Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "blaze-grenade-blueprint.webp"
+    },
+    {
+      "name": "Blaze Grenade Trap",
+      "rarity": "Rare",
+      "imageFile": "blaze-grenade-trap.webp"
+    },
+    {
+      "name": "Bloated Tuna Can",
+      "rarity": "Common",
+      "imageFile": "bloated-tuna-can.webp"
+    },
+    {
+      "name": "Blue (Radio Renegade Color)",
+      "rarity": "Common",
+      "imageFile": "blue-radio-renegade-color.webp"
+    },
+    {
+      "name": "Blue Gate Cellar Key",
+      "rarity": "Rare",
+      "imageFile": "blue-gate-cellar-key.webp"
+    },
+    {
+      "name": "Blue Gate Communication Tower Key",
+      "rarity": "Rare",
+      "imageFile": "blue-gate-communication-tower-key.webp"
+    },
+    {
+      "name": "Blue Gate Confiscation Room Key",
+      "rarity": "Epic",
+      "imageFile": "blue-gate-confiscation-room-key.webp"
+    },
+    {
+      "name": "Blue Gate Village Key",
+      "rarity": "Uncommon",
+      "imageFile": "blue-gate-village-key.webp"
+    },
+    {
+      "name": "Blue Light Stick",
+      "rarity": "Common",
+      "imageFile": "blue-light-stick.webp"
+    },
+    {
+      "name": "Blue Light Stick Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "blue-light-stick-blueprint.webp"
+    },
+    {
+      "name": "Blue Yellow (Aviator Color)",
+      "rarity": "Common",
+      "imageFile": "blue-yellow-aviator-color.webp"
+    },
+    {
+      "name": "Bobcat Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "bobcat-i-recipe.webp"
+    },
+    {
+      "name": "Bobcat I",
+      "rarity": "Epic",
+      "imageFile": "bobcat-i.webp"
+    },
+    {
+      "name": "Bobcat II",
+      "rarity": "Epic",
+      "imageFile": "bobcat-ii.webp"
+    },
+    {
+      "name": "Bobcat III",
+      "rarity": "Epic",
+      "imageFile": "bobcat-iii.webp"
+    },
+    {
+      "name": "Bobcat IV",
+      "rarity": "Epic",
+      "imageFile": "bobcat-iv.webp"
+    },
+    {
+      "name": "Bombardier Cell",
+      "rarity": "Epic",
+      "imageFile": "bombardier-cell.webp"
+    },
+    {
+      "name": "Bow and Arrow (Emote)",
+      "rarity": "Unknown",
+      "imageFile": "bow-and-arrow-emote.webp"
+    },
+    {
+      "name": "Breathtaking Snow Globe",
+      "rarity": "Epic",
+      "imageFile": "breathtaking-snow-globe.webp"
+    },
+    {
+      "name": "Briefcase (Backpack Attachment)",
+      "rarity": "Unknown",
+      "imageFile": "briefcase-backpack-attachment.webp"
+    },
+    {
+      "name": "Broken Flashlight",
+      "rarity": "Rare",
+      "imageFile": "broken-flashlight.webp"
+    },
+    {
+      "name": "Broken Guidance System",
+      "rarity": "Rare",
+      "imageFile": "broken-guidance-system.webp"
+    },
+    {
+      "name": "Broken Handcuffs",
+      "rarity": "Uncommon",
+      "imageFile": "broken-handcuffs.webp"
+    },
+    {
+      "name": "Broken Handheld Radio",
+      "rarity": "Rare",
+      "imageFile": "broken-handheld-radio.webp"
+    },
+    {
+      "name": "Broken Riot Shield",
+      "rarity": "Rare",
+      "imageFile": "broken-riot-shield.webp"
+    },
+    {
+      "name": "Broken Taser",
+      "rarity": "Rare",
+      "imageFile": "broken-taser.webp"
+    },
+    {
+      "name": "Burgerboy (Backpack Charm)",
+      "rarity": "Unknown",
+      "imageFile": "burgerboy-backpack-charm.webp"
+    },
+    {
+      "name": "Buried City Hospital Key",
+      "rarity": "Rare",
+      "imageFile": "buried-city-hospital-key.webp"
+    },
+    {
+      "name": "Buried City JKV Employee Access Card",
+      "rarity": "Uncommon",
+      "imageFile": "buried-city-jkv-employee-access-card.webp"
+    },
+    {
+      "name": "Buried City Residential Master Key",
+      "rarity": "Uncommon",
+      "imageFile": "buried-city-residential-master-key.webp"
+    },
+    {
+      "name": "Buried City Town Hall Key",
+      "rarity": "Epic",
+      "imageFile": "buried-city-town-hall-key.webp"
+    },
+    {
+      "name": "Burletta Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "burltetta-recipe.webp"
+    },
+    {
+      "name": "Burletta I",
+      "rarity": "Uncommon",
+      "imageFile": "burletta-i.webp"
+    },
+    {
+      "name": "Burletta II",
+      "rarity": "Uncommon",
+      "imageFile": "burletta-ii.webp"
+    },
+    {
+      "name": "Burletta III",
+      "rarity": "Uncommon",
+      "imageFile": "burletta-iiii.webp"
+    },
+    {
+      "name": "Burletta IV",
+      "rarity": "Uncommon",
+      "imageFile": "burletta-iv.webp"
+    },
+    {
+      "name": "Burned ARC Circuitry",
+      "rarity": "Uncommon",
+      "imageFile": "burned-arc-circuitry.webp"
+    },
+    {
+      "name": "Burnt-Out Candles",
+      "rarity": "Common",
+      "imageFile": "burnt-out-candles.webp"
+    },
+    {
+      "name": "Camera Lens",
+      "rarity": "Uncommon",
+      "imageFile": "camera-lens.webp"
+    },
+    {
+      "name": "Candle Holder",
+      "rarity": "Uncommon",
+      "imageFile": "candle-holder.webp"
+    },
+    {
+      "name": "Candleberries",
+      "rarity": "Rare",
+      "imageFile": "candleberries.webp"
+    },
+    {
+      "name": "Canister",
+      "rarity": "Uncommon",
+      "imageFile": "canister.webp"
+    },
+    {
+      "name": "Cans (Backpack Attachment)",
+      "rarity": "Common",
+      "imageFile": "cans-backpack-attachment.webp"
+    },
+    {
+      "name": "Cat Bed",
+      "rarity": "Uncommon",
+      "imageFile": "cat-bed.webp"
+    },
+    {
+      "name": "Cheer (Emote)",
+      "rarity": "Unknown",
+      "imageFile": "cheer-emote.webp"
+    },
+    {
+      "name": "Chemicals",
+      "rarity": "Common",
+      "imageFile": "chemicals.webp"
+    },
+    {
+      "name": "Coffee Pot",
+      "rarity": "Common",
+      "imageFile": "coffee-pot.webp"
+    },
+    {
+      "name": "Combat Mk. 1",
+      "rarity": "Uncommon",
+      "imageFile": "combat-mk-1.webp"
+    },
+    {
+      "name": "Combat Mk. 2",
+      "rarity": "Rare",
+      "imageFile": "combat-mk-2.webp"
+    },
+    {
+      "name": "Combat Mk. 3 (Aggressive)",
+      "rarity": "Epic",
+      "imageFile": "combat-mk-3-aggressive.webp"
+    },
+    {
+      "name": "Combat Mk. 3 (Flanking) Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "combat-mk-3-flanking.webp"
+    },
+    {
+      "name": "Combat Mk.3 (Aggressive) Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "combat-mk3-aggressive-blueprint.webp"
+    },
+    {
+      "name": "Combat Mk.3 (Flanking)",
+      "rarity": "Epic",
+      "imageFile": "combat-mk3-flanking.webp"
+    },
+    {
+      "name": "Compensator I",
+      "rarity": "Common",
+      "imageFile": "compensator-i.webp"
+    },
+    {
+      "name": "Compensator II",
+      "rarity": "Uncommon",
+      "imageFile": "compensator-ii.webp"
+    },
+    {
+      "name": "Compensator II Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "compensator-ii-recipe.webp"
+    },
+    {
+      "name": "Compensator III",
+      "rarity": "Rare",
+      "imageFile": "compensator-iii.webp"
+    },
+    {
+      "name": "Compensator III Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "compensator-iii-recipe.webp"
+    },
+    {
+      "name": "Complex Gun Parts",
+      "rarity": "Epic",
+      "imageFile": "complex-gun-parts.webp"
+    },
+    {
+      "name": "Complex Gun Parts Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "complex-gun-parts-blueprint.webp"
+    },
+    {
+      "name": "Coolant",
+      "rarity": "Rare",
+      "imageFile": "coolant.webp"
+    },
+    {
+      "name": "Cooling Coil",
+      "rarity": "Rare",
+      "imageFile": "cooling-coil.webp"
+    },
+    {
+      "name": "Cooling Fan",
+      "rarity": "Rare",
+      "imageFile": "cooling-fan.webp"
+    },
+    {
+      "name": "Cracked Bioscanner",
+      "rarity": "Rare",
+      "imageFile": "cracked-bioscanner.webp"
+    },
+    {
+      "name": "Crimson Racer (Aviator Colour)",
+      "rarity": "Common",
+      "imageFile": "crimson-racer-aviator-colour.webp"
+    },
+    {
+      "name": "Crude Explosives",
+      "rarity": "Uncommon",
+      "imageFile": "crude-explosives.webp"
+    },
+    {
+      "name": "Crumpled Plastic Bottle",
+      "rarity": "Uncommon",
+      "imageFile": "crumpled-plastic-bottle.webp"
+    },
+    {
+      "name": "Dam Control Center Tower Key",
+      "rarity": "Epic",
+      "imageFile": "dam-control-center-tower-key.webp"
+    },
+    {
+      "name": "Dam Staff Room Key",
+      "rarity": "Uncommon",
+      "imageFile": "dam-staff-room-key.webp"
+    },
+    {
+      "name": "Dam Surveillance Key",
+      "rarity": "Uncommon",
+      "imageFile": "dam-surveillance-key.webp"
+    },
+    {
+      "name": "Dam Testing Annex Key",
+      "rarity": "Rare",
+      "imageFile": "dam-testing-annex-key.webp"
+    },
+    {
+      "name": "Dam Utility Key",
+      "rarity": "Uncommon",
+      "imageFile": "dam-utility-key.webp"
+    },
+    {
+      "name": "Damaged ARC Motion Core",
+      "rarity": "Uncommon",
+      "imageFile": "damaged-arc-motion-core.webp"
+    },
+    {
+      "name": "Damaged ARC Powercell",
+      "rarity": "Common",
+      "imageFile": "damaged-arc-powercell.webp"
+    },
+    {
+      "name": "Damaged Fireball Burner",
+      "rarity": "Common",
+      "imageFile": "damaged-fireball-burner.webp"
+    },
+    {
+      "name": "Damaged Heat Sink",
+      "rarity": "Rare",
+      "imageFile": "damaged-heat-sink.webp"
+    },
+    {
+      "name": "Damaged Hornet Driver",
+      "rarity": "Common",
+      "imageFile": "danaged-hornet-driver.webp"
+    },
+    {
+      "name": "Damaged Rocketeer Driver",
+      "rarity": "Common",
+      "imageFile": "damaged-rocketeer-part.webp"
+    },
+    {
+      "name": "Damaged Tick Pod",
+      "rarity": "Common",
+      "imageFile": "damaged-tick-pod.webp"
+    },
+    {
+      "name": "Damaged Wasp Driver",
+      "rarity": "Common",
+      "imageFile": "damaged-wasp-driver.webp"
+    },
+    {
+      "name": "Dart Board",
+      "rarity": "Uncommon",
+      "imageFile": "dart-board.webp"
+    },
+    {
+      "name": "Deadline",
+      "rarity": "Epic",
+      "imageFile": "deadline.webp"
+    },
+    {
+      "name": "Deadline Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "deadline-blueprint.webp"
+    },
+    {
+      "name": "Defibrillator",
+      "rarity": "Rare",
+      "imageFile": "defibrillator.webp"
+    },
+    {
+      "name": "Defibrillator Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "defibrillator-recipe.webp"
+    },
+    {
+      "name": "Deflated Football",
+      "rarity": "Uncommon",
+      "imageFile": "deflated-football.webp"
+    },
+    {
+      "name": "Degraded ARC Rubber",
+      "rarity": "Uncommon",
+      "imageFile": "degraded-arc-rubber.webp"
+    },
+    {
+      "name": "Diving Goggles",
+      "rarity": "Rare",
+      "imageFile": "diving-googles.webp"
+    },
+    {
+      "name": "Dog Collar",
+      "rarity": "Rare",
+      "imageFile": "dog-collar.webp"
+    },
+    {
+      "name": "Doodly Duck",
+      "rarity": "Rare",
+      "imageFile": "doodly-duck.webp"
+    },
+    {
+      "name": "Door Blocker",
+      "rarity": "Common",
+      "imageFile": "door-blocker.webp"
+    },
+    {
+      "name": "Dried-Out ARC Resin",
+      "rarity": "Uncommon",
+      "imageFile": "dried-out-arc-resin.webp"
+    },
+    {
+      "name": "Duct Tape",
+      "rarity": "Uncommon",
+      "imageFile": "duct-tape-recipe.webp"
+    },
+    {
+      "name": "Durable Cloth",
+      "rarity": "Uncommon",
+      "imageFile": "durable-cloth.webp"
+    },
+    {
+      "name": "Electrical Components",
+      "rarity": "Uncommon",
+      "imageFile": "electrical-components.webp"
+    },
+    {
+      "name": "Empty Wine Bottle",
+      "rarity": "Common",
+      "imageFile": "empty-wine-bottle.webp"
+    },
+    {
+      "name": "Energy Clip",
+      "rarity": "Rare",
+      "imageFile": "energy-ammo.webp"
+    },
+    {
+      "name": "Equalizer",
+      "rarity": "Legendary",
+      "imageFile": "equalizer-i.webp"
+    },
+    {
+      "name": "Equalizer Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "equalizer-recipe.webp"
+    },
+    {
+      "name": "Exodus Modules",
+      "rarity": "Epic",
+      "imageFile": "exodus-modules.webp"
+    },
+    {
+      "name": "Expired Pasta",
+      "rarity": "Common",
+      "imageFile": "expired-pasta.webp"
+    },
+    {
+      "name": "Expired Respirator",
+      "rarity": "Rare",
+      "imageFile": "expired-respirator.webp"
+    },
+    {
+      "name": "Explosive Compound",
+      "rarity": "Rare",
+      "imageFile": "explosive-compound.webp"
+    },
+    {
+      "name": "Explosive Mine",
+      "rarity": "Rare",
+      "imageFile": "explosive-mine.webp"
+    },
+    {
+      "name": "Explosive Mine Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "explosive-mine-blueprint.webp"
+    },
+    {
+      "name": "Extended Barrel",
+      "rarity": "Epic",
+      "imageFile": "extended-barrel.webp"
+    },
+    {
+      "name": "Extended Barrel Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "extended-barrel-recipe.webp"
+    },
+    {
+      "name": "Extended Light Mag I",
+      "rarity": "Common",
+      "imageFile": "extended-light-mag-i.webp"
+    },
+    {
+      "name": "Extended Light Mag II",
+      "rarity": "Uncommon",
+      "imageFile": "extended-light-mag-ii.webp"
+    },
+    {
+      "name": "Extended Light Mag II Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "extended-light-mag-ii-recipe.webp"
+    },
+    {
+      "name": "Extended Light Mag III",
+      "rarity": "Rare",
+      "imageFile": "extended-light-mag-iii.webp"
+    },
+    {
+      "name": "Extended Light Mag III Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "extended-light-mag-iii-recipe.webp"
+    },
+    {
+      "name": "Extended Medium Mag I",
+      "rarity": "Common",
+      "imageFile": "extended-medium-mag-i.webp"
+    },
+    {
+      "name": "Extended Medium Mag II",
+      "rarity": "Uncommon",
+      "imageFile": "extended-medium-mag-ii.webp"
+    },
+    {
+      "name": "Extended Medium Mag II Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "extended-medium-mag-ii-recipe.webp"
+    },
+    {
+      "name": "Extended Medium Mag III",
+      "rarity": "Rare",
+      "imageFile": "extended-medium-mag-iii.webp"
+    },
+    {
+      "name": "Extended Medium Mag III Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "extended-medium-mag-iii-blueprint.webp"
+    },
+    {
+      "name": "Extended Shotgun Mag I",
+      "rarity": "Common",
+      "imageFile": "extended-shotgun-mag-i.webp"
+    },
+    {
+      "name": "Extended Shotgun Mag II",
+      "rarity": "Uncommon",
+      "imageFile": "extended-shotgun-mag-ii.webp"
+    },
+    {
+      "name": "Extended Shotgun Mag II Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "extended-shotgun-mag-ii-recipe.webp"
+    },
+    {
+      "name": "Extended Shotgun Mag III",
+      "rarity": "Rare",
+      "imageFile": "extended-shotgun-mag-iii.webp"
+    },
+    {
+      "name": "Extended Shotgun Mag III Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "extended-shotgun-mag-iii-recipe.webp"
+    },
+    {
+      "name": "Fabric",
+      "rarity": "Common",
+      "imageFile": "fabric.webp"
+    },
+    {
+      "name": "Faded Photograph",
+      "rarity": "Common",
+      "imageFile": "faded-photograph.webp"
+    },
+    {
+      "name": "Familiar Duck",
+      "rarity": "Epic",
+      "imageFile": "familiar-duck.webp"
+    },
+    {
+      "name": "Ferro I",
+      "rarity": "Common",
+      "imageFile": "ferro-i.webp"
+    },
+    {
+      "name": "Ferro II",
+      "rarity": "Common",
+      "imageFile": "ferro-ii.webp"
+    },
+    {
+      "name": "Ferro III",
+      "rarity": "Common",
+      "imageFile": "ferro-iii.webp"
+    },
+    {
+      "name": "Ferro IV",
+      "rarity": "Common",
+      "imageFile": "ferro-iv.webp"
+    },
+    {
+      "name": "Fertilizer",
+      "rarity": "Common",
+      "imageFile": "fertilizer.webp"
+    },
+    {
+      "name": "Film Reel",
+      "rarity": "Rare",
+      "imageFile": "film-reel.webp"
+    },
+    {
+      "name": "Fine Wristwatch",
+      "rarity": "Rare",
+      "imageFile": "fine-wristwatch.webp"
+    },
+    {
+      "name": "Fireball Burner",
+      "rarity": "Uncommon",
+      "imageFile": "fireball-burner.webp"
+    },
+    {
+      "name": "Firecracker",
+      "rarity": "Common",
+      "imageFile": "firecracker.webp"
+    },
+    {
+      "name": "Fireworks Box",
+      "rarity": "Rare",
+      "imageFile": "fireworks-box.webp"
+    },
+    {
+      "name": "Fireworks Box Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "fireworks-box-blueprint.webp"
+    },
+    {
+      "name": "Flame Spray",
+      "rarity": "Uncommon",
+      "imageFile": "flame-spray.webp"
+    },
+    {
+      "name": "Flashy Duck",
+      "rarity": "Rare",
+      "imageFile": "flashy-duck.webp"
+    },
+    {
+      "name": "Flow Controller",
+      "rarity": "Rare",
+      "imageFile": "flow-controller.webp"
+    },
+    {
+      "name": "Flushing Terminal Key",
+      "rarity": "Common",
+      "imageFile": "flushing-terminal-key.webp"
+    },
+    {
+      "name": "Fossilized Lightning",
+      "rarity": "Epic",
+      "imageFile": "fossilized-lightning.webp"
+    },
+    {
+      "name": "Free Loadout Augment",
+      "rarity": "Common",
+      "imageFile": "free-loadout-augment.webp"
+    },
+    {
+      "name": "Frequency Modulation Box",
+      "rarity": "Rare",
+      "imageFile": "frequency-modulation-box.webp"
+    },
+    {
+      "name": "Fried Motherboard",
+      "rarity": "Rare",
+      "imageFile": "fried-motherboard.webp"
+    },
+    {
+      "name": "Fruit Mix",
+      "rarity": "Uncommon",
+      "imageFile": "fruit-mix.webp"
+    },
+    {
+      "name": "Frying Pan",
+      "rarity": "Rare",
+      "imageFile": "frying-pan.webp"
+    },
+    {
+      "name": "Garlic Press",
+      "rarity": "Uncommon",
+      "imageFile": "garlic-press.webp"
+    },
+    {
+      "name": "Gas Grenade",
+      "rarity": "Common",
+      "imageFile": "gas-grenade.webp"
+    },
+    {
+      "name": "Gas Grenade Trap",
+      "rarity": "Common",
+      "imageFile": "gas-grenade-trap.webp"
+    },
+    {
+      "name": "Gas Mine",
+      "rarity": "Common",
+      "imageFile": "gas-mine.webp"
+    },
+    {
+      "name": "Gas Mine Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "gas-mine-blueprint.webp"
+    },
+    {
+      "name": "Geiger Counter",
+      "rarity": "Epic",
+      "imageFile": "geiger-counter.webp"
+    },
+    {
+      "name": "Gentle Duck",
+      "rarity": "Uncommon",
+      "imageFile": "gentle-duck.webp"
+    },
+    {
+      "name": "Goggles (Radio Renegade Variant)",
+      "rarity": "Unknown",
+      "imageFile": "goggles-radio-renegade-variant.webp"
+    },
+    {
+      "name": "Great Mullein",
+      "rarity": "Uncommon",
+      "imageFile": "great-muullein.webp"
+    },
+    {
+      "name": "Green Light Stick",
+      "rarity": "Common",
+      "imageFile": "green-light-stick.webp"
+    },
+    {
+      "name": "Green Light Stick Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "green-light-stick-blueprint.webp"
+    },
+    {
+      "name": "Hairpin I",
+      "rarity": "Common",
+      "imageFile": "hairpin-i.webp"
+    },
+    {
+      "name": "Hairpin II",
+      "rarity": "Common",
+      "imageFile": "hairpin-ii.webp"
+    },
+    {
+      "name": "Hairpin III",
+      "rarity": "Common",
+      "imageFile": "hairpin-iii.webp"
+    },
+    {
+      "name": "Hairpin IV",
+      "rarity": "Common",
+      "imageFile": "hairpin-iv.webp"
+    },
+    {
+      "name": "Happy Jig (Emote)",
+      "rarity": "Unknown",
+      "imageFile": "happy-jig-emote.webp"
+    },
+    {
+      "name": "Headphones",
+      "rarity": "Rare",
+      "imageFile": "headphones.webp"
+    },
+    {
+      "name": "Heavy Ammo",
+      "rarity": "Common",
+      "imageFile": "heavy-ammo.webp"
+    },
+    {
+      "name": "Heavy Fuze Grenade",
+      "rarity": "Rare",
+      "imageFile": "heavy-fuze-grenade.webp"
+    },
+    {
+      "name": "Heavy Gun Parts",
+      "rarity": "Rare",
+      "imageFile": "heavy-gun-parts.webp"
+    },
+    {
+      "name": "Heavy Gun Parts Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "heavy-gun-parts-recipe.webp"
+    },
+    {
+      "name": "Heavy Shield",
+      "rarity": "Epic",
+      "imageFile": "heavy-shield.webp"
+    },
+    {
+      "name": "Helmet (Radio Renegade Variant)",
+      "rarity": "Common",
+      "imageFile": "helmet-radio-renegade-variant.webp"
+    },
+    {
+      "name": "Herbal Bandage",
+      "rarity": "Uncommon",
+      "imageFile": "herbal-bandage.webp"
+    },
+    {
+      "name": "Horizontal Grip",
+      "rarity": "Epic",
+      "imageFile": "horizontal-grip.webp"
+    },
+    {
+      "name": "Hornet Driver",
+      "rarity": "Rare",
+      "imageFile": "hornet-driver.webp"
+    },
+    {
+      "name": "Household Cleaner",
+      "rarity": "Uncommon",
+      "imageFile": "household-cleaner.webp"
+    },
+    {
+      "name": "Hullcracker Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "hullcracker-blueprint.webp"
+    },
+    {
+      "name": "Hullcracker I",
+      "rarity": "Epic",
+      "imageFile": "hullcracker-i.webp"
+    },
+    {
+      "name": "Hullcracker II",
+      "rarity": "Epic",
+      "imageFile": "hullcracker-ii.webp"
+    },
+    {
+      "name": "Hullcracker III",
+      "rarity": "Epic",
+      "imageFile": "hullcracker-iii.webp"
+    },
+    {
+      "name": "Hullcracker IV",
+      "rarity": "Epic",
+      "imageFile": "hullcracker-iv.webp"
+    },
+    {
+      "name": "Humidifier",
+      "rarity": "Rare",
+      "imageFile": "humidifier.webp"
+    },
+    {
+      "name": "Ice Cream Scooper",
+      "rarity": "Uncommon",
+      "imageFile": "ice-cream-scooper.webp"
+    },
+    {
+      "name": "Il Toro Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "il-toro-recipe.webp"
+    },
+    {
+      "name": "Il Toro I",
+      "rarity": "Uncommon",
+      "imageFile": "il-toro-i.webp"
+    },
+    {
+      "name": "Il Toro II",
+      "rarity": "Uncommon",
+      "imageFile": "il-toro-ii.webp"
+    },
+    {
+      "name": "Il Toro III",
+      "rarity": "Uncommon",
+      "imageFile": "il-toro-iiii.webp"
+    },
+    {
+      "name": "Il Toro IV",
+      "rarity": "Uncommon",
+      "imageFile": "il-toro-iv.webp"
+    },
+    {
+      "name": "Impure ARC Coolant",
+      "rarity": "Uncommon",
+      "imageFile": "impure-arc-coolant.webp"
+    },
+    {
+      "name": "Industrial Battery",
+      "rarity": "Rare",
+      "imageFile": "industrial-battery.webp"
+    },
+    {
+      "name": "Industrial Charger",
+      "rarity": "Rare",
+      "imageFile": "industrial-charger.webp"
+    },
+    {
+      "name": "Industrial Magnet",
+      "rarity": "Rare",
+      "imageFile": "industrial-magnet.webp"
+    },
+    {
+      "name": "Ion Sputter",
+      "rarity": "Epic",
+      "imageFile": "ion-sputter.webp"
+    },
+    {
+      "name": "Jolt Mine",
+      "rarity": "Rare",
+      "imageFile": "jolt-mine.webp"
+    },
+    {
+      "name": "Jolt Mine Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "jolt-mine-recipe.webp"
+    },
+    {
+      "name": "Junior (Outfit)",
+      "rarity": "Common",
+      "imageFile": "junior-outfit.webp"
+    },
+    {
+      "name": "Jupiter",
+      "rarity": "Legendary",
+      "imageFile": "jupiter-i.webp"
+    },
+    {
+      "name": "Jupiter Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "jupiter-i-recipe.webp"
+    },
+    {
+      "name": "Kettle I",
+      "rarity": "Common",
+      "imageFile": "kettle-i.webp"
+    },
+    {
+      "name": "Kettle II",
+      "rarity": "Common",
+      "imageFile": "kettle-ii.webp"
+    },
+    {
+      "name": "Kettle III",
+      "rarity": "Common",
+      "imageFile": "kettle-iii.webp"
+    },
+    {
+      "name": "Kettle IV",
+      "rarity": "Common",
+      "imageFile": "kettle-iv.webp"
+    },
+    {
+      "name": "Kinetic Converter",
+      "rarity": "Legendary",
+      "imageFile": "kinetic-converter.webp"
+    },
+    {
+      "name": "Laboratory Reagents",
+      "rarity": "Rare",
+      "imageFile": "laboratory-reagents.webp"
+    },
+    {
+      "name": "Lance's Mixtape (5th Edition)",
+      "rarity": "Epic",
+      "imageFile": "lances-mixtape-5th-edition.webp"
+    },
+    {
+      "name": "Laser Trap: Lure",
+      "rarity": "Common",
+      "imageFile": "laser-trap-lure-recipe.webp"
+    },
+    {
+      "name": "Launcher Ammo",
+      "rarity": "Rare",
+      "imageFile": "launcher-ammo.webp"
+    },
+    {
+      "name": "Leaper Pulse Unit",
+      "rarity": "Epic",
+      "imageFile": "leaper-pulse-unit.webp"
+    },
+    {
+      "name": "Lemon",
+      "rarity": "Uncommon",
+      "imageFile": "lemon.webp"
+    },
+    {
+      "name": "Li'l Smoke Grenade",
+      "rarity": "Common",
+      "imageFile": "lil-smoke-grenade.webp"
+    },
+    {
+      "name": "Lidar Scanner",
+      "rarity": "Common",
+      "imageFile": "lidar-scanner.webp"
+    },
+    {
+      "name": "Light Ammo",
+      "rarity": "Common",
+      "imageFile": "light-ammo.webp"
+    },
+    {
+      "name": "Light Bulb",
+      "rarity": "Uncommon",
+      "imageFile": "light-bulb.webp"
+    },
+    {
+      "name": "Light Gun Parts",
+      "rarity": "Rare",
+      "imageFile": "light-gun-parts.webp"
+    },
+    {
+      "name": "Light Gun Parts Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "light-gun-parts-recipe.webp"
+    },
+    {
+      "name": "Light Impact Grenade",
+      "rarity": "Common",
+      "imageFile": "light-impact-grenade.webp"
+    },
+    {
+      "name": "Light Shield",
+      "rarity": "Uncommon",
+      "imageFile": "light-shield.webp"
+    },
+    {
+      "name": "Lightweight Stock",
+      "rarity": "Epic",
+      "imageFile": "lightweight-stock.webp"
+    },
+    {
+      "name": "Lightweight Stock Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "lightweight-stock-recipe.webp"
+    },
+    {
+      "name": "Looting Mk. 1",
+      "rarity": "Uncommon",
+      "imageFile": "looting-mk-1.webp"
+    },
+    {
+      "name": "Looting Mk. 2",
+      "rarity": "Rare",
+      "imageFile": "looting-mk-2.webp"
+    },
+    {
+      "name": "Looting MK. 3 (Cautious)",
+      "rarity": "Epic",
+      "imageFile": "looting-mk-3-cautious.webp"
+    },
+    {
+      "name": "Looting MK. 3 (Safekeeper)",
+      "rarity": "Epic",
+      "imageFile": "looting-mk-3-safekeeper.webp"
+    },
+    {
+      "name": "Looting MK. 3 (Safekeeper) Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "looting-mk-3-safekeeper-blueprint.webp"
+    },
+    {
+      "name": "Looting MK. 3 (Survivor)",
+      "rarity": "Epic",
+      "imageFile": "looting-mk-3-survivor.webp"
+    },
+    {
+      "name": "Looting MK. 3 (Survivor) Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "looting-mk-3-survivor-blueprint.webp"
+    },
+    {
+      "name": "Lure Grenade",
+      "rarity": "Uncommon",
+      "imageFile": "lure-grenade.webp"
+    },
+    {
+      "name": "Lure Grenade Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "lure-grenade-recipe.webp"
+    },
+    {
+      "name": "Lure Grenade Trap",
+      "rarity": "Uncommon",
+      "imageFile": "lure-grenade-trap.webp"
+    },
+    {
+      "name": "Magnet",
+      "rarity": "Uncommon",
+      "imageFile": "magnet.webp"
+    },
+    {
+      "name": "Magnetic Accelerator",
+      "rarity": "Epic",
+      "imageFile": "magnetic-accelerator.webp"
+    },
+    {
+      "name": "Magnetron",
+      "rarity": "Epic",
+      "imageFile": "magnetron.webp"
+    },
+    {
+      "name": "Mastery Medal (Backpack Charm)",
+      "rarity": "Unknown",
+      "imageFile": "mastery-medal-backpack-charm.webp"
+    },
+    {
+      "name": "Matriarch Reactor",
+      "rarity": "Legendary",
+      "imageFile": "matriarch-reactor.webp"
+    },
+    {
+      "name": "Mechanical Components",
+      "rarity": "Uncommon",
+      "imageFile": "mechanical-components.webp"
+    },
+    {
+      "name": "Medium Ammo",
+      "rarity": "Common",
+      "imageFile": "medium-ammo.webp"
+    },
+    {
+      "name": "Medium Gun Parts",
+      "rarity": "Rare",
+      "imageFile": "medium-gun-parts.webp"
+    },
+    {
+      "name": "Medium Gun Parts Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "medium-gun-parts-recipe.webp"
+    },
+    {
+      "name": "Medium Shield",
+      "rarity": "Rare",
+      "imageFile": "medium-shield.webp"
+    },
+    {
+      "name": "Metal Brackets",
+      "rarity": "Uncommon",
+      "imageFile": "metal-brackets.webp"
+    },
+    {
+      "name": "Metal Parts",
+      "rarity": "Common",
+      "imageFile": "metal-parts.webp"
+    },
+    {
+      "name": "Microscope",
+      "rarity": "Rare",
+      "imageFile": "microscope.webp"
+    },
+    {
+      "name": "Mini Centrifuge",
+      "rarity": "Rare",
+      "imageFile": "mini-centrifuge.webp"
+    },
+    {
+      "name": "Mod Components",
+      "rarity": "Rare",
+      "imageFile": "mod-components.webp"
+    },
+    {
+      "name": "Moss",
+      "rarity": "Rare",
+      "imageFile": "moss.webp"
+    },
+    {
+      "name": "Motor",
+      "rarity": "Rare",
+      "imageFile": "motor.webp"
+    },
+    {
+      "name": "Mushroom",
+      "rarity": "Uncommon",
+      "imageFile": "mushroom.webp"
+    },
+    {
+      "name": "Music Album",
+      "rarity": "Rare",
+      "imageFile": "music-album.webp"
+    },
+    {
+      "name": "Music Box",
+      "rarity": "Rare",
+      "imageFile": "music-box.webp"
+    },
+    {
+      "name": "Muzzle Brake I",
+      "rarity": "Common",
+      "imageFile": "muzzle-brake-i.webp"
+    },
+    {
+      "name": "Muzzle Brake II",
+      "rarity": "Uncommon",
+      "imageFile": "muzzle-brake-ii.webp"
+    },
+    {
+      "name": "Muzzle Brake II Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "muzzle-brake-ii-recipe.webp"
+    },
+    {
+      "name": "Muzzle Brake III",
+      "rarity": "Rare",
+      "imageFile": "muzzle-brake-iii.webp"
+    },
+    {
+      "name": "Muzzle Brake III Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "muzzle-brake-iii-recipe.webp"
+    },
+    {
+      "name": "Noisemaker",
+      "rarity": "Common",
+      "imageFile": "noisemaker.webp"
+    },
+    {
+      "name": "Number Plate",
+      "rarity": "Uncommon",
+      "imageFile": "number-plate.webp"
+    },
+    {
+      "name": "Oil",
+      "rarity": "Uncommon",
+      "imageFile": "oil.webp"
+    },
+    {
+      "name": "Olives",
+      "rarity": "Uncommon",
+      "imageFile": "olives.webp"
+    },
+    {
+      "name": "Orange Camo (Origin Outfit)",
+      "rarity": "Unknown",
+      "imageFile": "orange-camo-origin-outfit.webp"
+    },
+    {
+      "name": "Osprey Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "osprey-recipe.webp"
+    },
+    {
+      "name": "Osprey I",
+      "rarity": "Rare",
+      "imageFile": "osprey-i.webp"
+    },
+    {
+      "name": "Osprey II",
+      "rarity": "Rare",
+      "imageFile": "osprey-ii.webp"
+    },
+    {
+      "name": "Osprey III",
+      "rarity": "Rare",
+      "imageFile": "osprey-iii.webp"
+    },
+    {
+      "name": "Osprey IV",
+      "rarity": "Rare",
+      "imageFile": "osprey-iv.webp"
+    },
+    {
+      "name": "Padded Stock",
+      "rarity": "Epic",
+      "imageFile": "padded-stock.webp"
+    },
+    {
+      "name": "Padded Stock Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "padded-stock-recipe.webp"
+    },
+    {
+      "name": "Painted Box",
+      "rarity": "Uncommon",
+      "imageFile": "painted-box.webp"
+    },
+    {
+      "name": "Patrol (Outfit)",
+      "rarity": "Unknown",
+      "imageFile": "patrol-outfit.webp"
+    },
+    {
+      "name": "Patrol Car Key",
+      "rarity": "Uncommon",
+      "imageFile": "patrol-car-key.webp"
+    },
+    {
+      "name": "Photoelectric Cloak",
+      "rarity": "Epic",
+      "imageFile": "photoelectric-cloak.webp"
+    },
+    {
+      "name": "Pilgrim's Peak Security Code",
+      "rarity": "Common",
+      "imageFile": "pilgrims-peak-security-code.webp"
+    },
+    {
+      "name": "Plastic Parts",
+      "rarity": "Common",
+      "imageFile": "plastic-parts.webp"
+    },
+    {
+      "name": "Playing Cards",
+      "rarity": "Rare",
+      "imageFile": "playing-cards.webp"
+    },
+    {
+      "name": "Polluted Air Filter",
+      "rarity": "Rare",
+      "imageFile": "polluted-air-filter.webp"
+    },
+    {
+      "name": "Pop Trigger",
+      "rarity": "Uncommon",
+      "imageFile": "pop-trigger.webp"
+    },
+    {
+      "name": "Portable TV",
+      "rarity": "Rare",
+      "imageFile": "portable-television.webp"
+    },
+    {
+      "name": "Poster of Natural Wonder",
+      "rarity": "Uncommon",
+      "imageFile": "poster-natural-wonder.webp"
+    },
+    {
+      "name": "Pottery",
+      "rarity": "Uncommon",
+      "imageFile": "pottery.webp"
+    },
+    {
+      "name": "Power Bank",
+      "rarity": "Rare",
+      "imageFile": "power-bank.webp"
+    },
+    {
+      "name": "Power Cable",
+      "rarity": "Rare",
+      "imageFile": "power-cable.webp"
+    },
+    {
+      "name": "Power Rod",
+      "rarity": "Epic",
+      "imageFile": "power-rod.webp"
+    },
+    {
+      "name": "Prickly Pear",
+      "rarity": "Common",
+      "imageFile": "prickly-pear.webp"
+    },
+    {
+      "name": "Processor",
+      "rarity": "Rare",
+      "imageFile": "processor.webp"
+    },
+    {
+      "name": "Projector",
+      "rarity": "Rare",
+      "imageFile": "projector.webp"
+    },
+    {
+      "name": "Pulse Mine",
+      "rarity": "Uncommon",
+      "imageFile": "pulse-mine.webp"
+    },
+    {
+      "name": "Pulse Mine Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "pulse-mine-blueprint.webp"
+    },
+    {
+      "name": "Queen Reactor",
+      "rarity": "Legendary",
+      "imageFile": "queen-reactor.webp"
+    },
+    {
+      "name": "Radio",
+      "rarity": "Rare",
+      "imageFile": "radio.webp"
+    },
+    {
+      "name": "Radio Relay",
+      "rarity": "Rare",
+      "imageFile": "radio-relay.webp"
+    },
+    {
+      "name": "Radio Renegade (Outfit)",
+      "rarity": "Unknown",
+      "imageFile": "radio-renegade-outfit.webp"
+    },
+    {
+      "name": "Raider Hatch Key",
+      "rarity": "Rare",
+      "imageFile": "raider-hatch-key.webp"
+    },
+    {
+      "name": "Raider's Refuge Security Code",
+      "rarity": "Common",
+      "imageFile": "raiders-refuge-security-code.webp"
+    },
+    {
+      "name": "Rattler I",
+      "rarity": "Common",
+      "imageFile": "rattler-i.webp"
+    },
+    {
+      "name": "Rattler II",
+      "rarity": "Common",
+      "imageFile": "rattler-ii.webp"
+    },
+    {
+      "name": "Rattler III",
+      "rarity": "Common",
+      "imageFile": "rattler-iii.webp"
+    },
+    {
+      "name": "Rattler IV",
+      "rarity": "Common",
+      "imageFile": "rattler-iv.webp"
+    },
+    {
+      "name": "Recorder",
+      "rarity": "Uncommon",
+      "imageFile": "recorder.webp"
+    },
+    {
+      "name": "Red Coral Jewelry",
+      "rarity": "Rare",
+      "imageFile": "red-coral-jewelry.webp"
+    },
+    {
+      "name": "Red Light Stick",
+      "rarity": "Common",
+      "imageFile": "red-light-stick.webp"
+    },
+    {
+      "name": "Red Light Stick Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "red-light-stick-blueprint.webp"
+    },
+    {
+      "name": "Reinforced Reception Security Code",
+      "rarity": "Common",
+      "imageFile": "reinforced-reception-security-code.webp"
+    },
+    {
+      "name": "Remote Control",
+      "rarity": "Rare",
+      "imageFile": "remote-control.webp"
+    },
+    {
+      "name": "Remote Raider Flare",
+      "rarity": "Common",
+      "imageFile": "remote-raider-flare.webp"
+    },
+    {
+      "name": "Remote Raider Flare Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "remote-raider-flare-blueprint.webp"
+    },
+    {
+      "name": "Renegade I",
+      "rarity": "Rare",
+      "imageFile": "renegade-i.webp"
+    },
+    {
+      "name": "Renegade II",
+      "rarity": "Rare",
+      "imageFile": "renegade-ii.webp"
+    },
+    {
+      "name": "Renegade III",
+      "rarity": "Rare",
+      "imageFile": "renegade-iii.webp"
+    },
+    {
+      "name": "Renegade IV",
+      "rarity": "Rare",
+      "imageFile": "renegade-iv.webp"
+    },
+    {
+      "name": "Resin",
+      "rarity": "Common",
+      "imageFile": "resin.webp"
+    },
+    {
+      "name": "Ripped Safety Vest",
+      "rarity": "Uncommon",
+      "imageFile": "ripped-safety-vest.webp"
+    },
+    {
+      "name": "Rocket Thruster",
+      "rarity": "Rare",
+      "imageFile": "rocket-thruster.webp"
+    },
+    {
+      "name": "Rocketeer Driver",
+      "rarity": "Epic",
+      "imageFile": "rocketeer-part.webp"
+    },
+    {
+      "name": "Roots",
+      "rarity": "Uncommon",
+      "imageFile": "roots.webp"
+    },
+    {
+      "name": "Rope",
+      "rarity": "Rare",
+      "imageFile": "rope.webp"
+    },
+    {
+      "name": "Rosary",
+      "rarity": "Rare",
+      "imageFile": "rosary.webp"
+    },
+    {
+      "name": "Rotary Encoder",
+      "rarity": "Rare",
+      "imageFile": "rotary-encoder.webp"
+    },
+    {
+      "name": "Rubber Duck",
+      "rarity": "Common",
+      "imageFile": "rubber-duck.webp"
+    },
+    {
+      "name": "Rubber Pad",
+      "rarity": "Rare",
+      "imageFile": "rubber-pad.webp"
+    },
+    {
+      "name": "Rubber Parts",
+      "rarity": "Common",
+      "imageFile": "rubber-parts-recipe.webp"
+    },
+    {
+      "name": "Ruined Accordion",
+      "rarity": "Rare",
+      "imageFile": "ruined-accordion.webp"
+    },
+    {
+      "name": "Ruined Augment",
+      "rarity": "Common",
+      "imageFile": "ruined-augment.webp"
+    },
+    {
+      "name": "Ruined Baton",
+      "rarity": "Uncommon",
+      "imageFile": "ruined-baton.webp"
+    },
+    {
+      "name": "Ruined Handcuffs",
+      "rarity": "Uncommon",
+      "imageFile": "ruined-handcuffs.webp"
+    },
+    {
+      "name": "Ruined Parachute",
+      "rarity": "Uncommon",
+      "imageFile": "ruined-parachute.webp"
+    },
+    {
+      "name": "Ruined Riot Shield",
+      "rarity": "Rare",
+      "imageFile": "ruined-riot-shield.webp"
+    },
+    {
+      "name": "Ruined Tactical Vest",
+      "rarity": "Uncommon",
+      "imageFile": "ruined-tactical-vest.webp"
+    },
+    {
+      "name": "Rusted Bolts",
+      "rarity": "Uncommon",
+      "imageFile": "rusted-bolts.webp"
+    },
+    {
+      "name": "Rusted Gear",
+      "rarity": "Rare",
+      "imageFile": "rusted-gear.webp"
+    },
+    {
+      "name": "Rusted Shut Medical Kit",
+      "rarity": "Rare",
+      "imageFile": "rusted-shut-medical-kit.webp"
+    },
+    {
+      "name": "Rusted Tools",
+      "rarity": "Rare",
+      "imageFile": "rusted-tools.webp"
+    },
+    {
+      "name": "Rusty ARC Steel",
+      "rarity": "Uncommon",
+      "imageFile": "rusty-arc-steel.webp"
+    },
+    {
+      "name": "Sample Cleaner",
+      "rarity": "Rare",
+      "imageFile": "sample-cleaner.webp"
+    },
+    {
+      "name": "Seeker Grenade",
+      "rarity": "Uncommon",
+      "imageFile": "seeker-grenade.webp"
+    },
+    {
+      "name": "Seeker Grenade Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "seeker-grenade-blueprint.webp"
+    },
+    {
+      "name": "Sensors",
+      "rarity": "Rare",
+      "imageFile": "sensors-recipe.webp"
+    },
+    {
+      "name": "Sentinel Firing Core",
+      "rarity": "Rare",
+      "imageFile": "sentinel-part.webp"
+    },
+    {
+      "name": "Shaker",
+      "rarity": "Uncommon",
+      "imageFile": "shaker.webp"
+    },
+    {
+      "name": "Shield Recharger",
+      "rarity": "Uncommon",
+      "imageFile": "shield-recharger.webp"
+    },
+    {
+      "name": "Shotgun ammo",
+      "rarity": "Common",
+      "imageFile": "shotgun-ammo.webp"
+    },
+    {
+      "name": "Shotgun Choke I",
+      "rarity": "Common",
+      "imageFile": "shotgun-choke-i.webp"
+    },
+    {
+      "name": "Shotgun Choke II",
+      "rarity": "Uncommon",
+      "imageFile": "shotgun-choke-ii.webp"
+    },
+    {
+      "name": "Shotgun Choke II Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "shotgun-choke-ii-recipe.webp"
+    },
+    {
+      "name": "Shotgun Choke III",
+      "rarity": "Rare",
+      "imageFile": "shotgun-choke-iii.webp"
+    },
+    {
+      "name": "Shotgun Choke III Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "shotgun-choke-iii-recipe.webp"
+    },
+    {
+      "name": "Shotgun Parts",
+      "rarity": "Rare",
+      "imageFile": "shotgun-gun-parts.webp"
+    },
+    {
+      "name": "Shotgun Silencer",
+      "rarity": "Epic",
+      "imageFile": "shotgun-silencer.webp"
+    },
+    {
+      "name": "Shotgun Silencer Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "shotgun-silencer-blueprint.webp"
+    },
+    {
+      "name": "Showstopper",
+      "rarity": "Rare",
+      "imageFile": "showstopper.webp"
+    },
+    {
+      "name": "Showstopper Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "showstopper-blueprint.webp"
+    },
+    {
+      "name": "Shrapnel Grenade",
+      "rarity": "Uncommon",
+      "imageFile": "shrapnel-grenade.webp"
+    },
+    {
+      "name": "Shredder Gyro",
+      "rarity": "Rare",
+      "imageFile": "shredder-gyro.webp"
+    },
+    {
+      "name": "Signal Amplifier",
+      "rarity": "Rare",
+      "imageFile": "signal-amplifier.webp"
+    },
+    {
+      "name": "Silencer I",
+      "rarity": "Uncommon",
+      "imageFile": "silencer-i.webp"
+    },
+    {
+      "name": "Silencer I Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "silencer-i-recipe.webp"
+    },
+    {
+      "name": "Silencer II",
+      "rarity": "Rare",
+      "imageFile": "silencer-ii.webp"
+    },
+    {
+      "name": "Silencer II Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "silencer-ii-recipe.webp"
+    },
+    {
+      "name": "Silencer III",
+      "rarity": "Epic",
+      "imageFile": "silencer-iii.webp"
+    },
+    {
+      "name": "Silver Teaspoon Set",
+      "rarity": "Rare",
+      "imageFile": "silver-teaspoon-set.webp"
+    },
+    {
+      "name": "Simple Gun Parts",
+      "rarity": "Uncommon",
+      "imageFile": "simple-gun-parts.webp"
+    },
+    {
+      "name": "Smoke Grenade",
+      "rarity": "Rare",
+      "imageFile": "smoke-grenade.webp"
+    },
+    {
+      "name": "Smoke Grenade Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "smoke-grenade-blueprint.webp"
+    },
+    {
+      "name": "Smoke Grenade Trap",
+      "rarity": "Rare",
+      "imageFile": "laser-trap-smoke-recipe.webp"
+    },
+    {
+      "name": "Snap Blast Grenade",
+      "rarity": "Uncommon",
+      "imageFile": "snap-blast-grenade.webp"
+    },
+    {
+      "name": "Snap Hook",
+      "rarity": "Legendary",
+      "imageFile": "snap-hook.webp"
+    },
+    {
+      "name": "Snap Hook Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "snap-hook-recipe.webp"
+    },
+    {
+      "name": "Snitch Scanner",
+      "rarity": "Uncommon",
+      "imageFile": "snitch-scanner.webp"
+    },
+    {
+      "name": "Snowball",
+      "rarity": "Common",
+      "imageFile": "snowball.webp"
+    },
+    {
+      "name": "Spaceport Container Storage Key",
+      "rarity": "Rare",
+      "imageFile": "spaceport-container-storage-key.webp"
+    },
+    {
+      "name": "Spaceport Control Tower Key",
+      "rarity": "Rare",
+      "imageFile": "spaceport-ground-control-key.webp"
+    },
+    {
+      "name": "Spaceport Trench Tower Key",
+      "rarity": "Uncommon",
+      "imageFile": "spaceport-trench-tower-key.webp"
+    },
+    {
+      "name": "Spaceport Warehouse Key",
+      "rarity": "Uncommon",
+      "imageFile": "spaceport-warehouse-key.webp"
+    },
+    {
+      "name": "Speaker Component",
+      "rarity": "Rare",
+      "imageFile": "speaker-component.webp"
+    },
+    {
+      "name": "Spectrometer",
+      "rarity": "Rare",
+      "imageFile": "spectrometer.webp"
+    },
+    {
+      "name": "Spectrum Analyzer",
+      "rarity": "Epic",
+      "imageFile": "spectrum-analyzer.webp"
+    },
+    {
+      "name": "Spotter Relay",
+      "rarity": "Uncommon",
+      "imageFile": "spotter-relay.webp"
+    },
+    {
+      "name": "Spring Cushion",
+      "rarity": "Rare",
+      "imageFile": "spring-cushion.webp"
+    },
+    {
+      "name": "Stable Stock I",
+      "rarity": "Common",
+      "imageFile": "stable-stock-i.webp"
+    },
+    {
+      "name": "Stable Stock II",
+      "rarity": "Uncommon",
+      "imageFile": "stable-stock-ii.webp"
+    },
+    {
+      "name": "Stable Stock II Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "stable-stock-ii-recipe.webp"
+    },
+    {
+      "name": "Stable Stock III",
+      "rarity": "Rare",
+      "imageFile": "stable-stock-iii.webp"
+    },
+    {
+      "name": "Stable Stock III Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "stable-stock-iii-recipe.webp"
+    },
+    {
+      "name": "Statuette",
+      "rarity": "Rare",
+      "imageFile": "statuette.webp"
+    },
+    {
+      "name": "Steel Spring",
+      "rarity": "Uncommon",
+      "imageFile": "spring.webp"
+    },
+    {
+      "name": "Stella Montis Archives Key",
+      "rarity": "Epic",
+      "imageFile": "stella-montis-archives-key.webp"
+    },
+    {
+      "name": "Stella Montis Assembly Admin Key",
+      "rarity": "Uncommon",
+      "imageFile": "stella-montis-assembly-admin-key.webp"
+    },
+    {
+      "name": "Stella Montis Medical Storage Key",
+      "rarity": "Uncommon",
+      "imageFile": "stella-montis-medical-storage-key.webp"
+    },
+    {
+      "name": "Stella Montis Security Checkpoint Key",
+      "rarity": "Rare",
+      "imageFile": "stella-montis-security-checkpoint-key.webp"
+    },
+    {
+      "name": "Sterilized Bandage",
+      "rarity": "Rare",
+      "imageFile": "sterilized-bandage.webp"
+    },
+    {
+      "name": "Stitcher I",
+      "rarity": "Common",
+      "imageFile": "stitcher-i.webp"
+    },
+    {
+      "name": "Stitcher II",
+      "rarity": "Common",
+      "imageFile": "stitcher-ii.webp"
+    },
+    {
+      "name": "Stitcher III",
+      "rarity": "Common",
+      "imageFile": "stitcher-iii.webp"
+    },
+    {
+      "name": "Stitcher IV",
+      "rarity": "Common",
+      "imageFile": "stitcher-iv.webp"
+    },
+    {
+      "name": "Succulent (Backpack Charm)",
+      "rarity": "Unknown",
+      "imageFile": "succulent-backpack-charm.webp"
+    },
+    {
+      "name": "Surge Shield Recharger",
+      "rarity": "Rare",
+      "imageFile": "surge-shield-recharger.webp"
+    },
+    {
+      "name": "Surveyor Vault",
+      "rarity": "Rare",
+      "imageFile": "surveyor-vault.webp"
+    },
+    {
+      "name": "Synthesized Fuel",
+      "rarity": "Rare",
+      "imageFile": "synthesized-fuel.webp"
+    },
+    {
+      "name": "Syringe",
+      "rarity": "Rare",
+      "imageFile": "syringe.webp"
+    },
+    {
+      "name": "Tactical Mk. 1",
+      "rarity": "Uncommon",
+      "imageFile": "tactical-mk-1.webp"
+    },
+    {
+      "name": "Tactical Mk. 2",
+      "rarity": "Rare",
+      "imageFile": "tactical-mk-2.webp"
+    },
+    {
+      "name": "Tactical Mk. 3 (Healing)",
+      "rarity": "Epic",
+      "imageFile": "tactical-mk-3-healing.webp"
+    },
+    {
+      "name": "Tactical MK. 3 (Revival)",
+      "rarity": "Epic",
+      "imageFile": "tactical-mk-3-revival.webp"
+    },
+    {
+      "name": "Tactical Mk. 3 (Revival) Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "tactical-mk-3-revival-blueprint.webp"
+    },
+    {
+      "name": "Tactical Mk.3 (Defensive)",
+      "rarity": "Epic",
+      "imageFile": "tactical-mk3-defensive.webp"
+    },
+    {
+      "name": "Tactical MK.3 (Defensive) Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "tactical-mk3-defensive-blueprint.webp"
+    },
+    {
+      "name": "Tactical MK.3 (Healing) Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "tacical-mk3-healing-blueprint.webp"
+    },
+    {
+      "name": "Tagging Grenade",
+      "rarity": "Rare",
+      "imageFile": "tagging-grenade.webp"
+    },
+    {
+      "name": "Tagging Grenade Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "tagging-grenade-recipe.webp"
+    },
+    {
+      "name": "Tangerine (Warden Color)",
+      "rarity": "Common",
+      "imageFile": "tangerine-warden-color.png"
+    },
+    {
+      "name": "Tattered ARC Lining",
+      "rarity": "Uncommon",
+      "imageFile": "tattered-arc-lining.webp"
+    },
+    {
+      "name": "Tattered Clothes",
+      "rarity": "Uncommon",
+      "imageFile": "tattered-clothes.webp"
+    },
+    {
+      "name": "Telemetry Transceiver",
+      "rarity": "Rare",
+      "imageFile": "telemetry-transceiver.webp"
+    },
+    {
+      "name": "Tempest I",
+      "rarity": "Epic",
+      "imageFile": "tempest-i.webp"
+    },
+    {
+      "name": "Tempest I Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "tempest-i-recipe.webp"
+    },
+    {
+      "name": "Tempest II",
+      "rarity": "Epic",
+      "imageFile": "tempest-ii.webp"
+    },
+    {
+      "name": "Tempest III",
+      "rarity": "Epic",
+      "imageFile": "tempest-iii.webp"
+    },
+    {
+      "name": "Tempest IV",
+      "rarity": "Epic",
+      "imageFile": "tempest-iv.webp"
+    },
+    {
+      "name": "Thermostat",
+      "rarity": "Rare",
+      "imageFile": "thermostat.webp"
+    },
+    {
+      "name": "Tick Pod",
+      "rarity": "Uncommon",
+      "imageFile": "tick-pod.webp"
+    },
+    {
+      "name": "Toaster",
+      "rarity": "Rare",
+      "imageFile": "toaster.webp"
+    },
+    {
+      "name": "Torch Ginger",
+      "rarity": "Uncommon",
+      "imageFile": "torch-ginger.webp"
+    },
+    {
+      "name": "Torn Blanket",
+      "rarity": "Rare",
+      "imageFile": "torn-blanket.webp"
+    },
+    {
+      "name": "Torn Book",
+      "rarity": "Common",
+      "imageFile": "torn-book.webp"
+    },
+    {
+      "name": "Torrente Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "torrent-i-recipe.webp"
+    },
+    {
+      "name": "Torrente I",
+      "rarity": "Rare",
+      "imageFile": "torrente-i.webp"
+    },
+    {
+      "name": "Torrente II",
+      "rarity": "Rare",
+      "imageFile": "torrente-ii.webp"
+    },
+    {
+      "name": "Torrente III",
+      "rarity": "Rare",
+      "imageFile": "torrente-iii.webp"
+    },
+    {
+      "name": "Torrente IV",
+      "rarity": "Rare",
+      "imageFile": "torrente-iv.webp"
+    },
+    {
+      "name": "Trailblazer Grenade",
+      "rarity": "Rare",
+      "imageFile": "trailblazer-grenade.webp"
+    },
+    {
+      "name": "Trailblazer Grenade Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "trailblazer-grenade-blueprint.webp"
+    },
+    {
+      "name": "Trigger Nade",
+      "rarity": "Rare",
+      "imageFile": "trigger-nade.webp"
+    },
+    {
+      "name": "Trigger Nade Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "trigger-nade-recipe.webp"
+    },
+    {
+      "name": "Tropical Duck",
+      "rarity": "Uncommon",
+      "imageFile": "tropical-duck.webp"
+    },
+    {
+      "name": "Turbo Pump",
+      "rarity": "Rare",
+      "imageFile": "turbo-pump.webp"
+    },
+    {
+      "name": "Unusable Weapon",
+      "rarity": "Rare",
+      "imageFile": "unusable-weapon.webp"
+    },
+    {
+      "name": "Vase",
+      "rarity": "Rare",
+      "imageFile": "vase.webp"
+    },
+    {
+      "name": "Venator Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "venator-recipe.webp"
+    },
+    {
+      "name": "Venator I",
+      "rarity": "Rare",
+      "imageFile": "venator-i.webp"
+    },
+    {
+      "name": "Venator II",
+      "rarity": "Rare",
+      "imageFile": "venator-ii.webp"
+    },
+    {
+      "name": "Venator III",
+      "rarity": "Rare",
+      "imageFile": "venator-iii.webp"
+    },
+    {
+      "name": "Venator IV",
+      "rarity": "Rare",
+      "imageFile": "venator-iv.webp"
+    },
+    {
+      "name": "Vertical Grip I",
+      "rarity": "Common",
+      "imageFile": "vertical-grip-i.webp"
+    },
+    {
+      "name": "Vertical Grip II",
+      "rarity": "Uncommon",
+      "imageFile": "vertical-grip-ii.webp"
+    },
+    {
+      "name": "Vertical Grip II Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "vertical-grip-ii-recipe.webp"
+    },
+    {
+      "name": "Vertical Grip III",
+      "rarity": "Rare",
+      "imageFile": "vertical-grip-iii.webp"
+    },
+    {
+      "name": "Vertical Grip III Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "vertical-grip-iii-recipe.webp"
+    },
+    {
+      "name": "Very Comfortable Pillow",
+      "rarity": "Uncommon",
+      "imageFile": "very-comfortable-pillow.webp"
+    },
+    {
+      "name": "Vita Shot",
+      "rarity": "Rare",
+      "imageFile": "vita-shot.webp"
+    },
+    {
+      "name": "Vita Shot Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "vita-shot-recipe.webp"
+    },
+    {
+      "name": "Vita Spray",
+      "rarity": "Epic",
+      "imageFile": "vita-spray.webp"
+    },
+    {
+      "name": "Vita Spray Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "vita-spray-recipe.webp"
+    },
+    {
+      "name": "Volcanic Rock",
+      "rarity": "Common",
+      "imageFile": "volcanic-rock.webp"
+    },
+    {
+      "name": "Voltage Converter",
+      "rarity": "Rare",
+      "imageFile": "voltage-converter.webp"
+    },
+    {
+      "name": "Vulcano Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "vulcano-blueprint.webp"
+    },
+    {
+      "name": "Vulcano I",
+      "rarity": "Epic",
+      "imageFile": "vulcano-i.webp"
+    },
+    {
+      "name": "Vulcano II",
+      "rarity": "Epic",
+      "imageFile": "vulcano-ii.webp"
+    },
+    {
+      "name": "Vulcano III",
+      "rarity": "Epic",
+      "imageFile": "vulcano-iii.webp"
+    },
+    {
+      "name": "Vulcano IV",
+      "rarity": "Epic",
+      "imageFile": "vulcano-iv.webp"
+    },
+    {
+      "name": "Warden (Outfit)",
+      "rarity": "Common",
+      "imageFile": "warden-outfit.png"
+    },
+    {
+      "name": "Wasp Driver",
+      "rarity": "Rare",
+      "imageFile": "wasp-driver.webp"
+    },
+    {
+      "name": "Water Filter",
+      "rarity": "Rare",
+      "imageFile": "water-filter.webp"
+    },
+    {
+      "name": "Water Pump",
+      "rarity": "Rare",
+      "imageFile": "water-pump.webp"
+    },
+    {
+      "name": "Wires",
+      "rarity": "Uncommon",
+      "imageFile": "wires-recipe.webp"
+    },
+    {
+      "name": "WolfPack",
+      "rarity": "Epic",
+      "imageFile": "wolfpack.webp"
+    },
+    {
+      "name": "Wolfpack Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "wolfpack-recipe.webp"
+    },
+    {
+      "name": "Yellow Light Stick",
+      "rarity": "Common",
+      "imageFile": "yellow-light-stick.webp"
+    },
+    {
+      "name": "Yellow Light Stick Blueprint",
+      "rarity": "Legendary",
+      "imageFile": "yellow-light-stick-blueprint.webp"
+    },
+    {
+      "name": "Zipline",
+      "rarity": "Rare",
+      "imageFile": "zipline.webp"
+    }
+  ]
+}
