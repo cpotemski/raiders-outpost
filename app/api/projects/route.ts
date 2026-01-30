@@ -1,0 +1,67 @@
+import { getProjectProgress, updateProjectItems } from "@/lib/server/projects";
+import { getTokenFromRequest } from "@/lib/server/requests";
+import { getUserIdByToken } from "@/lib/server/users";
+
+export const runtime = "nodejs";
+
+export const GET = async (request: Request) => {
+  const token = getTokenFromRequest(request);
+  if (!token) {
+    return Response.json({ error: "Missing token" }, { status: 401 });
+  }
+
+  const user = await getUserIdByToken(token);
+
+  if (!user) {
+    return Response.json({ error: "Unknown token" }, { status: 404 });
+  }
+
+  const payload = await getProjectProgress(user.id);
+
+  return Response.json(payload);
+};
+
+export const PATCH = async (request: Request) => {
+  const token = getTokenFromRequest(request);
+  if (!token) {
+    return Response.json({ error: "Missing token" }, { status: 401 });
+  }
+
+  const body = await request.json().catch(() => null);
+  const updates = Array.isArray(body?.updates)
+    ? body.updates
+        .map((entry: unknown) => {
+          if (!entry || typeof entry !== "object") return null;
+          const record = entry as {
+            projectItemId?: unknown;
+            quantityOwned?: unknown;
+          };
+          if (typeof record.projectItemId !== "string") return null;
+          if (typeof record.quantityOwned !== "number") return null;
+          return {
+            projectItemId: record.projectItemId,
+            quantityOwned: Math.floor(record.quantityOwned),
+          };
+        })
+        .filter(
+          (
+            entry
+          ): entry is { projectItemId: string; quantityOwned: number } =>
+            Boolean(entry)
+        )
+    : null;
+
+  if (!updates?.length) {
+    return Response.json({ error: "Invalid payload" }, { status: 400 });
+  }
+
+  const user = await getUserIdByToken(token);
+
+  if (!user) {
+    return Response.json({ error: "Unknown token" }, { status: 404 });
+  }
+
+  const payload = await updateProjectItems(user.id, updates);
+
+  return Response.json({ updates: payload });
+};

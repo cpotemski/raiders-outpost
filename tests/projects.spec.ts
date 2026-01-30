@@ -28,6 +28,13 @@ const login = async (page: Page, name = "Vanguard") => {
   await page.getByLabel("Operator Name").fill(name);
   await page.getByRole("button", { name: "Link Uplink" }).click();
   await expect(page.getByText(name)).toBeVisible();
+  await expect(page.getByTestId("project-select")).toBeVisible();
+};
+
+const openUserMenu = async (page: Page) => {
+  const trigger = page.getByTestId("user-menu-trigger");
+  await expect(trigger).toBeVisible();
+  await trigger.click();
 };
 
 test.afterAll(async () => {
@@ -62,15 +69,8 @@ test("seo metadata is present", async ({ page }) => {
   );
 });
 
-test("blueprint images load from arc-items endpoint", async ({ page }) => {
+test("project images load from arc-items endpoint", async ({ page }) => {
   await login(page);
-  await page.waitForResponse((response) => {
-    return (
-      response.url().includes("/api/blueprints") &&
-      response.request().method() === "GET" &&
-      response.ok()
-    );
-  });
 
   const img = page.locator('img[src^="/api/arc-items/image"]').first();
   await expect(img).toBeVisible();
@@ -98,7 +98,31 @@ test("mobile layout avoids horizontal overflow", async ({ page }) => {
 
   await page.getByLabel("Operator Name").fill("Vanguard");
   await page.getByRole("button", { name: "Link Uplink" }).click();
-  await expect(page.getByText("Found")).toBeVisible();
+  await expect(page.getByTestId("project-select")).toBeVisible();
+  await openUserMenu(page);
+  const menuPanel = page.getByText("ARC// LINK CODE").locator("..").locator("..");
+  await expect(menuPanel).toBeVisible();
+  await expect
+    .poll(async () => {
+      const box = await menuPanel.boundingBox();
+      const viewport = page.viewportSize();
+      if (!box || !viewport) return false;
+      return (
+        box.x >= 0 &&
+        box.y >= 0 &&
+        box.x + box.width <= viewport.width &&
+        box.y + box.height <= viewport.height
+      );
+    })
+    .toBeTruthy();
+  await menuPanel.screenshot({
+    path: "test-results/mobile-user-menu.png",
+  });
+  await page.keyboard.press("Escape");
+  await expect(page.getByText("ARC// LINK CODE")).toHaveCount(0);
+  await page.getByRole("main").screenshot({
+    path: "test-results/mobile-projects.png",
+  });
   await expect
     .poll(async () => {
       return page.evaluate(() => {
@@ -127,34 +151,63 @@ test("mobile layout avoids horizontal overflow", async ({ page }) => {
   });
 });
 
-test("blueprint project persists owned state", async ({ page }) => {
+test("project selector switches active project", async ({ page }) => {
+  await login(page);
+  await page.getByTestId("project-select").selectOption("project-expedition-1");
+  await expect(page.getByTestId("project-select")).toHaveValue(
+    "project-expedition-1"
+  );
+  await expect(page.getByText("Phase 1/5")).toBeVisible();
+});
+
+test("search filters project items", async ({ page }) => {
+  await login(page);
+  await page.getByTestId("project-select").selectOption("project-expedition-1");
+  await expect(page.getByTestId("project-select")).toHaveValue(
+    "project-expedition-1"
+  );
+
+  const search = page.getByPlaceholder("SEARCH...");
+  await search.fill("Battery");
+  await expect(page.locator('[data-item-id="battery"]')).toBeVisible();
+  await expect(page.locator('[data-item-id="metal-parts"]')).toHaveCount(0);
+});
+
+test("needed-only hides completed items", async ({ page }) => {
+  await login(page);
+  await expect(page.getByTestId("project-select")).toBeVisible();
+
+  const firstTile = page.locator("[data-item-id]").first();
+  const itemId = await firstTile.getAttribute("data-item-id");
+  const increaseButton = firstTile.getByRole("button", { name: /Increase/i });
+  await increaseButton.click();
+  await expect(firstTile).toHaveAttribute("data-quantity", "1");
+
+  const filterButton = page.getByRole("button", { name: "Needed Only" });
+  await filterButton.click();
+  await expect(filterButton).toHaveAttribute("aria-pressed", "true");
+  if (itemId) {
+    await expect(page.locator(`[data-item-id="${itemId}"]`)).toHaveCount(0);
+  }
+});
+
+test("project item quantity persists", async ({ page }) => {
   await login(page);
   const identity = await getLocalIdentity(page);
   expect(identity.token).toBeTruthy();
-  const loadResponse = page.waitForResponse((response) => {
-    return (
-      response.url().includes("/api/blueprints") &&
-      response.request().method() === "GET" &&
-      response.ok()
-    );
-  });
-  await page.reload();
-  await loadResponse;
 
-  const firstBlueprint = page.getByRole("button", { name: /Blueprint/i }).first();
+  const firstTile = page.locator("[data-item-id]").first();
+  await expect(firstTile).toBeVisible();
+  const increaseButton = firstTile.getByRole("button", { name: /Increase/i });
   const persistRequest = page.waitForResponse((response) => {
     return (
-      response.url().includes("/api/blueprints") &&
+      response.url().includes("/api/projects") &&
       response.request().method() === "PATCH" &&
       response.ok()
     );
   });
-  await firstBlueprint.click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await page.getByRole("button", { name: "Found" }).click();
-  await expect(page.getByRole("dialog")).toBeHidden();
+  await increaseButton.click();
   await persistRequest;
-  await expect(firstBlueprint).toHaveAttribute("aria-pressed", "true");
 
   const user = await prisma.user.findUnique({
     where: { token: identity.token ?? "" },
@@ -174,75 +227,18 @@ test("blueprint project persists owned state", async ({ page }) => {
     const stored = await getLocalIdentity(page);
     return stored.token;
   }).toBe(identity.token);
-  await expect(page.getByRole("button", { name: /Operator/i })).toContainText(
+  await expect(page.getByTestId("user-menu-trigger")).toContainText(
     "Vanguard"
   );
-  await expect(firstBlueprint).toHaveAttribute("aria-pressed", "true");
+  await expect
+    .poll(async () => {
+      const qty = await firstTile.getAttribute("data-quantity");
+      return qty;
+    })
+    .toBe("1");
 });
 
-test("blueprint long press toggles owned state without dialog", async ({
-  page,
-}) => {
-  await login(page);
-  const loadResponse = page.waitForResponse((response) => {
-    return (
-      response.url().includes("/api/blueprints") &&
-      response.request().method() === "GET" &&
-      response.ok()
-    );
-  });
-  await page.reload();
-  await loadResponse;
-
-  const firstBlueprint = page.getByRole("button", { name: /Blueprint/i }).first();
-  const box = await firstBlueprint.boundingBox();
-  if (!box) {
-    throw new Error("Missing blueprint button bounding box");
-  }
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.waitForTimeout(900);
-  await page.mouse.up();
-
-  await expect(firstBlueprint).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("dialog")).toHaveCount(0);
-  await firstBlueprint.screenshot({
-    path: "test-results/blueprint-long-press.png",
-  });
-});
-
-test("needed-only filter hides owned items", async ({ page }) => {
-  await login(page);
-  const loadResponse = page.waitForResponse((response) => {
-    return (
-      response.url().includes("/api/blueprints") &&
-      response.request().method() === "GET" &&
-      response.ok()
-    );
-  });
-  await page.reload();
-  await loadResponse;
-
-  const firstBlueprint = page.getByRole("button", { name: /Blueprint/i }).first();
-  const box = await firstBlueprint.boundingBox();
-  if (!box) {
-    throw new Error("Missing blueprint button bounding box");
-  }
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.waitForTimeout(900);
-  await page.mouse.up();
-  await expect(firstBlueprint).toHaveAttribute("aria-pressed", "true");
-
-  const filterButton = page.getByRole("button", { name: "Needed Only" });
-  await filterButton.click();
-  await expect(filterButton).toHaveAttribute("aria-pressed", "true");
-  await expect(
-    page.locator('button[title][aria-pressed="true"]')
-  ).toHaveCount(0);
-});
-
-test("blueprint tiles show community ownership", async ({ page, browser }) => {
+test("project tiles show community ownership", async ({ page, browser }) => {
   await login(page, "Vanguard");
 
   await page.getByRole("link", { name: "Community", exact: true }).click();
@@ -260,81 +256,33 @@ test("blueprint tiles show community ownership", async ({ page, browser }) => {
   await invitePage.getByRole("button", { name: "Link Uplink" }).click();
   await expect(invitePage.getByText("Echo Node")).toBeVisible();
 
-  await page.getByRole("link", { name: "Start", exact: true }).click();
-  await page.waitForResponse((response) => {
-    return (
-      response.url().includes("/api/blueprints") &&
-      response.request().method() === "GET" &&
-      response.ok()
-    );
-  });
+  await page.getByRole("link", { name: "Projects", exact: true }).click();
+  await expect(page.getByTestId("project-select")).toBeVisible();
 
-  const firstBlueprint = page.getByRole("button", { name: /Blueprint/i }).first();
-  const itemName = await firstBlueprint.getAttribute("title");
+  const firstTile = page.locator("[data-item-id]").first();
   const persistRequest = page.waitForResponse((response) => {
     return (
-      response.url().includes("/api/blueprints") &&
+      response.url().includes("/api/projects") &&
       response.request().method() === "PATCH" &&
       response.ok()
     );
   });
-  await firstBlueprint.click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await page.getByRole("button", { name: "Found" }).click();
+  await firstTile.getByRole("button", { name: /Increase/i }).click();
   await persistRequest;
-  await expect(firstBlueprint).toHaveAttribute("aria-pressed", "true");
+  await expect(firstTile).toHaveAttribute("data-quantity", "1");
 
   await invitePage.goto("/");
-  await invitePage.waitForResponse((response) => {
-    return (
-      response.url().includes("/api/blueprints") &&
-      response.request().method() === "GET" &&
-      response.ok()
-    );
-  });
+  await expect(invitePage.getByTestId("project-select")).toBeVisible();
 
-  const targetBlueprint = itemName
-    ? invitePage.getByRole("button", { name: itemName })
-    : invitePage.getByRole("button", { name: /Blueprint/i }).first();
-  const progressRing = targetBlueprint.locator("[data-community-progress]");
+  const targetTile = invitePage.locator("[data-item-id]").first();
+  const progressRing = targetTile.locator("[data-community-progress]");
   await expect(progressRing).toBeVisible();
   await expect(progressRing).toHaveAttribute("data-community-progress", "50");
   await progressRing.screenshot({
-    path: "test-results/blueprint-community-progress.png",
-  });
-  await targetBlueprint.click();
-  await expect(invitePage.getByText("Needs Item")).toBeVisible();
-  await expect(invitePage.getByRole("dialog")).not.toContainText("Nomad");
-  await invitePage.getByRole("dialog").screenshot({
-    path: "test-results/blueprint-community-tile.png",
+    path: "test-results/project-community-progress.png",
   });
 
   await context.close();
-});
-
-test("blueprint tile suppresses context menu", async ({ page }) => {
-  await login(page);
-  await page.waitForResponse((response) => {
-    return (
-      response.url().includes("/api/blueprints") &&
-      response.request().method() === "GET" &&
-      response.ok()
-    );
-  });
-
-  const preventsDefault = await page.evaluate(() => {
-    const tile = document.querySelector<HTMLButtonElement>('button[title][aria-pressed]');
-    if (!tile) return false;
-    let prevented = false;
-    const handler = (event: Event) => {
-      prevented = event.defaultPrevented;
-    };
-    tile.addEventListener("contextmenu", handler, { once: true });
-    tile.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
-    return prevented;
-  });
-
-  expect(preventsDefault).toBe(true);
 });
 
 test("auth creates token in localStorage and shows in menu", async ({ page }) => {
@@ -350,7 +298,7 @@ test("auth creates token in localStorage and shows in menu", async ({ page }) =>
       response.request().method() === "POST"
     );
   });
-  await page.getByRole("button", { name: /Operator/i }).click();
+  await openUserMenu(page);
   await expect(page.getByText("Auth Code")).toBeVisible();
   const response = await generateResponse;
   if (!response.ok()) {
@@ -364,7 +312,7 @@ test("auth creates token in localStorage and shows in menu", async ({ page }) =>
 test("logout clears local identity and returns to auth gate", async ({ page }) => {
   await login(page);
 
-  await page.getByRole("button", { name: /Operator/i }).click();
+  await openUserMenu(page);
   await page.getByRole("button", { name: "Log Out" }).click();
 
   await expect(page.getByText("ARC// AUTH LINK")).toBeVisible();
@@ -397,7 +345,7 @@ test("auth code links existing account", async ({ page, browser }) => {
       response.request().method() === "POST"
     );
   });
-  await page.getByRole("button", { name: /Operator/i }).click();
+  await openUserMenu(page);
   const response = await generateResponse;
   if (!response.ok()) {
     const body = await response.text();

@@ -96,6 +96,7 @@ export function UserMenu() {
     <div className="relative z-40" ref={panelRef}>
       <button
         type="button"
+        data-testid="user-menu-trigger"
         onClick={() => setOpen((prev) => !prev)}
         className={cn(
           "flex items-center gap-3 rounded-[10px] border border-frame px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.08em] transition",
@@ -111,7 +112,7 @@ export function UserMenu() {
       </button>
 
       {open && identity ? (
-        <div className="absolute right-0 z-50 mt-3 w-72">
+        <div className="absolute left-0 z-50 mt-3 w-72 max-w-[90vw] sm:left-auto sm:right-0">
           <div className="arc-panel arc-corners overflow-hidden">
             <div className="arc-panel-header">
               <span className="text-xs font-semibold uppercase tracking-[0.18em]">

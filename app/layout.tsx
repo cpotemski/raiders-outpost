@@ -6,6 +6,7 @@ import { TopNav } from "@/components/layout/TopNav";
 import { cn } from "@/lib/cn";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { IdentitySync } from "@/components/auth/IdentitySync";
+import { ProjectProvider } from "@/components/projects/ProjectContext";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -89,10 +90,12 @@ export default function RootLayout({
           plexMono.variable
         )}
       >
-        <div className="mx-auto flex min-h-screen max-w-[1320px] flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
-          <TopNav />
-          <main className="flex-1">{children}</main>
-        </div>
+        <ProjectProvider>
+          <div className="mx-auto flex min-h-screen max-w-[1320px] flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+            <TopNav />
+            <main className="flex-1">{children}</main>
+          </div>
+        </ProjectProvider>
         <IdentitySync />
         <AuthGate />
       </body>

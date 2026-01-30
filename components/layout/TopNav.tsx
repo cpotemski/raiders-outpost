@@ -6,13 +6,12 @@ import { cn } from "@/lib/cn";
 import { UserMenu } from "@/components/auth/UserMenu";
 
 const tabs = [
-  { href: "/", label: "Start" },
+  { href: "/", label: "Projects" },
   { href: "/community", label: "Community" },
 ];
 
 export function TopNav() {
   const pathname = usePathname();
-
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname?.startsWith(href);
@@ -26,10 +25,10 @@ export function TopNav() {
             <span className="text-sm font-semibold uppercase tracking-[0.2em] text-text">
               ARC // Raiders Outpost
             </span>
-            <span className="hud-label">Community Exchange</span>
+            <span className="hud-label">Project Console</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {tabs.map((tab) => (
             <Link
               key={tab.href}
