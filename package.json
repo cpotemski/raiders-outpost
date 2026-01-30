@@ -7,11 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "sync:arc-items": "node lib/arc-items/sync.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
+    "arcraiders-data": "RaidTheory/arcraiders-data",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "next": "^16.1.6",

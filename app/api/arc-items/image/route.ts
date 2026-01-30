@@ -4,7 +4,10 @@ import path from "node:path";
 export const runtime = "nodejs";
 export const revalidate = 86400;
 
-const IMAGE_DIR = path.join(process.cwd(), "lib/arc-items/images");
+const IMAGE_DIR = path.join(
+  process.cwd(),
+  "node_modules/arcraiders-data/images/items"
+);
 
 const contentTypeFor = (filename: string) => {
   if (filename.endsWith(".png")) return "image/png";

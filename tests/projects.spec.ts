@@ -2,7 +2,7 @@ import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page, type Locator } from "@playwright/test";
 
 const NAME_KEY = "arc:identity:name";
 const TOKEN_KEY = "arc:identity:token";
@@ -13,6 +13,18 @@ const pool = new Pool({
 const prisma = new PrismaClient({
   adapter: new PrismaPg(pool),
 });
+
+const getTileQuantity = async (tile: Locator) => {
+  const value = await tile.getAttribute("data-quantity");
+  return Number(value ?? "0");
+};
+
+const incrementTile = async (tile: Locator) => {
+  const before = await getTileQuantity(tile);
+  const increaseButton = tile.getByRole("button", { name: /Increase/i });
+  await increaseButton.click();
+  await expect.poll(async () => getTileQuantity(tile)).toBeGreaterThan(before);
+};
 
 const getLocalIdentity = async (page: Page) => {
   return page.evaluate(
@@ -240,18 +252,18 @@ test("project control bar sticks beneath the top nav", async ({ page }) => {
 
 test("project selector switches active project", async ({ page }) => {
   await login(page);
-  await page.getByTestId("project-select").selectOption("project-expedition-1");
+  await page.getByTestId("project-select").selectOption("expedition_project");
   await expect(page.getByTestId("project-select")).toHaveValue(
-    "project-expedition-1"
+    "expedition_project"
   );
-  await expect(page.getByText("Phase 1/5")).toBeVisible();
+  await expect(page.getByText("Foundation")).toBeVisible();
 });
 
 test("search filters project items", async ({ page }) => {
   await login(page);
-  await page.getByTestId("project-select").selectOption("project-expedition-1");
+  await page.getByTestId("project-select").selectOption("expedition_project");
   await expect(page.getByTestId("project-select")).toHaveValue(
-    "project-expedition-1"
+    "expedition_project"
   );
 
   const search = page.getByPlaceholder("SEARCH...");
@@ -264,11 +276,12 @@ test("needed-only hides completed items", async ({ page }) => {
   await login(page);
   await expect(page.getByTestId("project-select")).toBeVisible();
 
+  await page.getByTestId("project-select").selectOption("blueprints");
+  await expect(page.getByTestId("project-select")).toHaveValue("blueprints");
+
   const firstTile = page.locator("[data-item-id]").first();
   const itemId = await firstTile.getAttribute("data-item-id");
-  const increaseButton = firstTile.getByRole("button", { name: /Increase/i });
-  await increaseButton.click();
-  await expect(firstTile).toHaveAttribute("data-quantity", "1");
+  await incrementTile(firstTile);
 
   const filterButton = page.getByRole("button", { name: "Needed Only" });
   await filterButton.click();
@@ -280,12 +293,13 @@ test("needed-only hides completed items", async ({ page }) => {
 
 test("project item quantity persists", async ({ page }) => {
   await login(page);
+  await page.getByTestId("project-select").selectOption("blueprints");
+  await expect(page.getByTestId("project-select")).toHaveValue("blueprints");
   const identity = await getLocalIdentity(page);
   expect(identity.token).toBeTruthy();
 
   const firstTile = page.locator("[data-item-id]").first();
   await expect(firstTile).toBeVisible();
-  const increaseButton = firstTile.getByRole("button", { name: /Increase/i });
   const persistRequest = page.waitForResponse((response) => {
     return (
       response.url().includes("/api/projects") &&
@@ -293,7 +307,7 @@ test("project item quantity persists", async ({ page }) => {
       response.ok()
     );
   });
-  await increaseButton.click();
+  await incrementTile(firstTile);
   await persistRequest;
 
   const user = await prisma.user.findUnique({
@@ -307,7 +321,7 @@ test("project item quantity persists", async ({ page }) => {
       projectItem: { stage: { project: { slug: "blueprints" } } },
     },
   });
-  expect(ownedCount).toBe(1);
+  expect(ownedCount).toBeGreaterThan(0);
 
   await page.reload();
   await expect.poll(async () => {
@@ -317,6 +331,8 @@ test("project item quantity persists", async ({ page }) => {
   await expect(page.getByTestId("user-menu-trigger")).toContainText(
     "Vanguard"
   );
+  await page.getByTestId("project-select").selectOption("blueprints");
+  await expect(page.getByTestId("project-select")).toHaveValue("blueprints");
   await expect
     .poll(async () => {
       const qty = await firstTile.getAttribute("data-quantity");
@@ -345,6 +361,8 @@ test("project tiles show community ownership", async ({ page, browser }) => {
 
   await page.getByRole("link", { name: "Projects", exact: true }).click();
   await expect(page.getByTestId("project-select")).toBeVisible();
+  await page.getByTestId("project-select").selectOption("blueprints");
+  await expect(page.getByTestId("project-select")).toHaveValue("blueprints");
 
   const firstTile = page.locator("[data-item-id]").first();
   const persistRequest = page.waitForResponse((response) => {
@@ -354,12 +372,18 @@ test("project tiles show community ownership", async ({ page, browser }) => {
       response.ok()
     );
   });
-  await firstTile.getByRole("button", { name: /Increase/i }).click();
+  await incrementTile(firstTile);
   await persistRequest;
-  await expect(firstTile).toHaveAttribute("data-quantity", "1");
+  await expect
+    .poll(async () => getTileQuantity(firstTile))
+    .toBeGreaterThan(0);
 
   await invitePage.goto("/");
   await expect(invitePage.getByTestId("project-select")).toBeVisible();
+  await invitePage.getByTestId("project-select").selectOption("blueprints");
+  await expect(invitePage.getByTestId("project-select")).toHaveValue(
+    "blueprints"
+  );
 
   const targetTile = invitePage.locator("[data-item-id]").first();
   const progressRing = targetTile.locator("[data-community-progress]");

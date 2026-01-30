@@ -10,8 +10,7 @@ type ProjectWithStages = Prisma.ProjectGetPayload<{
 
 let projectsSeedPromise: Promise<ProjectWithStages[]> | null = null;
 
-const seedProjects = async () => {
-  const payload = await loadArcProjects();
+const seedProjects = async (payload: Awaited<ReturnType<typeof loadArcProjects>>) => {
 
   for (const projectData of payload.projects) {
     const project = await prisma.project.create({
@@ -60,9 +59,25 @@ const ensureProjects = async () => {
   }
 
   projectsSeedPromise = (async () => {
-    const existingCount = await prisma.project.count();
-    if (existingCount === 0) {
-      await seedProjects();
+    const payload = await loadArcProjects();
+    const existingProjects = await prisma.project.findMany({
+      select: { id: true, slug: true },
+    });
+    const existingSlugs = new Set(existingProjects.map((project) => project.slug));
+    const requiredSlugs = new Set(payload.projects.map((project) => project.slug));
+    const needsReseed =
+      existingProjects.length === 0 ||
+      existingSlugs.size !== requiredSlugs.size ||
+      Array.from(requiredSlugs).some((slug) => !existingSlugs.has(slug));
+
+    if (needsReseed) {
+      await prisma.$transaction([
+        prisma.userProjectItem.deleteMany(),
+        prisma.projectItem.deleteMany(),
+        prisma.projectStage.deleteMany(),
+        prisma.project.deleteMany(),
+      ]);
+      await seedProjects(payload);
     }
     return prisma.project.findMany({
       include: {

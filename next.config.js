@@ -2,9 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   outputFileTracingIncludes: {
-    "/api/arc-items": ["./lib/arc-items/data/items.json"],
-    "/api/arc-items/image": ["./lib/arc-items/images/**"],
-    "/api/blueprints": ["./lib/arc-items/data/items.json"],
+    "/api/arc-items": ["./node_modules/arcraiders-data/items/**"],
+    "/api/arc-items/image": ["./node_modules/arcraiders-data/images/items/**"],
+    "/api/blueprints": ["./node_modules/arcraiders-data/items/**"],
+    "/api/projects": ["./node_modules/arcraiders-data/projects.json"],
   },
 };
 
