@@ -19,6 +19,13 @@ type Community = {
   members: CommunityMember[];
 };
 
+const getInitials = (name: string) => {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "??";
+  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+};
+
 export function CommunityRoster() {
   const { identity, ready, clearIdentity } = useLocalIdentity();
   const searchParams = useSearchParams();
@@ -283,28 +290,26 @@ export function CommunityRoster() {
 
       <div className="mt-6">
         <div className="hud-label">Members</div>
-        <div className="mt-3 divide-y divide-frame2 border border-frame2">
-          <div className="hidden grid-cols-[minmax(0,1fr)_120px_120px] gap-2 bg-panel2 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted sm:grid">
-            <span>Operator</span>
-            <span className="text-right">Status</span>
-            <span className="text-right">Action</span>
-          </div>
+        <div className="mt-3 space-y-2">
           {community.members.map((member) => (
             <div
               key={member.id}
-              className="flex flex-col gap-2 px-3 py-2 text-xs uppercase tracking-[0.12em] sm:grid sm:grid-cols-[minmax(0,1fr)_120px_120px] sm:items-center sm:gap-2"
+              className="flex flex-col gap-3 rounded-[6px] border border-frame2 bg-panel2/60 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
             >
-              <span>{member.name}</span>
-              <div className="flex items-center justify-between gap-3 sm:justify-end">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted sm:hidden">
-                  Status
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-frame2/80 bg-panel text-[10px] font-semibold uppercase tracking-[0.14em] text-text">
+                  {getInitials(member.name)}
                 </span>
-                <span className="text-right text-accent">Synced</span>
+                <div className="leading-tight">
+                  <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-text">
+                    {member.name}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-muted">
+                    Synced
+                  </div>
+                </div>
               </div>
               <div className="flex items-center justify-between gap-3 sm:justify-end">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted sm:hidden">
-                  Action
-                </span>
                 <Button
                   type="button"
                   variant="default"

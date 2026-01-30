@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import blueprintBg from "../../blueprint-bg.webp";
 import { cn } from "../../lib/cn";
 import { useLocalIdentity } from "../auth/useLocalIdentity";
@@ -33,6 +33,16 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
   >({});
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [activeItem, setActiveItem] = useState<BlueprintItem | null>(null);
+  const [holdItem, setHoldItem] = useState<string | null>(null);
+  const [holdProgress, setHoldProgress] = useState(0);
+  const holdRafRef = useRef<number | null>(null);
+  const holdSuppressClickRef = useRef(false);
+  const holdBlockUntilRef = useRef(0);
+  const holdStartRef = useRef(0);
+  const HOLD_DURATION_MS = 700;
+  const HOLD_RING_RADIUS = 18;
+  const HOLD_RING_STROKE = 2;
+  const HOLD_RING_CIRC = 2 * Math.PI * HOLD_RING_RADIUS;
 
   const ordered = useMemo(() => {
     return [...items].sort((a, b) => a.name.localeCompare(b.name));
@@ -117,6 +127,42 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
     });
   };
 
+  const cancelHold = () => {
+    if (holdRafRef.current) {
+      cancelAnimationFrame(holdRafRef.current);
+      holdRafRef.current = null;
+    }
+    holdStartRef.current = 0;
+    setHoldItem(null);
+    setHoldProgress(0);
+  };
+
+  const startHold = (name: string) => {
+    cancelHold();
+    holdStartRef.current = performance.now();
+    setHoldItem(name);
+    setHoldProgress(0);
+
+    const tick = (now: number) => {
+      const elapsed = now - holdStartRef.current;
+      const progress = Math.min(elapsed / HOLD_DURATION_MS, 1);
+      setHoldProgress(progress);
+      if (progress >= 1) {
+        holdSuppressClickRef.current = true;
+        holdBlockUntilRef.current = Date.now() + 900;
+        toggleOwned(name);
+        cancelHold();
+        window.setTimeout(() => {
+          holdSuppressClickRef.current = false;
+        }, 900);
+        return;
+      }
+      holdRafRef.current = requestAnimationFrame(tick);
+    };
+
+    holdRafRef.current = requestAnimationFrame(tick);
+  };
+
   const getInitials = (name: string) => {
     const parts = name.trim().split(/\s+/).filter(Boolean);
     if (!parts.length) return "??";
@@ -194,13 +240,43 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
             {filtered.map((item) => {
               const isOwned = owned.has(item.name);
               const label = item.name.replace(/\s*Blueprint\s*$/i, "");
+              const memberCount = communityMembers.length;
+              const ownerCount = ownershipByItem[item.name]?.length ?? 0;
+              const progressRatio = memberCount ? ownerCount / memberCount : 0;
+              const progressPercent = Math.round(progressRatio * 100);
+              const ringRadius = 6;
+              const ringStroke = 2;
+              const ringCircumference = 2 * Math.PI * ringRadius;
+              const ringDash = progressRatio * ringCircumference;
               return (
                 <button
                   key={item.name}
                   type="button"
                   aria-pressed={isOwned}
                   title={item.name}
-                  onClick={() => setActiveItem(item)}
+                  onClick={(event) => {
+                    if (
+                      holdSuppressClickRef.current ||
+                      Date.now() < holdBlockUntilRef.current
+                    ) {
+                      event.preventDefault();
+                      return;
+                    }
+                    setActiveItem(item);
+                  }}
+                  onPointerDown={(event) => {
+                    if (event.button !== 0) return;
+                    startHold(item.name);
+                  }}
+                  onPointerUp={() => {
+                    if (holdItem === item.name) cancelHold();
+                  }}
+                  onPointerLeave={() => {
+                    if (holdItem === item.name) cancelHold();
+                  }}
+                  onPointerCancel={() => {
+                    if (holdItem === item.name) cancelHold();
+                  }}
                   className={cn(
                     "group relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-[8px] border bg-panel2/80 transition",
                     "hover:border-accent/70 hover:bg-panel2/90",
@@ -228,12 +304,41 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
                   >
                     {isOwned ? "Owned" : "Needed"}
                   </span>
-                  <span
-                    className={cn(
-                      "absolute right-2 top-2 h-2 w-2 rounded-full",
-                      isOwned ? "bg-accent" : "bg-frame"
-                    )}
-                  />
+                  {memberCount ? (
+                    <svg
+                      aria-hidden="true"
+                      data-community-progress={progressPercent}
+                      viewBox="0 0 16 16"
+                      className="absolute right-2 top-2 h-4 w-4"
+                    >
+                      <circle
+                        cx="8"
+                        cy="8"
+                        r={ringRadius}
+                        fill="none"
+                        stroke="rgba(160, 180, 190, 0.35)"
+                        strokeWidth={ringStroke}
+                      />
+                      <circle
+                        cx="8"
+                        cy="8"
+                        r={ringRadius}
+                        fill="none"
+                        stroke="rgba(72, 199, 214, 0.75)"
+                        strokeWidth={ringStroke}
+                        strokeLinecap="square"
+                        strokeDasharray={`${ringDash} ${ringCircumference}`}
+                        transform="rotate(-90 8 8)"
+                      />
+                    </svg>
+                  ) : (
+                    <span
+                      className={cn(
+                        "absolute right-2 top-2 h-2 w-2 rounded-full",
+                        isOwned ? "bg-accent" : "bg-frame"
+                      )}
+                    />
+                  )}
                   <img
                     src={`/api/arc-items/image?file=${encodeURIComponent(
                       item.imageFile
@@ -247,9 +352,39 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
                         : "opacity-80 group-hover:opacity-100"
                     )}
                   />
+                  {holdItem === item.name ? (
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                      <svg viewBox="0 0 48 48" className="h-12 w-12">
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r={HOLD_RING_RADIUS}
+                          fill="none"
+                          stroke="rgba(160, 180, 190, 0.35)"
+                          strokeWidth={HOLD_RING_STROKE}
+                        />
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r={HOLD_RING_RADIUS}
+                          fill="none"
+                          stroke="rgba(72, 199, 214, 0.75)"
+                          strokeWidth={HOLD_RING_STROKE}
+                          strokeLinecap="square"
+                          strokeDasharray={`${holdProgress * HOLD_RING_CIRC} ${HOLD_RING_CIRC}`}
+                          transform="rotate(-90 24 24)"
+                        />
+                      </svg>
+                    </div>
+                  ) : null}
                   <span className="line-clamp-2 absolute bottom-2 left-2 right-2 text-[10px] font-semibold uppercase leading-tight tracking-[0.12em] text-text/90">
                     {label}
                   </span>
+                  {memberCount ? (
+                    <span className="sr-only">
+                      Community owned {ownerCount} of {memberCount}
+                    </span>
+                  ) : null}
                   <span className="sr-only">{item.name}</span>
                 </button>
               );
@@ -296,7 +431,7 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
                 {communityMembers.length ? (
                   <div>
                     <div className="hud-label">Needs Item</div>
-                    <div className="mt-2 flex flex-wrap gap-2">
+                    <div className="mt-2 space-y-2">
                       {(() => {
                         const ownedIds = new Set(
                           ownershipByItem[activeItem.name] ?? []
@@ -307,18 +442,28 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
                         });
                         if (!members.length) {
                           return (
-                            <span className="text-[11px] uppercase tracking-[0.12em] text-muted">
+                            <div className="border border-frame2/70 bg-panel2/40 px-3 py-2 text-[11px] uppercase tracking-[0.12em] text-muted">
                               All synced
-                            </span>
+                            </div>
                           );
                         }
                         return members.map((member) => (
-                          <span
+                          <div
                             key={member.id}
-                            className="border border-frame2 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted"
+                            className="flex items-center gap-3 rounded-[6px] border border-frame2 bg-panel2/60 px-3 py-2"
                           >
-                            {member.name}
-                          </span>
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-frame2/80 bg-panel text-[10px] font-semibold uppercase tracking-[0.14em] text-text">
+                              {getInitials(member.name)}
+                            </span>
+                            <div className="leading-tight">
+                              <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-text">
+                                {member.name}
+                              </div>
+                              <div className="text-[10px] uppercase tracking-[0.18em] text-muted">
+                                Needs
+                              </div>
+                            </div>
+                          </div>
                         ));
                       })()}
                     </div>

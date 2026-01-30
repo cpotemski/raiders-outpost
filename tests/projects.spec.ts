@@ -180,6 +180,37 @@ test("blueprint project persists owned state", async ({ page }) => {
   await expect(firstBlueprint).toHaveAttribute("aria-pressed", "true");
 });
 
+test("blueprint long press toggles owned state without dialog", async ({
+  page,
+}) => {
+  await login(page);
+  const loadResponse = page.waitForResponse((response) => {
+    return (
+      response.url().includes("/api/blueprints") &&
+      response.request().method() === "GET" &&
+      response.ok()
+    );
+  });
+  await page.reload();
+  await loadResponse;
+
+  const firstBlueprint = page.getByRole("button", { name: /Blueprint/i }).first();
+  const box = await firstBlueprint.boundingBox();
+  if (!box) {
+    throw new Error("Missing blueprint button bounding box");
+  }
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(900);
+  await page.mouse.up();
+
+  await expect(firstBlueprint).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await firstBlueprint.screenshot({
+    path: "test-results/blueprint-long-press.png",
+  });
+});
+
 test("blueprint tiles show community ownership", async ({ page, browser }) => {
   await login(page, "Vanguard");
 
@@ -234,6 +265,12 @@ test("blueprint tiles show community ownership", async ({ page, browser }) => {
   const targetBlueprint = itemName
     ? invitePage.getByRole("button", { name: itemName })
     : invitePage.getByRole("button", { name: /Blueprint/i }).first();
+  const progressRing = targetBlueprint.locator("[data-community-progress]");
+  await expect(progressRing).toBeVisible();
+  await expect(progressRing).toHaveAttribute("data-community-progress", "50");
+  await progressRing.screenshot({
+    path: "test-results/blueprint-community-progress.png",
+  });
   await targetBlueprint.click();
   await expect(invitePage.getByText("Needs Item")).toBeVisible();
   await expect(invitePage.getByRole("dialog")).not.toContainText("Nomad");
