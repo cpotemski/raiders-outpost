@@ -91,8 +91,8 @@ export default function RootLayout({
         )}
       >
         <ProjectProvider>
-          <div className="mx-auto flex min-h-screen max-w-[1320px] flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
-            <TopNav />
+          <TopNav />
+          <div className="mx-auto flex min-h-screen max-w-[1320px] flex-col px-4 pb-8 pt-6 sm:px-6 lg:px-8">
             <main className="flex-1">{children}</main>
           </div>
         </ProjectProvider>

@@ -35,6 +35,7 @@ const openUserMenu = async (page: Page) => {
   const trigger = page.getByTestId("user-menu-trigger");
   await expect(trigger).toBeVisible();
   await trigger.click();
+  await expect(page).toHaveURL(/\/operator/);
 };
 
 test.afterAll(async () => {
@@ -81,6 +82,35 @@ test("project images load from arc-items endpoint", async ({ page }) => {
     .toBeGreaterThan(0);
 });
 
+test("blueprint labels omit blueprint suffix", async ({ page }) => {
+  await login(page);
+
+  const firstTile = page.locator("[data-item-id]").first();
+  await expect(firstTile).toBeVisible();
+  await expect(firstTile).not.toContainText(/Blueprint/i);
+});
+
+test("project tile images scale to fill on desktop", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await login(page);
+
+  const tile = page
+    .locator("[data-item-id]")
+    .filter({ has: page.locator("img") })
+    .first();
+  await expect(tile).toBeVisible();
+  const image = tile.locator("img");
+  await expect(image).toBeVisible();
+
+  const tileBox = await tile.boundingBox();
+  const imageBox = await image.boundingBox();
+  expect(tileBox).toBeTruthy();
+  expect(imageBox).toBeTruthy();
+  if (!tileBox || !imageBox) return;
+  expect(imageBox.width / tileBox.width).toBeGreaterThan(0.55);
+  expect(imageBox.height / tileBox.height).toBeGreaterThan(0.55);
+});
+
 test("mobile layout avoids horizontal overflow", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/");
@@ -100,7 +130,7 @@ test("mobile layout avoids horizontal overflow", async ({ page }) => {
   await page.getByRole("button", { name: "Link Uplink" }).click();
   await expect(page.getByTestId("project-select")).toBeVisible();
   await openUserMenu(page);
-  const menuPanel = page.getByText("ARC// LINK CODE").locator("..").locator("..");
+  const menuPanel = page.getByText("ARC// OPERATOR").locator("..").locator("..");
   await expect(menuPanel).toBeVisible();
   await expect
     .poll(async () => {
@@ -118,8 +148,8 @@ test("mobile layout avoids horizontal overflow", async ({ page }) => {
   await menuPanel.screenshot({
     path: "test-results/mobile-user-menu.png",
   });
-  await page.keyboard.press("Escape");
-  await expect(page.getByText("ARC// LINK CODE")).toHaveCount(0);
+  await page.goBack();
+  await expect(page.getByTestId("project-select")).toBeVisible();
   await page.getByRole("main").screenshot({
     path: "test-results/mobile-projects.png",
   });

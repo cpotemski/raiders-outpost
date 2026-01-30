@@ -3,15 +3,19 @@
 import { useMemo, useState } from "react";
 import { useProjectContext } from "@/components/projects/ProjectContext";
 import { ProjectStagePanel } from "@/components/projects/ProjectStagePanel";
-import { cn } from "@/lib/cn";
 
-export function ProjectDashboard() {
+type ProjectDashboardProps = {
+  query: string;
+  neededOnly: boolean;
+};
+
+export function ProjectDashboard({
+  query,
+  neededOnly,
+}: ProjectDashboardProps) {
   const {
     loading,
-    projects,
     selectedProject,
-    selectedSlug,
-    setSelectedSlug,
     memberCount,
     communityCountsByItemId,
     updateItemQuantity,
@@ -19,8 +23,6 @@ export function ProjectDashboard() {
   const [expandedCompleted, setExpandedCompleted] = useState<Set<string>>(
     () => new Set()
   );
-  const [query, setQuery] = useState("");
-  const [neededOnly, setNeededOnly] = useState(false);
 
   const filteredStages = useMemo(() => {
     if (!selectedProject) return [];
@@ -49,48 +51,13 @@ export function ProjectDashboard() {
   }
 
   return selectedProject ? (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4 pb-24">
       <div className="arc-panel-header flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="hud-label">Project</p>
-          <select
-            value={selectedSlug ?? ""}
-            onChange={(event) => setSelectedSlug(event.target.value)}
-            aria-label="Project selection"
-            data-testid="project-select"
-            className="mt-1 h-9 w-full min-w-[220px] border border-frame bg-panel px-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-text sm:w-auto"
-          >
-            {projects.map((project) => (
-              <option key={project.slug} value={project.slug}>
-                {project.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:justify-end">
-          <label className="relative">
-            <span className="sr-only">Quicksearch</span>
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="SEARCH..."
-              className="h-8 w-36 border-b border-frame2 bg-transparent px-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-text placeholder:text-muted/70 focus:border-accent/60 focus:outline-none"
-            />
-          </label>
-          <button
-            type="button"
-            aria-pressed={neededOnly}
-            aria-label="Filter needed only"
-            onClick={() => setNeededOnly((prev) => !prev)}
-            className={cn(
-              "h-8 border px-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
-              neededOnly
-                ? "border-accent/70 text-text"
-                : "border-frame2 text-muted hover:border-accent/60"
-            )}
-          >
-            Needed Only
-          </button>
+          <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
+            {selectedProject.name}
+          </h2>
         </div>
       </div>
       {filteredStages
@@ -128,6 +95,7 @@ export function ProjectDashboard() {
                   return next;
                 });
               }}
+              stripBlueprintLabel={selectedProject.kind === "blueprints"}
             />
           );
         })}

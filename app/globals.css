@@ -62,6 +62,16 @@ body {
   box-shadow: 0 0 0 1px rgba(0,0,0,.35) inset, 0 10px 30px rgba(0,0,0,.45);
 }
 
+.arc-panel-topless {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+.arc-panel-bottomless {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
 /* Panel Header Bar */
 .arc-panel-header {
   @apply flex items-center justify-between px-4 py-3 border-b;
@@ -76,10 +86,10 @@ body {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(var(--frame), var(--frame)) left 10px top 10px / 14px 1px no-repeat,
-    linear-gradient(var(--frame), var(--frame)) left 10px top 10px / 1px 14px no-repeat,
-    linear-gradient(var(--frame), var(--frame)) right 10px top 10px / 14px 1px no-repeat,
-    linear-gradient(var(--frame), var(--frame)) right 10px top 10px / 1px 14px no-repeat;
+    linear-gradient(var(--frame), var(--frame)) left var(--arc-corner-offset, 10px) top var(--arc-corner-offset, 10px) / 14px 1px no-repeat,
+    linear-gradient(var(--frame), var(--frame)) left var(--arc-corner-offset, 10px) top var(--arc-corner-offset, 10px) / 1px 14px no-repeat,
+    linear-gradient(var(--frame), var(--frame)) right var(--arc-corner-offset, 10px) top var(--arc-corner-offset, 10px) / 14px 1px no-repeat,
+    linear-gradient(var(--frame), var(--frame)) right var(--arc-corner-offset, 10px) top var(--arc-corner-offset, 10px) / 1px 14px no-repeat;
   opacity: .9;
 }
 

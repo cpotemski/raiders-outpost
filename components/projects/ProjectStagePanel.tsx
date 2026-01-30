@@ -10,6 +10,7 @@ type ProjectStagePanelProps = {
   onAdjust: (projectItemId: string, nextQuantity: number) => void;
   isExpanded: boolean;
   onToggleExpanded: () => void;
+  stripBlueprintLabel?: boolean;
 };
 
 export function ProjectStagePanel({
@@ -19,6 +20,7 @@ export function ProjectStagePanel({
   onAdjust,
   isExpanded,
   onToggleExpanded,
+  stripBlueprintLabel,
 }: ProjectStagePanelProps) {
   const isCompleted = useMemo(() => {
     if (!stage.items.length) return true;
@@ -104,6 +106,7 @@ export function ProjectStagePanel({
                     communityCountsByItemId[item.projectItemId] ?? 0
                   }
                   onAdjust={onAdjust}
+                  stripBlueprintLabel={stripBlueprintLabel}
                 />
               ))}
             </div>
