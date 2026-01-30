@@ -33,6 +33,7 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
   >({});
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [activeItem, setActiveItem] = useState<BlueprintItem | null>(null);
+  const [showNeededOnly, setShowNeededOnly] = useState(false);
   const [holdItem, setHoldItem] = useState<string | null>(null);
   const [holdProgress, setHoldProgress] = useState(0);
   const holdRafRef = useRef<number | null>(null);
@@ -50,9 +51,13 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return ordered;
-    return ordered.filter((item) => item.name.toLowerCase().includes(q));
-  }, [ordered, query]);
+    let result = ordered;
+    if (showNeededOnly) {
+      result = result.filter((item) => !owned.has(item.name));
+    }
+    if (!q) return result;
+    return result.filter((item) => item.name.toLowerCase().includes(q));
+  }, [ordered, owned, query, showNeededOnly]);
 
   useEffect(() => {
     if (!ready || !identity) return;
@@ -228,6 +233,20 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
               className="h-8 w-28 border-b border-frame2 bg-transparent px-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-text placeholder:text-muted/70 focus:border-accent/60 focus:outline-none sm:w-44"
             />
           </label>
+          <button
+            type="button"
+            aria-pressed={showNeededOnly}
+            aria-label="Filter needed only"
+            onClick={() => setShowNeededOnly((prev) => !prev)}
+            className={cn(
+              "h-8 border px-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
+              showNeededOnly
+                ? "border-accent/70 text-text"
+                : "border-frame2 text-muted hover:border-accent/60"
+            )}
+          >
+            Needed Only
+          </button>
           <span className="hud-label">
             {owned.size}/{ordered.length}
           </span>

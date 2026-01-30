@@ -211,6 +211,37 @@ test("blueprint long press toggles owned state without dialog", async ({
   });
 });
 
+test("needed-only filter hides owned items", async ({ page }) => {
+  await login(page);
+  const loadResponse = page.waitForResponse((response) => {
+    return (
+      response.url().includes("/api/blueprints") &&
+      response.request().method() === "GET" &&
+      response.ok()
+    );
+  });
+  await page.reload();
+  await loadResponse;
+
+  const firstBlueprint = page.getByRole("button", { name: /Blueprint/i }).first();
+  const box = await firstBlueprint.boundingBox();
+  if (!box) {
+    throw new Error("Missing blueprint button bounding box");
+  }
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(900);
+  await page.mouse.up();
+  await expect(firstBlueprint).toHaveAttribute("aria-pressed", "true");
+
+  const filterButton = page.getByRole("button", { name: "Needed Only" });
+  await filterButton.click();
+  await expect(filterButton).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page.locator('button[title][aria-pressed="true"]')
+  ).toHaveCount(0);
+});
+
 test("blueprint tiles show community ownership", async ({ page, browser }) => {
   await login(page, "Vanguard");
 
