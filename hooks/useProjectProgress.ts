@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
 import type { ProjectProgressPayload } from "@/types/projects";
 
@@ -13,6 +13,8 @@ export const useProjectProgress = () => {
   const { identity, ready, clearIdentity } = useLocalIdentity();
   const [payload, setPayload] = useState<ProjectProgressPayload | null>(null);
   const [loading, setLoading] = useState(false);
+  const pendingUpdates = useRef<Map<string, number>>(new Map());
+  const flushTimeout = useRef<number | null>(null);
 
   useEffect(() => {
     if (!ready || !identity) return;
@@ -40,6 +42,52 @@ export const useProjectProgress = () => {
 
     return () => controller.abort();
   }, [clearIdentity, identity, ready]);
+
+  const flushUpdates = useCallback(() => {
+    if (!identity) return;
+    if (!pendingUpdates.current.size) return;
+    const updates = Array.from(pendingUpdates.current.entries()).map(
+      ([projectItemId, quantityOwned]) => ({
+        projectItemId,
+        quantityOwned,
+      })
+    );
+    pendingUpdates.current.clear();
+
+    fetch("/api/projects", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...getIdentityHeaders(identity.token, identity.name),
+      },
+      body: JSON.stringify({ updates }),
+    })
+      .then((res) => {
+        if (res.status === 401 || res.status === 404) {
+          clearIdentity();
+        }
+      })
+      .catch(() => null);
+  }, [clearIdentity, identity]);
+
+  const scheduleFlush = useCallback(() => {
+    if (flushTimeout.current) {
+      window.clearTimeout(flushTimeout.current);
+    }
+    flushTimeout.current = window.setTimeout(() => {
+      flushTimeout.current = null;
+      flushUpdates();
+    }, 300);
+  }, [flushUpdates]);
+
+  useEffect(() => {
+    return () => {
+      if (flushTimeout.current) {
+        window.clearTimeout(flushTimeout.current);
+      }
+      flushUpdates();
+    };
+  }, [flushUpdates]);
 
   const updateItemQuantity = useCallback(
     (projectItemId: string, nextQuantity: number) => {
@@ -92,24 +140,10 @@ export const useProjectProgress = () => {
         };
       });
 
-      fetch("/api/projects", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...getIdentityHeaders(identity.token, identity.name),
-        },
-        body: JSON.stringify({
-          updates: [{ projectItemId, quantityOwned: nextQuantity }],
-        }),
-      })
-        .then((res) => {
-          if (res.status === 401 || res.status === 404) {
-            clearIdentity();
-          }
-        })
-        .catch(() => null);
+      pendingUpdates.current.set(projectItemId, nextQuantity);
+      scheduleFlush();
     },
-    [clearIdentity, identity]
+    [identity, scheduleFlush]
   );
 
   const allProjects = useMemo(() => payload?.projects ?? [], [payload]);

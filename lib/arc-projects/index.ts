@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { unstable_cache } from "next/cache";
 import { loadArcItems } from "@/lib/arc-items";
 
 export type ArcProjectItem = {
@@ -30,7 +31,10 @@ export type ArcProjectPayload = {
   projects: ArcProject[];
 };
 
-const DATA_PATH = path.join(process.cwd(), "lib/arc-projects/data/projects.json");
+const DATA_PATH = path.join(
+  process.cwd(),
+  "lib/arc-projects/data/projects.json"
+);
 
 const buildBlueprintFallback = async (): Promise<ArcProjectPayload> => {
   const items = await loadArcItems();
@@ -65,14 +69,22 @@ const buildBlueprintFallback = async (): Promise<ArcProjectPayload> => {
   };
 };
 
-export const loadArcProjects = async (): Promise<ArcProjectPayload> => {
-  try {
-    const raw = await fs.readFile(DATA_PATH, "utf-8");
-    return JSON.parse(raw) as ArcProjectPayload;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return await buildBlueprintFallback();
+const readArcProjects = unstable_cache(
+  async (): Promise<ArcProjectPayload> => {
+    try {
+      const raw = await fs.readFile(DATA_PATH, "utf-8");
+      return JSON.parse(raw) as ArcProjectPayload;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+        return await buildBlueprintFallback();
+      }
+      throw error;
     }
-    throw error;
-  }
+  },
+  ["arc-projects"],
+  { revalidate: 3600 }
+);
+
+export const loadArcProjects = async (): Promise<ArcProjectPayload> => {
+  return readArcProjects();
 };

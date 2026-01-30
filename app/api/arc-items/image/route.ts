@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 export const runtime = "nodejs";
+export const revalidate = 86400;
 
 const IMAGE_DIR = path.join(process.cwd(), "lib/arc-items/images");
 
@@ -28,7 +29,7 @@ export const GET = async (request: Request) => {
       status: 200,
       headers: {
         "Content-Type": contentTypeFor(safeName),
-        "Cache-Control": "public, max-age=86400",
+        "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
   } catch {

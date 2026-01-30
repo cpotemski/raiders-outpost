@@ -1,10 +1,18 @@
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import { test, expect, type Page } from "@playwright/test";
 
 const NAME_KEY = "arc:identity:name";
 const TOKEN_KEY = "arc:identity:token";
 
-const prisma = new PrismaClient();
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+const prisma = new PrismaClient({
+  adapter: new PrismaPg(pool),
+});
 
 const getLocalIdentity = async (page: Page) => {
   return page.evaluate(
@@ -40,6 +48,7 @@ const openUserMenu = async (page: Page) => {
 
 test.afterAll(async () => {
   await prisma.$disconnect();
+  await pool.end();
 });
 
 test("seo metadata is present", async ({ page }) => {

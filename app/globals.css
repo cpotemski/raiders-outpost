@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@config "../tailwind.config.cjs";
+@import "tailwindcss";
+@reference "tailwindcss";
 
 :root {
   /* aus deinen Screens abgeleitet (dunkles navy/anthrazit + off-white) */
