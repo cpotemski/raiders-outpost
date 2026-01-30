@@ -12,7 +12,7 @@ type BlueprintDetailDialogProps = {
   ownershipByItem: Record<string, string[]>;
   viewerId: string | null;
   onClose: () => void;
-  onToggleOwned: (name: string) => void;
+  onToggleOwned: (id: string) => void;
 };
 
 export function BlueprintDetailDialog({
@@ -60,7 +60,7 @@ export function BlueprintDetailDialog({
                 <div className="hud-label">Needs Item</div>
                 <div className="mt-2 space-y-2">
                   {(() => {
-                    const ownedIds = new Set(ownershipByItem[item.name] ?? []);
+                    const ownedIds = new Set(ownershipByItem[item.id] ?? []);
                     const members = communityMembers.filter((member) => {
                       if (viewerId && member.id === viewerId) return false;
                       return !ownedIds.has(member.id);
@@ -102,7 +102,7 @@ export function BlueprintDetailDialog({
               <button
                 type="button"
                 onClick={() => {
-                  onToggleOwned(item.name);
+                  onToggleOwned(item.id);
                   onClose();
                 }}
                 className={cn(

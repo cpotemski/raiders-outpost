@@ -1,4 +1,5 @@
 export type BlueprintItem = {
+  id: string;
   name: string;
   rarity: string;
   itemType: string;

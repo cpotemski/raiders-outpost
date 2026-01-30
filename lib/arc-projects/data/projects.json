@@ -1,0 +1,1284 @@
+{
+  "scrapedAt": "2026-01-30T17:21:17.614Z",
+  "sourceUrl": "https://metaforge.app/arc-raiders/needed-items",
+  "projects": [
+    {
+      "slug": "blueprints",
+      "name": "Blueprint Cache",
+      "kind": "blueprints",
+      "repeatable": false,
+      "timeLimitedUntil": null,
+      "stages": [
+        {
+          "stageKey": "phase-1",
+          "name": "Phase 01",
+          "sortOrder": 1,
+          "items": [
+            {
+              "itemId": "angled-grip-ii-recipe",
+              "displayName": "Angled Grip II Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "angled-grip-iii-recipe",
+              "displayName": "Angled Grip III Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "anvil-recipe",
+              "displayName": "Anvil Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "aphelion-rifle-blueprint",
+              "displayName": "Aphelion Rifle Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "barricade-kit-recipe",
+              "displayName": "Barricade Kit Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "bettina-blueprint",
+              "displayName": "Bettina Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "blaze-grenade-blueprint",
+              "displayName": "Blaze Grenade Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "blue-light-stick-blueprint",
+              "displayName": "Blue Light Stick Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "bobcat-i-recipe",
+              "displayName": "Bobcat Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "burltetta-recipe",
+              "displayName": "Burletta Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "combat-mk-3-flanking",
+              "displayName": "Combat Mk. 3 (Flanking) Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "combat-mk3-aggressive-blueprint",
+              "displayName": "Combat Mk.3 (Aggressive) Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "compensator-ii-recipe",
+              "displayName": "Compensator II Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "compensator-iii-recipe",
+              "displayName": "Compensator III Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "complex-gun-parts-blueprint",
+              "displayName": "Complex Gun Parts Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "deadline-blueprint",
+              "displayName": "Deadline Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "defibrillator-recipe",
+              "displayName": "Defibrillator Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "equalizer-recipe",
+              "displayName": "Equalizer Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "explosive-mine-blueprint",
+              "displayName": "Explosive Mine Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "extended-barrel-recipe",
+              "displayName": "Extended Barrel Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "extended-light-mag-ii-recipe",
+              "displayName": "Extended Light Mag II Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "extended-light-mag-iii-recipe",
+              "displayName": "Extended Light Mag III Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "extended-medium-mag-ii-recipe",
+              "displayName": "Extended Medium Mag II Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "extended-medium-mag-iii-blueprint",
+              "displayName": "Extended Medium Mag III Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "extended-shotgun-mag-ii-recipe",
+              "displayName": "Extended Shotgun Mag II Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "extended-shotgun-mag-iii-recipe",
+              "displayName": "Extended Shotgun Mag III Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "fireworks-box-blueprint",
+              "displayName": "Fireworks Box Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "gas-mine-blueprint",
+              "displayName": "Gas Mine Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "green-light-stick-blueprint",
+              "displayName": "Green Light Stick Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "heavy-gun-parts-recipe",
+              "displayName": "Heavy Gun Parts Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "hullcracker-blueprint",
+              "displayName": "Hullcracker Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "il-toro-recipe",
+              "displayName": "Il Toro Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "jolt-mine-recipe",
+              "displayName": "Jolt Mine Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "jupiter-i-recipe",
+              "displayName": "Jupiter Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "light-gun-parts-recipe",
+              "displayName": "Light Gun Parts Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "lightweight-stock-recipe",
+              "displayName": "Lightweight Stock Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "looting-mk-3-safekeeper-blueprint",
+              "displayName": "Looting MK. 3 (Safekeeper) Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "looting-mk-3-survivor-blueprint",
+              "displayName": "Looting MK. 3 (Survivor) Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "lure-grenade-recipe",
+              "displayName": "Lure Grenade Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "medium-gun-parts-recipe",
+              "displayName": "Medium Gun Parts Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "muzzle-brake-ii-recipe",
+              "displayName": "Muzzle Brake II Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "muzzle-brake-iii-recipe",
+              "displayName": "Muzzle Brake III Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "osprey-recipe",
+              "displayName": "Osprey Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "padded-stock-recipe",
+              "displayName": "Padded Stock Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "pulse-mine-blueprint",
+              "displayName": "Pulse Mine Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "red-light-stick-blueprint",
+              "displayName": "Red Light Stick Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "remote-raider-flare-blueprint",
+              "displayName": "Remote Raider Flare Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "seeker-grenade-blueprint",
+              "displayName": "Seeker Grenade Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "shotgun-choke-ii-recipe",
+              "displayName": "Shotgun Choke II Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "shotgun-choke-iii-recipe",
+              "displayName": "Shotgun Choke III Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "shotgun-silencer-blueprint",
+              "displayName": "Shotgun Silencer Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "showstopper-blueprint",
+              "displayName": "Showstopper Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "silencer-i-recipe",
+              "displayName": "Silencer I Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "silencer-ii-recipe",
+              "displayName": "Silencer II Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "smoke-grenade-blueprint",
+              "displayName": "Smoke Grenade Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "snap-hook-recipe",
+              "displayName": "Snap Hook Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "stable-stock-ii-recipe",
+              "displayName": "Stable Stock II Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "stable-stock-iii-recipe",
+              "displayName": "Stable Stock III Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "tactical-mk-3-revival-blueprint",
+              "displayName": "Tactical Mk. 3 (Revival) Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "tactical-mk3-defensive-blueprint",
+              "displayName": "Tactical MK.3 (Defensive) Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "tacical-mk3-healing-blueprint",
+              "displayName": "Tactical MK.3 (Healing) Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "tagging-grenade-recipe",
+              "displayName": "Tagging Grenade Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "tempest-i-recipe",
+              "displayName": "Tempest I Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "torrent-i-recipe",
+              "displayName": "Torrente Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "trailblazer-grenade-blueprint",
+              "displayName": "Trailblazer Grenade Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "trigger-nade-recipe",
+              "displayName": "Trigger Nade Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "venator-recipe",
+              "displayName": "Venator Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "vertical-grip-ii-recipe",
+              "displayName": "Vertical Grip II Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "vertical-grip-iii-recipe",
+              "displayName": "Vertical Grip III Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "vita-shot-recipe",
+              "displayName": "Vita Shot Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "vita-spray-recipe",
+              "displayName": "Vita Spray Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "vulcano-blueprint",
+              "displayName": "Vulcano Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "wolfpack-recipe",
+              "displayName": "Wolfpack Blueprint",
+              "quantityRequired": 1
+            },
+            {
+              "itemId": "yellow-light-stick-blueprint",
+              "displayName": "Yellow Light Stick Blueprint",
+              "quantityRequired": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "project-expedition-1",
+      "name": "Expedition 1",
+      "kind": "project",
+      "repeatable": false,
+      "timeLimitedUntil": null,
+      "stages": [
+        {
+          "stageKey": "phase-1-5",
+          "name": "Phase 1/5",
+          "sortOrder": 1,
+          "items": [
+            {
+              "itemId": "metal-parts",
+              "displayName": "Metal Parts",
+              "quantityRequired": 150
+            },
+            {
+              "itemId": "rubber-parts-recipe",
+              "displayName": "Rubber Parts",
+              "quantityRequired": 200
+            },
+            {
+              "itemId": "arc-alloy",
+              "displayName": "Arc Alloy",
+              "quantityRequired": 80
+            },
+            {
+              "itemId": "spring",
+              "displayName": "Steel Spring",
+              "quantityRequired": 15
+            }
+          ]
+        },
+        {
+          "stageKey": "phase-2-5",
+          "name": "Phase 2/5",
+          "sortOrder": 2,
+          "items": [
+            {
+              "itemId": "durable-cloth",
+              "displayName": "Durable Cloth",
+              "quantityRequired": 35
+            },
+            {
+              "itemId": "wires-recipe",
+              "displayName": "Wires",
+              "quantityRequired": 30
+            },
+            {
+              "itemId": "electrical-components",
+              "displayName": "Electrical Components",
+              "quantityRequired": 30
+            },
+            {
+              "itemId": "cooling-fan",
+              "displayName": "Cooling Fan",
+              "quantityRequired": 5
+            }
+          ]
+        },
+        {
+          "stageKey": "phase-3-5",
+          "name": "Phase 3/5",
+          "sortOrder": 3,
+          "items": [
+            {
+              "itemId": "light-bulb",
+              "displayName": "Light Bulb",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "battery",
+              "displayName": "Battery",
+              "quantityRequired": 30
+            },
+            {
+              "itemId": "sensors-recipe",
+              "displayName": "Sensor",
+              "quantityRequired": 20
+            },
+            {
+              "itemId": "exodus-modules",
+              "displayName": "Exodus Modules",
+              "quantityRequired": 1
+            }
+          ]
+        },
+        {
+          "stageKey": "phase-4-5",
+          "name": "Phase 4/5",
+          "sortOrder": 4,
+          "items": [
+            {
+              "itemId": "humidifier",
+              "displayName": "Humidifier",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "advanced-electrical-components",
+              "displayName": "Advanced Electrical Components",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "magnetic-accelerator",
+              "displayName": "Magnetic Accelerator",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "leaper-pulse-unit",
+              "displayName": "Leaper Pulse Unit",
+              "quantityRequired": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "project-expedition-2",
+      "name": "Expedition 2",
+      "kind": "project",
+      "repeatable": false,
+      "timeLimitedUntil": null,
+      "stages": [
+        {
+          "stageKey": "phase-1-5",
+          "name": "Phase 1/5",
+          "sortOrder": 1,
+          "items": [
+            {
+              "itemId": "metal-parts",
+              "displayName": "Metal Parts",
+              "quantityRequired": 150
+            },
+            {
+              "itemId": "plastic-parts",
+              "displayName": "Plastic Parts",
+              "quantityRequired": 200
+            },
+            {
+              "itemId": "arc-alloy",
+              "displayName": "Arc Alloy",
+              "quantityRequired": 80
+            },
+            {
+              "itemId": "spring",
+              "displayName": "Steel Spring",
+              "quantityRequired": 15
+            }
+          ]
+        },
+        {
+          "stageKey": "phase-2-5",
+          "name": "Phase 2/5",
+          "sortOrder": 2,
+          "items": [
+            {
+              "itemId": "durable-cloth",
+              "displayName": "Durable Cloth",
+              "quantityRequired": 35
+            },
+            {
+              "itemId": "wires-recipe",
+              "displayName": "Wires",
+              "quantityRequired": 25
+            },
+            {
+              "itemId": "electrical-components",
+              "displayName": "Electrical Components",
+              "quantityRequired": 20
+            },
+            {
+              "itemId": "cooling-coil",
+              "displayName": "Cooling Coil",
+              "quantityRequired": 4
+            }
+          ]
+        },
+        {
+          "stageKey": "phase-3-5",
+          "name": "Phase 3/5",
+          "sortOrder": 3,
+          "items": [
+            {
+              "itemId": "light-bulb",
+              "displayName": "Light Bulb",
+              "quantityRequired": 4
+            },
+            {
+              "itemId": "battery",
+              "displayName": "Battery",
+              "quantityRequired": 30
+            },
+            {
+              "itemId": "shredder-gyro",
+              "displayName": "Shredder Gyro",
+              "quantityRequired": 10
+            },
+            {
+              "itemId": "exodus-modules",
+              "displayName": "Exodus Modules",
+              "quantityRequired": 1
+            }
+          ]
+        },
+        {
+          "stageKey": "phase-4-5",
+          "name": "Phase 4/5",
+          "sortOrder": 4,
+          "items": [
+            {
+              "itemId": "frequency-modulation-box",
+              "displayName": "Frequency Modulation Box",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "advanced-electrical-components",
+              "displayName": "Advanced Electrical Components",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "ion-sputter",
+              "displayName": "Ion Sputter",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "leaper-pulse-unit",
+              "displayName": "Leaper Pulse Unit",
+              "quantityRequired": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "workshop-explosives-bench",
+      "name": "Explosives Station",
+      "kind": "workshop",
+      "repeatable": true,
+      "timeLimitedUntil": null,
+      "stages": [
+        {
+          "stageKey": "level-1",
+          "name": "Level 01",
+          "sortOrder": 1,
+          "items": [
+            {
+              "itemId": "chemicals",
+              "displayName": "Chemicals",
+              "quantityRequired": 50
+            },
+            {
+              "itemId": "arc-alloy",
+              "displayName": "ARC Alloy",
+              "quantityRequired": 6
+            }
+          ]
+        },
+        {
+          "stageKey": "level-2",
+          "name": "Level 02",
+          "sortOrder": 2,
+          "items": [
+            {
+              "itemId": "synthesized-fuel",
+              "displayName": "Synthesized Fuel",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "crude-explosives",
+              "displayName": "Crude Explosives",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "pop-trigger",
+              "displayName": "Pop Trigger",
+              "quantityRequired": 5
+            }
+          ]
+        },
+        {
+          "stageKey": "level-3",
+          "name": "Level 03",
+          "sortOrder": 3,
+          "items": [
+            {
+              "itemId": "laboratory-reagents",
+              "displayName": "Laboratory Reagents",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "explosive-compound",
+              "displayName": "Explosive Compound",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "rocketeer-part",
+              "displayName": "Rocketeer Driver",
+              "quantityRequired": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "workshop-equipment-bench",
+      "name": "Gear Bench",
+      "kind": "workshop",
+      "repeatable": true,
+      "timeLimitedUntil": null,
+      "stages": [
+        {
+          "stageKey": "level-1",
+          "name": "Level 01",
+          "sortOrder": 1,
+          "items": [
+            {
+              "itemId": "plastic-parts",
+              "displayName": "Plastic Parts",
+              "quantityRequired": 25
+            },
+            {
+              "itemId": "fabric",
+              "displayName": "Fabric",
+              "quantityRequired": 30
+            }
+          ]
+        },
+        {
+          "stageKey": "level-2",
+          "name": "Level 02",
+          "sortOrder": 2,
+          "items": [
+            {
+              "itemId": "power-cable",
+              "displayName": "Power Cable",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "electrical-components",
+              "displayName": "Electrical Components",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "hornet-driver",
+              "displayName": "Hornet Driver",
+              "quantityRequired": 5
+            }
+          ]
+        },
+        {
+          "stageKey": "level-3",
+          "name": "Level 03",
+          "sortOrder": 3,
+          "items": [
+            {
+              "itemId": "industrial-battery",
+              "displayName": "Industrial Battery",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "advanced-electrical-components",
+              "displayName": "Advanced Electrical Components",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "bastion-part",
+              "displayName": "Bastion Cell",
+              "quantityRequired": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "workshop-weapon-bench",
+      "name": "Gunsmith",
+      "kind": "workshop",
+      "repeatable": true,
+      "timeLimitedUntil": null,
+      "stages": [
+        {
+          "stageKey": "level-1",
+          "name": "Level 01",
+          "sortOrder": 1,
+          "items": [
+            {
+              "itemId": "metal-parts",
+              "displayName": "Metal Parts",
+              "quantityRequired": 20
+            },
+            {
+              "itemId": "rubber-parts-recipe",
+              "displayName": "Rubber Parts",
+              "quantityRequired": 30
+            }
+          ]
+        },
+        {
+          "stageKey": "level-2",
+          "name": "Level 02",
+          "sortOrder": 2,
+          "items": [
+            {
+              "itemId": "rusted-tools",
+              "displayName": "Rusted Tools",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "mechanical-components",
+              "displayName": "Mechanical Components",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "wasp-driver",
+              "displayName": "Wasp Driver",
+              "quantityRequired": 8
+            }
+          ]
+        },
+        {
+          "stageKey": "level-3",
+          "name": "Level 03",
+          "sortOrder": 3,
+          "items": [
+            {
+              "itemId": "rusted-gear",
+              "displayName": "Rusted Gear",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "advanced-mechanical-components",
+              "displayName": "Advanced Mechanical Components",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "sentinel-part",
+              "displayName": "Sentinel Firing Core",
+              "quantityRequired": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "workshop-med-station",
+      "name": "Medical Lab",
+      "kind": "workshop",
+      "repeatable": true,
+      "timeLimitedUntil": null,
+      "stages": [
+        {
+          "stageKey": "level-1",
+          "name": "Level 01",
+          "sortOrder": 1,
+          "items": [
+            {
+              "itemId": "fabric",
+              "displayName": "Fabric",
+              "quantityRequired": 50
+            },
+            {
+              "itemId": "arc-alloy",
+              "displayName": "ARC Alloy",
+              "quantityRequired": 6
+            }
+          ]
+        },
+        {
+          "stageKey": "level-2",
+          "name": "Level 02",
+          "sortOrder": 2,
+          "items": [
+            {
+              "itemId": "cracked-bioscanner",
+              "displayName": "Cracked Bioscanner",
+              "quantityRequired": 2
+            },
+            {
+              "itemId": "durable-cloth",
+              "displayName": "Durable Cloth",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "tick-pod",
+              "displayName": "Tick Pod",
+              "quantityRequired": 8
+            }
+          ]
+        },
+        {
+          "stageKey": "level-3",
+          "name": "Level 03",
+          "sortOrder": 3,
+          "items": [
+            {
+              "itemId": "rusted-shut-medical-kit",
+              "displayName": "Rusted Shut Medical Kit",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "antiseptic",
+              "displayName": "Antiseptic",
+              "quantityRequired": 8
+            },
+            {
+              "itemId": "surveyor-vault",
+              "displayName": "Surveyor Vault",
+              "quantityRequired": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "workshop-refiner",
+      "name": "Refiner",
+      "kind": "workshop",
+      "repeatable": true,
+      "timeLimitedUntil": null,
+      "stages": [
+        {
+          "stageKey": "level-1",
+          "name": "Level 01",
+          "sortOrder": 1,
+          "items": [
+            {
+              "itemId": "metal-parts",
+              "displayName": "Metal Parts",
+              "quantityRequired": 60
+            },
+            {
+              "itemId": "arc-powercell",
+              "displayName": "ARC Powercell",
+              "quantityRequired": 5
+            }
+          ]
+        },
+        {
+          "stageKey": "level-2",
+          "name": "Level 02",
+          "sortOrder": 2,
+          "items": [
+            {
+              "itemId": "toaster",
+              "displayName": "Toaster",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "arc-motion-core",
+              "displayName": "ARC Motion Core",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "fireball-burner",
+              "displayName": "Fireball Burner",
+              "quantityRequired": 8
+            }
+          ]
+        },
+        {
+          "stageKey": "level-3",
+          "name": "Level 03",
+          "sortOrder": 3,
+          "items": [
+            {
+              "itemId": "motor",
+              "displayName": "Motor",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "arc-circuitry",
+              "displayName": "ARC Circuitry",
+              "quantityRequired": 10
+            },
+            {
+              "itemId": "bombardier-cell",
+              "displayName": "Bombardier Cell",
+              "quantityRequired": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "workshop-scrappy",
+      "name": "Scrappy",
+      "kind": "workshop",
+      "repeatable": true,
+      "timeLimitedUntil": null,
+      "stages": [
+        {
+          "stageKey": "level-1",
+          "name": "Level 01",
+          "sortOrder": 1,
+          "items": []
+        },
+        {
+          "stageKey": "level-2",
+          "name": "Level 02",
+          "sortOrder": 2,
+          "items": [
+            {
+              "itemId": "dog-collar",
+              "displayName": "Dog Collar",
+              "quantityRequired": 1
+            }
+          ]
+        },
+        {
+          "stageKey": "level-3",
+          "name": "Level 03",
+          "sortOrder": 3,
+          "items": [
+            {
+              "itemId": "lemon",
+              "displayName": "Lemon",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "apricot",
+              "displayName": "Apricot",
+              "quantityRequired": 3
+            }
+          ]
+        },
+        {
+          "stageKey": "level-4",
+          "name": "Level 04",
+          "sortOrder": 4,
+          "items": [
+            {
+              "itemId": "prickly-pear",
+              "displayName": "Prickly Pear",
+              "quantityRequired": 6
+            },
+            {
+              "itemId": "olives",
+              "displayName": "Olives",
+              "quantityRequired": 6
+            },
+            {
+              "itemId": "cat-bed",
+              "displayName": "Cat Bed",
+              "quantityRequired": 1
+            }
+          ]
+        },
+        {
+          "stageKey": "level-5",
+          "name": "Level 05",
+          "sortOrder": 5,
+          "items": [
+            {
+              "itemId": "apricot",
+              "displayName": "Apricot",
+              "quantityRequired": 12
+            },
+            {
+              "itemId": "mushroom",
+              "displayName": "Mushroom",
+              "quantityRequired": 12
+            },
+            {
+              "itemId": "very-comfortable-pillow",
+              "displayName": "Very Comfortable Pillow",
+              "quantityRequired": 3
+            }
+          ]
+        },
+        {
+          "stageKey": "level-6",
+          "name": "Level 06",
+          "sortOrder": 6,
+          "items": []
+        }
+      ]
+    },
+    {
+      "slug": "project-trophy-display",
+      "name": "Trophy Display",
+      "kind": "project",
+      "repeatable": false,
+      "timeLimitedUntil": null,
+      "stages": [
+        {
+          "stageKey": "phase-1-5",
+          "name": "Phase 1/5",
+          "sortOrder": 1,
+          "items": [
+            {
+              "itemId": "rusted-bolts",
+              "displayName": "Rusted Bolts",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "pop-trigger",
+              "displayName": "Pop Trigger",
+              "quantityRequired": 15
+            },
+            {
+              "itemId": "tick-pod",
+              "displayName": "Tick Pod",
+              "quantityRequired": 15
+            },
+            {
+              "itemId": "surveyor-vault",
+              "displayName": "Surveyor Vault",
+              "quantityRequired": 5
+            }
+          ]
+        },
+        {
+          "stageKey": "phase-2-5",
+          "name": "Phase 2/5",
+          "sortOrder": 2,
+          "items": [
+            {
+              "itemId": "spotter-relay",
+              "displayName": "Spotter Relay",
+              "quantityRequired": 10
+            },
+            {
+              "itemId": "expired-respirator",
+              "displayName": "Expired Respirator",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "wasp-driver",
+              "displayName": "Wasp Driver",
+              "quantityRequired": 20
+            },
+            {
+              "itemId": "hornet-driver",
+              "displayName": "Hornet Driver",
+              "quantityRequired": 15
+            }
+          ]
+        },
+        {
+          "stageKey": "phase-3-5",
+          "name": "Phase 3/5",
+          "sortOrder": 3,
+          "items": [
+            {
+              "itemId": "arc-performance-steel",
+              "displayName": "ARC Performance Steel",
+              "quantityRequired": 10
+            },
+            {
+              "itemId": "shredder-gyro",
+              "displayName": "Shredder Gyro",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "leaper-pulse-unit",
+              "displayName": "Leaper Pulse Unit",
+              "quantityRequired": 10
+            },
+            {
+              "itemId": "bastion-part",
+              "displayName": "Bastion Cell",
+              "quantityRequired": 5
+            }
+          ]
+        },
+        {
+          "stageKey": "phase-4-5",
+          "name": "Phase 4/5",
+          "sortOrder": 4,
+          "items": [
+            {
+              "itemId": "arc-synthetic-resin",
+              "displayName": "ARC Synthetic Resin",
+              "quantityRequired": 10
+            },
+            {
+              "itemId": "magnetic-accelerator",
+              "displayName": "Magnetic Accelerator",
+              "quantityRequired": 10
+            },
+            {
+              "itemId": "rocketeer-part",
+              "displayName": "Rocketeer Driver",
+              "quantityRequired": 8
+            },
+            {
+              "itemId": "queen-reactor",
+              "displayName": "Queen Reactor",
+              "quantityRequired": 3
+            }
+          ]
+        },
+        {
+          "stageKey": "phase-5-5",
+          "name": "Phase 5/5",
+          "sortOrder": 5,
+          "items": [
+            {
+              "itemId": "exodus-modules",
+              "displayName": "Exodus Modules",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "geiger-counter",
+              "displayName": "Geiger Counter",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "bombardier-cell",
+              "displayName": "Bombardier Cell",
+              "quantityRequired": 8
+            },
+            {
+              "itemId": "matriarch-reactor",
+              "displayName": "Matriarch Reactor",
+              "quantityRequired": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "workshop-utility-bench",
+      "name": "Utility Station",
+      "kind": "workshop",
+      "repeatable": true,
+      "timeLimitedUntil": null,
+      "stages": [
+        {
+          "stageKey": "level-1",
+          "name": "Level 01",
+          "sortOrder": 1,
+          "items": [
+            {
+              "itemId": "plastic-parts",
+              "displayName": "Plastic Parts",
+              "quantityRequired": 50
+            },
+            {
+              "itemId": "arc-alloy",
+              "displayName": "ARC Alloy",
+              "quantityRequired": 6
+            }
+          ]
+        },
+        {
+          "stageKey": "level-2",
+          "name": "Level 02",
+          "sortOrder": 2,
+          "items": [
+            {
+              "itemId": "damaged-heat-sink",
+              "displayName": "Damaged Heat Sink",
+              "quantityRequired": 2
+            },
+            {
+              "itemId": "electrical-components",
+              "displayName": "Electrical Components",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "snitch-scanner",
+              "displayName": "Snitch Scanner",
+              "quantityRequired": 6
+            }
+          ]
+        },
+        {
+          "stageKey": "level-3",
+          "name": "Level 03",
+          "sortOrder": 3,
+          "items": [
+            {
+              "itemId": "fried-motherboard",
+              "displayName": "Fried Motherboard",
+              "quantityRequired": 3
+            },
+            {
+              "itemId": "advanced-electrical-components",
+              "displayName": "Advanced Electrical Components",
+              "quantityRequired": 5
+            },
+            {
+              "itemId": "leaper-pulse-unit",
+              "displayName": "Leaper Pulse Unit",
+              "quantityRequired": 4
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

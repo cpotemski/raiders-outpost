@@ -70,24 +70,24 @@ export const useBlueprintOwnership = () => {
       .catch(() => null);
   };
 
-  const toggleOwned = (name: string) => {
+  const toggleOwned = (id: string) => {
     setOwned((prev) => {
       const next = new Set(prev);
-      const willOwn = !next.has(name);
+      const willOwn = !next.has(id);
       if (willOwn) {
-        next.add(name);
+        next.add(id);
       } else {
-        next.delete(name);
+        next.delete(id);
       }
       if (viewerId) {
         setOwnershipByItem((prevOwnership) => {
-          const current = new Set(prevOwnership[name] ?? []);
+          const current = new Set(prevOwnership[id] ?? []);
           if (willOwn) {
             current.add(viewerId);
           } else {
             current.delete(viewerId);
           }
-          return { ...prevOwnership, [name]: Array.from(current) };
+          return { ...prevOwnership, [id]: Array.from(current) };
         });
       }
       persistOwned(next);

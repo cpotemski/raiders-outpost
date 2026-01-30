@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { loadArcItems } from "@/lib/arc-items";
+import { loadArcProjects } from "@/lib/arc-projects";
 import { getCommunityForUser } from "@/lib/server/community";
 
 const PROJECT_SLUG = "blueprints";
@@ -37,16 +37,43 @@ export const ensureBlueprintProject = async () => {
     });
   }
 
-  const payload = await loadArcItems();
-  const blueprintNames = payload.items
-    .filter((item) => item.itemType === "Blueprint")
-    .map((item) => item.name);
+  const payload = await loadArcProjects();
+  const blueprintProject = payload.projects.find(
+    (entry) => entry.slug === PROJECT_SLUG
+  );
+  const blueprintItems = (blueprintProject?.stages ?? []).flatMap(
+    (stage) => stage.items
+  );
+  const blueprintIds = blueprintItems.map((item) => item.itemId);
+  const displayNameMap = new Map(
+    blueprintItems.map((item) => [item.displayName, item.itemId])
+  );
 
-  if (blueprintNames.length) {
+  if (blueprintIds.length) {
+    const existingItems = await prisma.projectItem.findMany({
+      where: { stageId: stage.id },
+      select: { id: true, itemName: true },
+    });
+    const updates = existingItems
+      .map((item) => {
+        const mapped = displayNameMap.get(item.itemName);
+        if (!mapped) return null;
+        return prisma.projectItem.update({
+          where: { id: item.id },
+          data: { itemName: mapped },
+        });
+      })
+      .filter((entry): entry is ReturnType<typeof prisma.projectItem.update> =>
+        Boolean(entry)
+      );
+    if (updates.length) {
+      await prisma.$transaction(updates);
+    }
+
     await prisma.projectItem.createMany({
-      data: blueprintNames.map((name) => ({
+      data: blueprintIds.map((itemId) => ({
         stageId: stage.id,
-        itemName: name,
+        itemName: itemId,
         quantityRequired: 1,
       })),
       skipDuplicates: true,

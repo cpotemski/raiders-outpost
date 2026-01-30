@@ -10,7 +10,7 @@ type BlueprintTileProps = {
   memberCount: number;
   ownerCount: number;
   onSelect: (item: BlueprintItem) => void;
-  onHoldStart: (name: string) => void;
+  onHoldStart: (id: string) => void;
   onHoldCancel: () => void;
   shouldSuppressClick: () => boolean;
 };
@@ -54,16 +54,16 @@ export function BlueprintTile({
       }}
       onPointerDown={(event) => {
         if (event.button !== 0) return;
-        onHoldStart(item.name);
+        onHoldStart(item.id);
       }}
       onPointerUp={() => {
-        if (holdItem === item.name) onHoldCancel();
+        if (holdItem === item.id) onHoldCancel();
       }}
       onPointerLeave={() => {
-        if (holdItem === item.name) onHoldCancel();
+        if (holdItem === item.id) onHoldCancel();
       }}
       onPointerCancel={() => {
-        if (holdItem === item.name) onHoldCancel();
+        if (holdItem === item.id) onHoldCancel();
       }}
       className={cn(
         "group relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-[8px] border bg-panel2/80 transition",
@@ -142,7 +142,7 @@ export function BlueprintTile({
         onContextMenu={(event) => event.preventDefault()}
         style={{ WebkitTouchCallout: "none" }}
       />
-      {holdItem === item.name ? (
+      {holdItem === item.id ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <svg viewBox="0 0 48 48" className="h-12 w-12">
             <circle

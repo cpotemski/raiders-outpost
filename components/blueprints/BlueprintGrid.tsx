@@ -34,7 +34,7 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
     const q = query.trim().toLowerCase();
     let result = ordered;
     if (showNeededOnly) {
-      result = result.filter((item) => !owned.has(item.name));
+      result = result.filter((item) => !owned.has(item.id));
     }
     if (!q) return result;
     return result.filter((item) => item.name.toLowerCase().includes(q));
@@ -55,11 +55,11 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
         <div className="border-t border-frame2 bg-panel/80 px-4 py-5">
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
             {filtered.map((item) => {
-              const isOwned = owned.has(item.name);
-              const ownerCount = ownershipByItem[item.name]?.length ?? 0;
+              const isOwned = owned.has(item.id);
+              const ownerCount = ownershipByItem[item.id]?.length ?? 0;
               return (
                 <BlueprintTile
-                  key={item.name}
+                  key={item.id}
                   item={item}
                   isOwned={isOwned}
                   holdItem={holdItem}
@@ -80,7 +80,7 @@ export function BlueprintGrid({ items }: BlueprintGridProps) {
       {activeItem ? (
         <BlueprintDetailDialog
           item={activeItem}
-          owned={owned.has(activeItem.name)}
+          owned={owned.has(activeItem.id)}
           communityMembers={communityMembers}
           ownershipByItem={ownershipByItem}
           viewerId={viewerId}
