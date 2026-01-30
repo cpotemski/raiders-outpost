@@ -1,11 +1,14 @@
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import { loadArcProjects } from "@/lib/arc-projects";
 import { loadArcItems } from "@/lib/arc-items";
 import { getCommunityForUser } from "@/lib/server/community";
 
-let projectsSeedPromise: Promise<
-  ReturnType<typeof prisma.project.findMany>
-> | null = null;
+type ProjectWithStages = Prisma.ProjectGetPayload<{
+  include: { stages: { include: { items: true } } };
+}>;
+
+let projectsSeedPromise: Promise<ProjectWithStages[]> | null = null;
 
 const seedProjects = async () => {
   const payload = await loadArcProjects();

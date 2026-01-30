@@ -45,7 +45,7 @@ export const PATCH = async (request: Request) => {
         })
         .filter(
           (
-            entry
+            entry: { projectItemId: string; quantityOwned: number } | null
           ): entry is { projectItemId: string; quantityOwned: number } =>
             Boolean(entry)
         )
