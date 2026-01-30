@@ -181,6 +181,54 @@ test("mobile layout avoids horizontal overflow", async ({ page }) => {
   });
 });
 
+test("project control bar sticks beneath the top nav", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await login(page);
+
+  const topNav = page.getByText("ARC // Raiders Outpost");
+  const controlBar = page.getByTestId("project-control-bar");
+  await expect(topNav).toBeVisible();
+  await expect(controlBar).toBeVisible();
+
+  const initialPositions = await page.evaluate(() => {
+    const nav = document
+      .evaluate(
+        "//*[contains(text(), 'ARC // Raiders Outpost')]",
+        document,
+        null,
+        XPathResult.FIRST_ORDERED_NODE_TYPE,
+        null
+      )
+      .singleNodeValue as HTMLElement | null;
+    const bar = document.querySelector(
+      '[data-testid="project-control-bar"]'
+    ) as HTMLElement | null;
+    if (!nav || !bar) return null;
+    return {
+      navBottom: nav.getBoundingClientRect().bottom,
+      barTop: bar.getBoundingClientRect().top,
+    };
+  });
+  expect(initialPositions).toBeTruthy();
+  if (!initialPositions) return;
+  expect(initialPositions.barTop).toBeGreaterThan(
+    initialPositions.navBottom - 1
+  );
+
+  await page.mouse.wheel(0, 1200);
+  await page.waitForTimeout(100);
+
+  const barTopAfterScroll = await page.evaluate(() => {
+    const bar = document.querySelector(
+      '[data-testid="project-control-bar"]'
+    ) as HTMLElement | null;
+    return bar?.getBoundingClientRect().top ?? null;
+  });
+  expect(barTopAfterScroll).not.toBeNull();
+  if (barTopAfterScroll === null) return;
+  expect(barTopAfterScroll).toBeLessThanOrEqual(1);
+});
+
 test("project selector switches active project", async ({ page }) => {
   await login(page);
   await page.getByTestId("project-select").selectOption("project-expedition-1");
@@ -313,6 +361,49 @@ test("project tiles show community ownership", async ({ page, browser }) => {
   });
 
   await context.close();
+});
+
+test("mobile longpress increments quantity repeatedly", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await login(page);
+
+  await expect(page.locator("[data-item-id]").first()).toBeVisible();
+
+  const tiles = page.locator("[data-item-id]");
+  const tileCount = await tiles.count();
+  let targetIndex = -1;
+  for (let i = 0; i < tileCount; i += 1) {
+    const required = await tiles.nth(i).getAttribute("data-required");
+    if (required !== null && Number(required) > 0) {
+      targetIndex = i;
+      break;
+    }
+  }
+
+  if (targetIndex < 0) {
+    throw new Error("No tile found for longpress test.");
+  }
+
+  const tile = tiles.nth(targetIndex);
+  const increaseButton = tile.getByTestId("qty-plus");
+  await expect(increaseButton).toBeVisible();
+
+  await increaseButton.dispatchEvent("pointerdown", {
+    pointerType: "touch",
+    button: 0,
+  });
+  await page.waitForTimeout(120);
+  await increaseButton.dispatchEvent("pointerup", {
+    pointerType: "touch",
+    button: 0,
+  });
+
+  await expect
+    .poll(async () => {
+      const value = await tile.getAttribute("data-quantity");
+      return Number(value ?? "0");
+    })
+    .toBeGreaterThan(0);
 });
 
 test("auth creates token in localStorage and shows in menu", async ({ page }) => {

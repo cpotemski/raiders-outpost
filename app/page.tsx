@@ -12,29 +12,42 @@ export default function StartPage() {
 
   return (
     <div className="space-y-4">
-      <ProjectDashboard
-        query={query}
-        neededOnly={neededOnly}
-      />
-      <div className="sticky bottom-0 z-40">
+      <div className="sticky top-0 z-40" data-testid="project-control-bar">
         <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen">
           <div className="arc-panel arc-panel-bottomless arc-corners px-4 py-2 sm:px-6 [--arc-corner-offset:6px]">
             <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-3 px-4 sm:px-6 lg:px-8">
               <label className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
                 Project
-                <select
-                  value={selectedSlug ?? ""}
-                  onChange={(event) => setSelectedSlug(event.target.value)}
-                  aria-label="Project selection"
-                  data-testid="project-select"
-                  className="h-8 min-w-[180px] border border-frame bg-panel px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-text"
-                >
-                  {projects.map((project) => (
-                    <option key={project.slug} value={project.slug}>
-                      {project.name}
-                    </option>
-                  ))}
-                </select>
+                <span className="relative">
+                  <select
+                    value={selectedSlug ?? ""}
+                    onChange={(event) => setSelectedSlug(event.target.value)}
+                    aria-label="Project selection"
+                    data-testid="project-select"
+                    className="h-8 min-w-[180px] appearance-none border border-frame bg-panel px-2 pr-7 text-[11px] font-semibold uppercase tracking-[0.12em] text-text"
+                  >
+                    {projects.map((project) => (
+                      <option key={project.slug} value={project.slug}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted">
+                    <svg
+                      aria-hidden="true"
+                      className="h-3 w-3"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                    >
+                      <path
+                        d="M4 6l4 4 4-4"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="square"
+                      />
+                    </svg>
+                  </span>
+                </span>
               </label>
               <label className="relative">
                 <span className="sr-only">Quicksearch</span>
@@ -63,6 +76,10 @@ export default function StartPage() {
           </div>
         </div>
       </div>
+      <ProjectDashboard
+        query={query}
+        neededOnly={neededOnly}
+      />
     </div>
   );
 }

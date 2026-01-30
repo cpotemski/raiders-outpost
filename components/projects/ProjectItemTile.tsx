@@ -86,7 +86,7 @@ export function ProjectItemTile({
       data-quantity={item.quantityOwned}
       data-required={item.quantityRequired}
       className={cn(
-        "group relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-[8px] border bg-panel2/80 transition",
+        "group relative flex aspect-square w-full select-none items-center justify-center overflow-hidden rounded-[8px] border bg-panel2/80 transition",
         "hover:border-accent/70 hover:bg-panel2/90",
         isComplete ? "border-accent/80 shadow-arcHover" : "border-frame2"
       )}
@@ -120,13 +120,14 @@ export function ProjectItemTile({
         aria-hidden={!canDecrement}
         onPointerDown={(event) => {
           if (event.button !== 0) return;
+          event.preventDefault();
           startHold(-1);
         }}
         onPointerUp={clearHold}
         onPointerLeave={clearHold}
         onPointerCancel={clearHold}
         className={cn(
-          "absolute inset-y-0 left-0 z-20 flex w-1/2 items-center justify-start px-2 text-lg font-semibold uppercase tracking-[0.2em]",
+          "absolute inset-y-0 left-0 z-20 flex w-1/2 select-none items-center justify-start px-2 text-lg font-semibold uppercase tracking-[0.2em] touch-manipulation",
           canDecrement ? "text-muted/70 hover:text-text" : "text-muted/30"
         )}
       >
@@ -139,13 +140,14 @@ export function ProjectItemTile({
         aria-hidden={!canIncrement}
         onPointerDown={(event) => {
           if (event.button !== 0) return;
+          event.preventDefault();
           startHold(1);
         }}
         onPointerUp={clearHold}
         onPointerLeave={clearHold}
         onPointerCancel={clearHold}
         className={cn(
-          "absolute inset-y-0 right-0 z-20 flex w-1/2 items-center justify-end px-2 text-lg font-semibold uppercase tracking-[0.2em]",
+          "absolute inset-y-0 right-0 z-20 flex w-1/2 select-none items-center justify-end px-2 text-lg font-semibold uppercase tracking-[0.2em] touch-manipulation",
           canIncrement ? "text-muted/70 hover:text-text" : "text-muted/30"
         )}
       >
