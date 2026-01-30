@@ -1,6 +1,6 @@
-import { Panel } from "../../components/ui/Panel";
-import { CommunityRoster } from "../../components/community/CommunityRoster";
 import { Suspense } from "react";
+import { Panel } from "@/components/ui/Panel";
+import { CommunityRoster } from "@/components/community/CommunityRoster";
 
 export default function CommunityPage() {
   return (

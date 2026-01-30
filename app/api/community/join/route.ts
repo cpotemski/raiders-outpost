@@ -1,14 +1,12 @@
-import { prisma } from "../../../../lib/prisma";
-import { getCommunityForUser } from "../../../../lib/community";
+import { prisma } from "@/lib/prisma";
+import { findCommunityByInviteCode, getCommunityForUser } from "@/lib/server/community";
+import { getTokenFromRequest } from "@/lib/server/requests";
+import { getUserIdByToken } from "@/lib/server/users";
 
 export const runtime = "nodejs";
 
-const getToken = (request: Request) => {
-  return request.headers.get("x-arc-token")?.trim() ?? "";
-};
-
 export const POST = async (request: Request) => {
-  const token = getToken(request);
+  const token = getTokenFromRequest(request);
   if (!token) {
     return Response.json({ error: "Missing token" }, { status: 401 });
   }
@@ -20,10 +18,7 @@ export const POST = async (request: Request) => {
     return Response.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { token },
-    select: { id: true },
-  });
+  const user = await getUserIdByToken(token);
 
   if (!user) {
     return Response.json({ error: "Unknown token" }, { status: 404 });
@@ -40,10 +35,7 @@ export const POST = async (request: Request) => {
     );
   }
 
-  const community = await prisma.community.findUnique({
-    where: { inviteCode: code },
-    select: { id: true },
-  });
+  const community = await findCommunityByInviteCode(code);
 
   if (!community) {
     return Response.json({ error: "Unknown invite" }, { status: 404 });

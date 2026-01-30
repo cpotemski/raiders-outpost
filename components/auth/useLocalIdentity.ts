@@ -1,11 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-
-type Identity = {
-  name: string;
-  token: string;
-};
+import type { Identity } from "@/types/auth";
 
 const NAME_KEY = "arc:identity:name";
 const TOKEN_KEY = "arc:identity:token";
@@ -59,7 +55,8 @@ export function useLocalIdentity() {
     if (typeof window === "undefined") return null;
     const name = nameInput.trim();
     if (!name) return null;
-    const token = tokenInput?.trim() || localStorage.getItem(TOKEN_KEY) || generateToken();
+    const token =
+      tokenInput?.trim() || localStorage.getItem(TOKEN_KEY) || generateToken();
     localStorage.setItem(NAME_KEY, name);
     localStorage.setItem(TOKEN_KEY, token);
     window.dispatchEvent(new Event(UPDATE_EVENT));

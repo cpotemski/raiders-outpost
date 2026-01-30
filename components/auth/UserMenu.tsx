@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "../ui/Button";
-import { useLocalIdentity } from "./useLocalIdentity";
-import { cn } from "../../lib/cn";
+import { Button } from "@/components/ui/Button";
+import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
+import { cn } from "@/lib/cn";
 
 const copyTokenToClipboard = async (token: string) => {
   if (navigator?.clipboard?.writeText) {
@@ -103,7 +103,6 @@ export function UserMenu() {
         )}
       >
         <div>
-          {/* <div className="hud-label">Operator</div> */}
           <div className="text-xs font-semibold uppercase tracking-[0.12em]">
             {identity?.name ?? "No Signal"}
           </div>

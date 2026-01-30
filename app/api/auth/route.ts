@@ -1,4 +1,5 @@
-import { prisma } from "../../../lib/prisma";
+import { generateUserToken } from "@/lib/server/auth";
+import { getUserByToken, updateUserName, upsertUserWithToken } from "@/lib/server/users";
 
 export const runtime = "nodejs";
 
@@ -8,31 +9,12 @@ export const POST = async (request: Request) => {
   const token = typeof body?.token === "string" ? body.token.trim() : "";
   const create = body?.create === true;
 
-  const generateToken = () => {
-    if (globalThis.crypto && "randomUUID" in globalThis.crypto) {
-      return globalThis.crypto.randomUUID();
-    }
-    return `arc-${Math.random().toString(36).slice(2, 10)}-${Date.now()
-      .toString(36)
-      .slice(-6)}`;
-  };
-
   if (create) {
     if (!name) {
       return Response.json({ error: "Invalid payload" }, { status: 400 });
     }
-    const nextToken = token || generateToken();
-    const user = await prisma.user.upsert({
-      where: { token: nextToken },
-      update: { name },
-      create: { name, token: nextToken },
-      select: {
-        id: true,
-        name: true,
-        token: true,
-        createdAt: true,
-      },
-    });
+    const nextToken = token || generateUserToken();
+    const user = await upsertUserWithToken(name, nextToken);
     return Response.json({ user });
   }
 
@@ -40,31 +22,14 @@ export const POST = async (request: Request) => {
     return Response.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  let user = await prisma.user.findUnique({
-    where: { token },
-    select: {
-      id: true,
-      name: true,
-      token: true,
-      createdAt: true,
-    },
-  });
+  let user = await getUserByToken(token);
 
   if (!user) {
     return Response.json({ error: "Unknown token" }, { status: 404 });
   }
 
   if (name && name !== user.name) {
-    user = await prisma.user.update({
-      where: { token },
-      data: { name },
-      select: {
-        id: true,
-        name: true,
-        token: true,
-        createdAt: true,
-      },
-    });
+    user = await updateUserName(token, name);
   }
 
   return Response.json({ user });

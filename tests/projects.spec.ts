@@ -312,6 +312,31 @@ test("blueprint tiles show community ownership", async ({ page, browser }) => {
   await context.close();
 });
 
+test("blueprint tile suppresses context menu", async ({ page }) => {
+  await login(page);
+  await page.waitForResponse((response) => {
+    return (
+      response.url().includes("/api/blueprints") &&
+      response.request().method() === "GET" &&
+      response.ok()
+    );
+  });
+
+  const preventsDefault = await page.evaluate(() => {
+    const tile = document.querySelector<HTMLButtonElement>('button[title][aria-pressed]');
+    if (!tile) return false;
+    let prevented = false;
+    const handler = (event: Event) => {
+      prevented = event.defaultPrevented;
+    };
+    tile.addEventListener("contextmenu", handler, { once: true });
+    tile.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
+    return prevented;
+  });
+
+  expect(preventsDefault).toBe(true);
+});
+
 test("auth creates token in localStorage and shows in menu", async ({ page }) => {
   await login(page);
 

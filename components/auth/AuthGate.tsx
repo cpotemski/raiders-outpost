@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "../ui/Button";
-import { Input } from "../ui/Input";
-import { useLocalIdentity } from "./useLocalIdentity";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
 
 export function AuthGate() {
   const { identity, ready, saveIdentity } = useLocalIdentity();

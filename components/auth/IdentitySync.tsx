@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useLocalIdentity } from "./useLocalIdentity";
+import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
 
 export function IdentitySync() {
   const { identity, ready, clearIdentity, saveIdentity } = useLocalIdentity();

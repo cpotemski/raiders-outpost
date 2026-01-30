@@ -1,4 +1,4 @@
-import { prisma } from "../../../../../lib/prisma";
+import { redeemAuthCode } from "@/lib/server/auth-codes";
 
 export const runtime = "nodejs";
 
@@ -11,25 +11,11 @@ export const POST = async (request: Request) => {
     return Response.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const authCode = await prisma.authCode.findUnique({
-    where: { code },
-    include: {
-      user: {
-        select: { id: true, name: true, token: true, createdAt: true },
-      },
-    },
-  });
+  const result = await redeemAuthCode(code);
 
-  if (!authCode) {
-    return Response.json({ error: "Unknown code" }, { status: 404 });
+  if (result.status === 200) {
+    return Response.json({ user: result.user });
   }
 
-  if (authCode.expiresAt <= new Date()) {
-    await prisma.authCode.delete({ where: { id: authCode.id } });
-    return Response.json({ error: "Code expired" }, { status: 410 });
-  }
-
-  await prisma.authCode.delete({ where: { id: authCode.id } });
-
-  return Response.json({ user: authCode.user });
+  return Response.json({ error: result.error }, { status: result.status });
 };

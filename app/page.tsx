@@ -1,6 +1,6 @@
-import { Panel } from "../components/ui/Panel";
-import { BlueprintGrid } from "../components/blueprints/BlueprintGrid";
-import { loadArcItems } from "../lib/arc-items";
+import { Panel } from "@/components/ui/Panel";
+import { BlueprintGrid } from "@/components/blueprints/BlueprintGrid";
+import { loadArcItems } from "@/lib/arc-items";
 
 export default async function StartPage() {
   const payload = await loadArcItems();

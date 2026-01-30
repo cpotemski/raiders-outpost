@@ -1,5 +1,5 @@
-import { cn } from "../../lib/cn";
 import type { HTMLAttributes } from "react";
+import { cn } from "@/lib/cn";
 
 type ChipVariant = "neutral" | "accent" | "warn" | "good" | "bad";
 
