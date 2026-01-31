@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CommunityNeedsItem, CommunityNeedsMember } from "@/types/community";
 import { cn } from "@/lib/cn";
+import { CommunityNeedTile } from "@/components/community/CommunityNeedTile";
 
 type CommunityNeedsPanelProps = {
   members: CommunityNeedsMember[];
@@ -13,23 +14,13 @@ export function CommunityNeedsPanel({
   items,
   loading,
 }: CommunityNeedsPanelProps) {
-  const rarityColor = useMemo(
-    () =>
-      new Map<string, string>([
-        ["Common", "#6D6F78"],
-        ["Uncommon", "#5DBC63"],
-        ["Rare", "#4BA7EC"],
-        ["Epic", "#BD3F95"],
-        ["Legendary", "#F6C844"],
-      ]),
-    []
-  );
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(
     () => new Set(members.map((member) => member.id))
   );
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
     () => new Set()
   );
+  const [activeItemId, setActiveItemId] = useState<string | null>(null);
 
   useEffect(() => {
     setSelectedMembers(new Set(members.map((member) => member.id)));
@@ -96,6 +87,16 @@ export function CommunityNeedsPanel({
       return { type, items: sorted };
     });
   }, [items, selectedMembers]);
+
+  useEffect(() => {
+    if (!activeItemId) return;
+    const itemIds = new Set(
+      groupedItems.flatMap((group) => group.items.map((item) => item.itemId))
+    );
+    if (!itemIds.has(activeItemId)) {
+      setActiveItemId(null);
+    }
+  }, [activeItemId, groupedItems]);
 
   return (
     <div
@@ -168,40 +169,19 @@ export function CommunityNeedsPanel({
                   {!collapsedGroups.has(group.type) ? (
                     <div
                       id={`needs-group-${group.type}`}
-                      className="space-y-2"
+                      className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6"
                     >
                       {group.items.map((item) => (
-                        <div
+                        <CommunityNeedTile
                           key={item.itemId}
-                          data-item-id={item.itemId}
-                          data-total-needed={item.totalNeeded}
-                          className="border border-frame2/70 bg-panel2/60 px-3 py-2"
-                        >
-                          <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-                            <div className="flex items-center gap-3 text-[12px] font-semibold uppercase tracking-[0.14em] text-text">
-                              <span className="text-accent">
-                                {item.totalNeeded}x
-                              </span>
-                              <span
-                                className="truncate"
-                                style={{
-                                  color:
-                                    rarityColor.get(item.rarity) ??
-                                    "rgba(232, 224, 208, 0.7)",
-                                }}
-                              >
-                                {item.displayName}
-                              </span>
-                            </div>
-                            <div className="text-[10px] uppercase tracking-[0.14em] text-muted">
-                              {item.memberNeeds.map((member) => (
-                                <span key={member.memberId} className="mr-2">
-                                  {member.memberName} {member.needed}x
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
+                          item={item}
+                          active={activeItemId === item.itemId}
+                          onToggle={(itemId) =>
+                            setActiveItemId((prev) =>
+                              prev === itemId ? null : itemId
+                            )
+                          }
+                        />
                       ))}
                     </div>
                   ) : null}

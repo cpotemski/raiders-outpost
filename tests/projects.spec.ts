@@ -733,6 +733,13 @@ test("community needs overview aggregates and filters by member", async ({
   const totalBefore = Number(await targetRow.getAttribute("data-total-needed"));
   expect(totalBefore).toBeGreaterThan(0);
 
+  await firstRow.click();
+  const overlay = firstRow.getByTestId("community-need-overlay");
+  await expect(overlay).toBeVisible();
+  await overlay.screenshot({
+    path: "test-results/community-needs-overlay.png",
+  });
+
   const wardenToggle = panel.getByRole("button", { name: "Warden" });
   await expect(wardenToggle).toBeVisible();
   await wardenToggle.click();

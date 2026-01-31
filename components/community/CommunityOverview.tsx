@@ -31,20 +31,18 @@ export function CommunityOverview({
     <>
       <div className="mt-6">
         <div className="hud-label">Needs Overview</div>
-        <div className="mt-3">
-          <CommunityNeedsPanel
-            members={
-              needsPayload?.members ??
-              community.members.map((member) => ({
-                id: member.id,
-                name: member.name,
-                joinedAt: member.joinedAt,
-              }))
-            }
-            items={needsPayload?.items ?? []}
-            loading={needsLoading}
-          />
-        </div>
+        <CommunityNeedsPanel
+          members={
+            needsPayload?.members ??
+            community.members.map((member) => ({
+              id: member.id,
+              name: member.name,
+              joinedAt: member.joinedAt,
+            }))
+          }
+          items={needsPayload?.items ?? []}
+          loading={needsLoading}
+        />
       </div>
 
       <div className="mt-6">

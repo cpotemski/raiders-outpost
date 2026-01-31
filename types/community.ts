@@ -22,6 +22,7 @@ export type CommunityNeedsMember = {
 export type CommunityNeedsItem = {
   itemId: string;
   displayName: string;
+  imageFile?: string | null;
   itemType: string;
   rarity: string;
   totalNeeded: number;

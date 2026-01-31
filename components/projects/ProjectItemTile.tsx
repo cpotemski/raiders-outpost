@@ -1,8 +1,11 @@
 import { useEffect, useRef } from "react";
 import type { PointerEvent } from "react";
-import blueprintBg from "@/blueprint-bg.webp";
 import { cn } from "@/lib/cn";
 import type { ProjectItemProgress } from "@/types/projects";
+import {
+  getItemLabel,
+  getItemTileBackground,
+} from "@/components/projects/itemTileUtils";
 
 type ProjectItemTileProps = {
   item: ProjectItemProgress;
@@ -21,27 +24,11 @@ export function ProjectItemTile({
   onAdjust,
   stripBlueprintLabel,
 }: ProjectItemTileProps) {
-  const rawLabel = item.displayName || item.itemId;
-  const label = stripBlueprintLabel
-    ? rawLabel
-        .replace(/^\s*(blueprint|bauplan)\s*:\s*/i, "")
-        .replace(/\s*(blueprint|bauplan)\s*$/i, "")
-        .trim()
-    : rawLabel;
-  const rarityKey = (item.rarity || "unknown")
-    .toLowerCase()
-    .replace(/[^a-z]/g, "");
-  const rarityColor =
-    {
-      common: "var(--rarity-common)",
-      uncommon: "var(--rarity-uncommon)",
-      rare: "var(--rarity-rare)",
-      epic: "var(--rarity-epic)",
-      legendary: "var(--rarity-legendary)",
-    }[rarityKey] ?? null;
-  const isBlueprint =
-    item.itemType.toLowerCase() === "blueprint" ||
-    /_blueprint$/i.test(item.itemId);
+  const label = getItemLabel(
+    item.displayName,
+    item.itemId,
+    stripBlueprintLabel
+  );
   const isComplete =
     item.quantityRequired > 0 && item.quantityOwned >= item.quantityRequired;
   const expeditionMemberCount =
@@ -204,21 +191,11 @@ export function ProjectItemTile({
 
   const minusHandlers = createPressHandlers(-1, minusPress);
   const plusHandlers = createPressHandlers(1, plusPress);
-  const rarityTint = rarityColor
-    ? {
-        strong: `color-mix(in srgb, ${rarityColor} 55%, transparent)`,
-        mid: `color-mix(in srgb, ${rarityColor} 32%, transparent)`,
-        low: `color-mix(in srgb, ${rarityColor} 18%, transparent)`,
-      }
-    : null;
-  const itemBackground = isBlueprint
-    ? `url(${blueprintBg.src})`
-    : rarityTint
-      ? [
-          `radial-gradient(120% 120% at 20% 18%, ${rarityTint.strong} 0%, transparent 55%)`,
-          `linear-gradient(135deg, ${rarityTint.mid} 0%, ${rarityTint.low} 42%, rgba(7, 10, 16, 0.92) 100%)`,
-        ].join(", ")
-      : "linear-gradient(135deg, rgba(18, 24, 40, 0.75), rgba(7, 10, 16, 0.9))";
+  const { itemBackground } = getItemTileBackground({
+    itemId: item.itemId,
+    itemType: item.itemType,
+    rarity: item.rarity,
+  });
 
   return (
     <div

@@ -327,6 +327,7 @@ export const getProjectProgress = async (
 type CommunityNeedsItem = {
   itemId: string;
   displayName: string;
+  imageFile?: string | null;
   totalNeeded: number;
   memberNeeds: Array<{
     memberId: string;
@@ -353,7 +354,11 @@ export const getCommunityNeeds = async (
   const itemMetaById = new Map(
     arcItems.items.map((item) => [
       item.id ?? item.imageFile ?? "",
-      { itemType: item.itemType, rarity: item.rarity },
+      {
+        itemType: item.itemType,
+        rarity: item.rarity,
+        imageFile: item.imageFile,
+      },
     ])
   );
   const expeditionSlugs = new Set(
@@ -386,6 +391,7 @@ export const getCommunityNeeds = async (
           const meta = itemMetaById.get(item.itemId) ?? {
             itemType: "Unknown",
             rarity: "Unknown",
+            imageFile: null,
           };
           return {
             projectItemId,
@@ -396,6 +402,7 @@ export const getCommunityNeeds = async (
             quantityRequired: item.quantityRequired,
             itemType: meta.itemType,
             rarity: meta.rarity,
+            imageFile: meta.imageFile ?? null,
           };
         })
         .filter(
@@ -408,6 +415,7 @@ export const getCommunityNeeds = async (
             quantityRequired: number;
             itemType: string;
             rarity: string;
+            imageFile: string | null;
           } => Boolean(entry)
         )
     );
@@ -442,6 +450,7 @@ export const getCommunityNeeds = async (
       displayName: string;
       itemType: string;
       rarity: string;
+      imageFile: string | null;
       memberNeeds: Map<string, number>;
     }
   >();
@@ -465,6 +474,7 @@ export const getCommunityNeeds = async (
         displayName: item.displayName,
         itemType: item.itemType,
         rarity: item.rarity,
+        imageFile: item.imageFile ?? null,
         memberNeeds: new Map(),
       };
       entry.memberNeeds.set(
@@ -495,6 +505,7 @@ export const getCommunityNeeds = async (
         displayName: data.displayName,
         itemType: data.itemType,
         rarity: data.rarity,
+        imageFile: data.imageFile ?? null,
         totalNeeded,
         memberNeeds,
       };
