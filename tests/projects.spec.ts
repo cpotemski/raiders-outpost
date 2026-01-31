@@ -521,6 +521,17 @@ test("community needs overview aggregates and filters by member", async ({
     })
     .toBeLessThan(totalBefore);
 
+  const firstGroupToggle = panel.getByRole("button", { name: "Hide" }).first();
+  await expect(firstGroupToggle).toBeVisible();
+  await firstGroupToggle.click();
+  const showToggle = panel.getByRole("button", { name: "Show" }).first();
+  await expect(showToggle).toBeVisible();
+
+  const search = panel.getByPlaceholder("SEARCH...");
+  await expect(search).toBeVisible();
+  await search.fill("zzzzzz");
+  await expect(panel.locator("[data-item-id]")).toHaveCount(0);
+
   await context.close();
 });
 

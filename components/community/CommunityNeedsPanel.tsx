@@ -27,6 +27,10 @@ export function CommunityNeedsPanel({
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(
     () => new Set(members.map((member) => member.id))
   );
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+    () => new Set()
+  );
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     setSelectedMembers(new Set(members.map((member) => member.id)));
@@ -53,6 +57,7 @@ export function CommunityNeedsPanel({
       ["Common", 4],
       ["Unknown", 5],
     ]);
+    const search = query.trim().toLowerCase();
     const filtered = items
       .map((item) => {
         const memberNeeds = item.memberNeeds.filter((member) =>
@@ -68,7 +73,14 @@ export function CommunityNeedsPanel({
           totalNeeded,
         };
       })
-      .filter((item) => item.totalNeeded > 0);
+      .filter((item) => item.totalNeeded > 0)
+      .filter((item) => {
+        if (!search) return true;
+        return (
+          item.displayName.toLowerCase().includes(search) ||
+          item.itemId.toLowerCase().includes(search)
+        );
+      });
 
     const groups = new Map<string, typeof filtered>();
     for (const item of filtered) {
@@ -91,7 +103,7 @@ export function CommunityNeedsPanel({
       });
       return { type, items: sorted };
     });
-  }, [items, selectedMembers]);
+  }, [items, query, selectedMembers]);
 
   return (
     <div
@@ -135,7 +147,16 @@ export function CommunityNeedsPanel({
         </div>
 
         <div className="mt-5 border-t border-frame2 pt-4">
-          <div className="hud-label">Needs List</div>
+          <div className="mt-3">
+            <input
+              id="community-needs-search"
+              name="community-needs-search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="SEARCH..."
+              className="mt-2 h-8 w-full border-b border-frame2 bg-transparent px-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-text placeholder:text-muted/70 focus:border-accent/60 focus:outline-none"
+            />
+          </div>
           {loading ? (
             <div className="mt-3 text-[11px] uppercase tracking-[0.12em] text-muted">
               Scanning cache...
@@ -144,44 +165,73 @@ export function CommunityNeedsPanel({
             <div className="mt-3 space-y-4">
               {groupedItems.map((group) => (
                 <div key={group.type} className="space-y-2">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-                    {group.type}
+                  <div className="flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+                    <span>{group.type}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCollapsedGroups((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(group.type)) {
+                            next.delete(group.type);
+                          } else {
+                            next.add(group.type);
+                          }
+                          return next;
+                        })
+                      }
+                      className={cn(
+                        "h-6 border px-2 text-[9px] uppercase tracking-[0.16em]",
+                        collapsedGroups.has(group.type)
+                          ? "border-frame2 text-muted hover:border-accent/60"
+                          : "border-accent/70 text-text"
+                      )}
+                      aria-expanded={!collapsedGroups.has(group.type)}
+                      aria-controls={`needs-group-${group.type}`}
+                    >
+                      {collapsedGroups.has(group.type) ? "Show" : "Hide"}
+                    </button>
                   </div>
-                  <div className="space-y-2">
-                    {group.items.map((item) => (
-                      <div
-                        key={item.itemId}
-                        data-item-id={item.itemId}
-                        data-total-needed={item.totalNeeded}
-                        className="border border-frame2/70 bg-panel2/60 px-3 py-2"
-                      >
-                        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-                          <div className="flex items-center gap-3 text-[12px] font-semibold uppercase tracking-[0.14em] text-text">
-                            <span className="text-accent">
-                              {item.totalNeeded}x
-                            </span>
-                            <span
-                              className="truncate"
-                              style={{
-                                color:
-                                  rarityColor.get(item.rarity) ??
-                                  "rgba(232, 224, 208, 0.7)",
-                              }}
-                            >
-                              {item.displayName}
-                            </span>
-                          </div>
-                          <div className="text-[10px] uppercase tracking-[0.14em] text-muted">
-                            {item.memberNeeds.map((member) => (
-                              <span key={member.memberId} className="mr-2">
-                                {member.memberName} {member.needed}x
+                  {!collapsedGroups.has(group.type) ? (
+                    <div
+                      id={`needs-group-${group.type}`}
+                      className="space-y-2"
+                    >
+                      {group.items.map((item) => (
+                        <div
+                          key={item.itemId}
+                          data-item-id={item.itemId}
+                          data-total-needed={item.totalNeeded}
+                          className="border border-frame2/70 bg-panel2/60 px-3 py-2"
+                        >
+                          <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+                            <div className="flex items-center gap-3 text-[12px] font-semibold uppercase tracking-[0.14em] text-text">
+                              <span className="text-accent">
+                                {item.totalNeeded}x
                               </span>
-                            ))}
+                              <span
+                                className="truncate"
+                                style={{
+                                  color:
+                                    rarityColor.get(item.rarity) ??
+                                    "rgba(232, 224, 208, 0.7)",
+                                }}
+                              >
+                                {item.displayName}
+                              </span>
+                            </div>
+                            <div className="text-[10px] uppercase tracking-[0.14em] text-muted">
+                              {item.memberNeeds.map((member) => (
+                                <span key={member.memberId} className="mr-2">
+                                  {member.memberName} {member.needed}x
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>

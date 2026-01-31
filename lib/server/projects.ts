@@ -336,6 +336,8 @@ export const getCommunityNeeds = async (
             itemId: string;
             displayName: string;
             quantityRequired: number;
+            itemType: string;
+            rarity: string;
           } => Boolean(entry)
         )
     );
