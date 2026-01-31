@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import type { PointerEvent } from "react";
 import blueprintBg from "@/blueprint-bg.webp";
 import { cn } from "@/lib/cn";
 import type { ProjectItemProgress } from "@/types/projects";
@@ -38,15 +39,40 @@ export function ProjectItemTile({
   const canDecrement = canAdjust && item.quantityOwned > 0;
   const canIncrement =
     canAdjust && item.quantityOwned < item.quantityRequired;
-  const canRepeat = item.quantityRequired >= 10;
-  const repeatStep = canRepeat ? 10 : 1;
+  const repeatStep = Math.max(1, Math.floor(item.quantityRequired * 0.1));
   const quantityRef = useRef(item.quantityOwned);
   const holdTimeout = useRef<number | null>(null);
   const holdInterval = useRef<number | null>(null);
+  const minusPress = useRef({
+    pointerId: null as number | null,
+    startX: 0,
+    startY: 0,
+    holdStarted: false,
+    pressTimeout: null as number | null,
+  });
+  const plusPress = useRef({
+    pointerId: null as number | null,
+    startX: 0,
+    startY: 0,
+    holdStarted: false,
+    pressTimeout: null as number | null,
+  });
 
   useEffect(() => {
     quantityRef.current = item.quantityOwned;
   }, [item.quantityOwned]);
+
+  useEffect(() => {
+    return () => {
+      clearHold();
+      if (minusPress.current.pressTimeout) {
+        window.clearTimeout(minusPress.current.pressTimeout);
+      }
+      if (plusPress.current.pressTimeout) {
+        window.clearTimeout(plusPress.current.pressTimeout);
+      }
+    };
+  }, []);
 
   const clearHold = () => {
     if (holdTimeout.current) {
@@ -70,18 +96,92 @@ export function ProjectItemTile({
     onAdjust(item.projectItemId, next);
   };
 
-  const startHold = (delta: number) => {
+  const startHold = (delta: number, initialDelta = delta) => {
     if (delta < 0 && !canDecrement) return;
     if (delta > 0 && !canIncrement) return;
-    applyDelta(delta);
-    if (!canRepeat) return;
+    applyDelta(initialDelta);
     clearHold();
     holdTimeout.current = window.setTimeout(() => {
       holdInterval.current = window.setInterval(() => {
         applyDelta(delta < 0 ? -repeatStep : repeatStep);
-      }, 120);
+      }, 240);
     }, 360);
   };
+
+  const pressDelayMs = 140;
+  const moveThreshold = 8;
+
+  const createPressHandlers = (
+    delta: number,
+    pressRef: typeof minusPress
+  ) => {
+    const resetPressState = () => {
+      if (pressRef.current.pressTimeout) {
+        window.clearTimeout(pressRef.current.pressTimeout);
+      }
+      pressRef.current.pressTimeout = null;
+      pressRef.current.pointerId = null;
+      pressRef.current.holdStarted = false;
+    };
+
+    const cancelPress = () => {
+      resetPressState();
+      clearHold();
+    };
+
+    return {
+      onPointerDown: (event: PointerEvent<HTMLButtonElement>) => {
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+        if (event.pointerType === "mouse") {
+          event.preventDefault();
+          startHold(delta);
+          return;
+        }
+
+        pressRef.current.pointerId = event.pointerId;
+        pressRef.current.startX = event.clientX;
+        pressRef.current.startY = event.clientY;
+        pressRef.current.holdStarted = false;
+        if (pressRef.current.pressTimeout) {
+          window.clearTimeout(pressRef.current.pressTimeout);
+        }
+        pressRef.current.pressTimeout = window.setTimeout(() => {
+          pressRef.current.holdStarted = true;
+          startHold(delta, delta < 0 ? -repeatStep : repeatStep);
+        }, pressDelayMs);
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+      },
+      onPointerMove: (event: PointerEvent<HTMLButtonElement>) => {
+        if (pressRef.current.pointerId !== event.pointerId) return;
+        const dx = event.clientX - pressRef.current.startX;
+        const dy = event.clientY - pressRef.current.startY;
+        if (Math.hypot(dx, dy) > moveThreshold) {
+          cancelPress();
+        }
+      },
+      onPointerUp: (event: PointerEvent<HTMLButtonElement>) => {
+        if (pressRef.current.pointerId !== event.pointerId) {
+          clearHold();
+          return;
+        }
+
+        if (pressRef.current.pressTimeout) {
+          window.clearTimeout(pressRef.current.pressTimeout);
+          pressRef.current.pressTimeout = null;
+          if (!pressRef.current.holdStarted) {
+            applyDelta(delta);
+          }
+        }
+        resetPressState();
+        clearHold();
+      },
+      onPointerLeave: cancelPress,
+      onPointerCancel: cancelPress,
+    };
+  };
+
+  const minusHandlers = createPressHandlers(-1, minusPress);
+  const plusHandlers = createPressHandlers(1, plusPress);
 
   return (
     <div
@@ -121,13 +221,8 @@ export function ProjectItemTile({
         data-testid="qty-minus"
         aria-label={`Decrease ${label}`}
         aria-hidden={!canDecrement}
-        onPointerDown={(event) => {
-          if (event.pointerType === "mouse" && event.button !== 0) return;
-          if (event.pointerType === "mouse") {
-            event.preventDefault();
-          }
-          startHold(-1);
-        }}
+        onPointerDown={minusHandlers.onPointerDown}
+        onPointerMove={minusHandlers.onPointerMove}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
@@ -135,9 +230,9 @@ export function ProjectItemTile({
           }
         }}
         onContextMenu={(event) => event.preventDefault()}
-        onPointerUp={clearHold}
-        onPointerLeave={clearHold}
-        onPointerCancel={clearHold}
+        onPointerUp={minusHandlers.onPointerUp}
+        onPointerLeave={minusHandlers.onPointerLeave}
+        onPointerCancel={minusHandlers.onPointerCancel}
         className={cn(
           "absolute inset-y-0 left-0 z-20 flex w-1/2 select-none items-center justify-start px-2 text-lg font-semibold uppercase tracking-[0.2em] touch-manipulation [-webkit-touch-callout:none]",
           canDecrement ? "text-muted/70 hover:text-text" : "text-muted/30"
@@ -150,13 +245,8 @@ export function ProjectItemTile({
         data-testid="qty-plus"
         aria-label={`Increase ${label}`}
         aria-hidden={!canIncrement}
-        onPointerDown={(event) => {
-          if (event.pointerType === "mouse" && event.button !== 0) return;
-          if (event.pointerType === "mouse") {
-            event.preventDefault();
-          }
-          startHold(1);
-        }}
+        onPointerDown={plusHandlers.onPointerDown}
+        onPointerMove={plusHandlers.onPointerMove}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
@@ -164,9 +254,9 @@ export function ProjectItemTile({
           }
         }}
         onContextMenu={(event) => event.preventDefault()}
-        onPointerUp={clearHold}
-        onPointerLeave={clearHold}
-        onPointerCancel={clearHold}
+        onPointerUp={plusHandlers.onPointerUp}
+        onPointerLeave={plusHandlers.onPointerLeave}
+        onPointerCancel={plusHandlers.onPointerCancel}
         className={cn(
           "absolute inset-y-0 right-0 z-20 flex w-1/2 select-none items-center justify-end px-2 text-lg font-semibold uppercase tracking-[0.2em] touch-manipulation [-webkit-touch-callout:none]",
           canIncrement ? "text-muted/70 hover:text-text" : "text-muted/30"

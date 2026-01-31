@@ -131,6 +131,61 @@ test("plus button increments by one per click", async ({ page }) => {
     .toBe(before + 1);
 });
 
+test("touch scroll over plus does not change quantity", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await login(page);
+
+  const tile = page
+    .locator("[data-item-id]")
+    .filter({
+      has: page.locator(
+        '[data-testid="qty-plus"][aria-hidden="false"]'
+      ),
+    })
+    .first();
+  await expect(tile).toBeVisible();
+  const increaseButton = tile.getByTestId("qty-plus");
+  const before = await getTileQuantity(tile);
+  const box = await increaseButton.boundingBox();
+  expect(box).toBeTruthy();
+  if (!box) return;
+  const startX = box.x + box.width / 2;
+  const startY = box.y + box.height / 2;
+
+  await increaseButton.dispatchEvent("pointerdown", {
+    pointerId: 1,
+    pointerType: "touch",
+    isPrimary: true,
+    buttons: 1,
+    clientX: startX,
+    clientY: startY,
+  });
+  await increaseButton.dispatchEvent("pointermove", {
+    pointerId: 1,
+    pointerType: "touch",
+    isPrimary: true,
+    buttons: 1,
+    clientX: startX,
+    clientY: startY + 32,
+  });
+  await increaseButton.dispatchEvent("pointerup", {
+    pointerId: 1,
+    pointerType: "touch",
+    isPrimary: true,
+    buttons: 0,
+    clientX: startX,
+    clientY: startY + 32,
+  });
+
+  await page.waitForTimeout(200);
+  await expect
+    .poll(async () => getTileQuantity(tile))
+    .toBe(before);
+  await tile.screenshot({
+    path: "test-results/mobile-qty-touch-scroll.png",
+  });
+});
+
 test("project tile images scale to fill on desktop", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await login(page);
