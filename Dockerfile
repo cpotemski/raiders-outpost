@@ -8,6 +8,9 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 FROM deps AS builder
+# Accept DATABASE_URL at build time for Prisma generate
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
 COPY . .
 RUN npx prisma generate
 RUN npm run build
