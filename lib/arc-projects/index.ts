@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { unstable_cache } from "next/cache";
 import { loadArcItems } from "@/lib/arc-items";
+import type { AppLocale } from "@/lib/locale";
 
 export type ArcProjectItem = {
   itemId: string;
@@ -35,6 +36,10 @@ const DATA_PATH = path.join(
   process.cwd(),
   "node_modules/arcraiders-data/projects.json"
 );
+const HIDEOUT_DIR = path.join(
+  process.cwd(),
+  "node_modules/arcraiders-data/hideout"
+);
 
 type ArcProjectSource = {
   id: string;
@@ -47,8 +52,29 @@ type ArcProjectSource = {
   }[];
 };
 
-const buildBlueprintFallback = async (): Promise<ArcProject> => {
-  const items = await loadArcItems();
+type ArcHideoutSource = {
+  id: string;
+  name?: Record<string, string>;
+  maxLevel?: number;
+  levels?: {
+    level?: number;
+    requirementItemIds?: { itemId: string; quantity: number }[];
+  }[];
+};
+
+const resolveName = (
+  name: Record<string, string> | undefined,
+  locale: AppLocale,
+  fallback: string
+) => {
+  if (!name) return fallback;
+  return name[locale] ?? name.en ?? name.de ?? fallback;
+};
+
+const buildBlueprintFallback = async (
+  locale: AppLocale
+): Promise<ArcProject> => {
+  const items = await loadArcItems(locale);
   const blueprints = items.items
     .filter((item) => item.itemType === "Blueprint")
     .map((item) => ({
@@ -60,7 +86,7 @@ const buildBlueprintFallback = async (): Promise<ArcProject> => {
 
   return {
     slug: "blueprints",
-    name: "Blueprint Cache",
+    name: locale === "de" ? "Blueprint-Cache" : "Blueprint Cache",
     kind: "blueprints",
     repeatable: false,
     timeLimitedUntil: null,
@@ -75,16 +101,59 @@ const buildBlueprintFallback = async (): Promise<ArcProject> => {
   };
 };
 
+const resolveHideoutStageName = (locale: AppLocale, level: number) => {
+  const label = String(level).padStart(2, "0");
+  return locale === "de" ? `Stufe ${label}` : `Level ${label}`;
+};
+
+const mapHideoutProject = (
+  entry: ArcHideoutSource,
+  itemNameMap: Map<string, string>,
+  locale: AppLocale
+): ArcProject => {
+  const stages =
+    entry.levels?.map((level) => {
+      const sortOrder = Number(level.level ?? 0);
+      return {
+        stageKey: `level-${sortOrder || 0}`,
+        name: resolveHideoutStageName(locale, sortOrder || 0),
+        sortOrder,
+        items:
+          level.requirementItemIds?.map((item) => ({
+            itemId: item.itemId,
+            displayName:
+              itemNameMap.get(item.itemId) ?? item.itemId ?? "Unknown",
+            quantityRequired: Number(item.quantity ?? 0),
+          })) ?? [],
+      };
+    }) ?? [];
+
+  return {
+    slug: entry.id,
+    name: resolveName(entry.name, locale, entry.id),
+    kind: "project",
+    repeatable: false,
+    timeLimitedUntil: null,
+    stages,
+  };
+};
+
 const mapProject = (
   project: ArcProjectSource,
-  itemNameMap: Map<string, string>
+  itemNameMap: Map<string, string>,
+  locale: AppLocale
 ): ArcProject => {
   const stages =
     project.phases?.map((phase) => {
       const sortOrder = Number(phase.phase ?? 0);
       return {
         stageKey: `phase-${sortOrder || 0}`,
-        name: phase.name?.en ?? `Phase ${String(sortOrder).padStart(2, "0")}`,
+        name:
+          resolveName(
+            phase.name,
+            locale,
+            `Phase ${String(sortOrder).padStart(2, "0")}`
+          ),
         sortOrder,
         items:
           phase.requirementItemIds?.map((item) => ({
@@ -98,7 +167,7 @@ const mapProject = (
 
   return {
     slug: project.id,
-    name: project.name?.en ?? project.id,
+    name: resolveName(project.name, locale, project.id),
     kind: "project",
     repeatable: false,
     timeLimitedUntil: null,
@@ -106,11 +175,12 @@ const mapProject = (
   };
 };
 
-const readArcProjects = unstable_cache(
-  async (): Promise<ArcProjectPayload> => {
+const readArcProjects = (locale: AppLocale) =>
+  unstable_cache(
+    async (): Promise<ArcProjectPayload> => {
     const raw = await fs.readFile(DATA_PATH, "utf-8");
     const source = JSON.parse(raw) as ArcProjectSource[];
-    const items = await loadArcItems();
+    const items = await loadArcItems(locale);
     const itemNameMap = new Map<string, string>();
     for (const item of items.items) {
       const key = item.id ?? item.imageFile;
@@ -119,21 +189,41 @@ const readArcProjects = unstable_cache(
       }
     }
 
+    const hideoutFiles = await fs.readdir(HIDEOUT_DIR).catch(() => []);
+    const hideoutEntries = await Promise.all(
+      hideoutFiles
+        .filter((file) => file.endsWith(".json"))
+        .map(async (file) => {
+          const rawHideout = await fs.readFile(
+            path.join(HIDEOUT_DIR, file),
+            "utf-8"
+          );
+          return JSON.parse(rawHideout) as ArcHideoutSource;
+        })
+    );
+
     const projects = source
       .filter((project) => !project.disabled)
-      .map((project) => mapProject(project, itemNameMap))
+      .map((project) => mapProject(project, itemNameMap, locale))
+      .concat(
+        hideoutEntries.map((entry) =>
+          mapHideoutProject(entry, itemNameMap, locale)
+        )
+      )
       .sort((a, b) => a.name.localeCompare(b.name));
 
     return {
       scrapedAt: new Date().toISOString(),
       sourceUrl: "raidtheory/arcraiders-data",
-      projects: [...projects, await buildBlueprintFallback()],
+      projects: [...projects, await buildBlueprintFallback(locale)],
     };
-  },
-  ["arc-projects"],
-  { revalidate: 3600 }
-);
+    },
+    ["arc-projects", locale],
+    { revalidate: 3600 }
+  );
 
-export const loadArcProjects = async (): Promise<ArcProjectPayload> => {
-  return readArcProjects();
+export const loadArcProjects = async (
+  locale: AppLocale = "en"
+): Promise<ArcProjectPayload> => {
+  return readArcProjects(locale)();
 };

@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { unstable_cache } from "next/cache";
+import type { AppLocale } from "@/lib/locale";
 
 export type ArcItem = {
   id?: string;
@@ -34,6 +35,15 @@ type ArcItemSource = {
   updatedAt?: string;
 };
 
+const resolveName = (
+  name: Record<string, string> | undefined,
+  locale: AppLocale,
+  fallback: string
+) => {
+  if (!name) return fallback;
+  return name[locale] ?? name.en ?? name.de ?? name.fr ?? fallback;
+};
+
 const parseUpdatedAt = (value?: string) => {
   if (!value) return null;
   const parts = value.split("/");
@@ -43,8 +53,9 @@ const parseUpdatedAt = (value?: string) => {
   return new Date(Date.UTC(year, month - 1, day));
 };
 
-const readArcItems = unstable_cache(
-  async (): Promise<ArcItemPayload> => {
+const readArcItems = (locale: AppLocale) =>
+  unstable_cache(
+    async (): Promise<ArcItemPayload> => {
     const [itemFiles, imageFiles] = await Promise.all([
       fs.readdir(DATA_DIR),
       fs.readdir(IMAGE_DIR).catch(() => [] as string[]),
@@ -69,7 +80,7 @@ const readArcItems = unstable_cache(
               : null;
           return {
             id,
-            name: item.name?.en ?? item.name?.de ?? item.name?.fr ?? id,
+            name: resolveName(item.name, locale, id),
             rarity: item.rarity ?? "Unknown",
             itemType: item.type ?? "Unknown",
             imageFile,
@@ -90,11 +101,13 @@ const readArcItems = unstable_cache(
         .map(({ updatedAt, ...rest }) => rest)
         .sort((a, b) => a.name.localeCompare(b.name)),
     };
-  },
-  ["arc-items"],
-  { revalidate: 3600 }
-);
+    },
+    ["arc-items", locale],
+    { revalidate: 3600 }
+  );
 
-export const loadArcItems = async (): Promise<ArcItemPayload> => {
-  return readArcItems();
+export const loadArcItems = async (
+  locale: AppLocale = "en"
+): Promise<ArcItemPayload> => {
+  return readArcItems(locale)();
 };

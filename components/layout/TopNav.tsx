@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { UserMenu } from "@/components/auth/UserMenu";
+import { useLocale } from "@/components/locale/LocaleProvider";
 
 const tabs = [
   { href: "/", label: "Projects" },
@@ -12,6 +13,7 @@ const tabs = [
 
 export function TopNav() {
   const pathname = usePathname();
+  const { locale, setLocale } = useLocale();
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname?.startsWith(href);
@@ -45,6 +47,30 @@ export function TopNav() {
               {tab.label}
             </Link>
           ))}
+          <div
+            className="flex border border-frame2"
+            data-testid="language-switch"
+          >
+            {(["de", "en"] as const).map((option, index) => {
+              const active = locale === option;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  aria-pressed={active}
+                  data-testid={`language-option-${option}`}
+                  onClick={() => setLocale(option)}
+                  className={cn(
+                    "h-8 px-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
+                    index > 0 && "border-l border-frame2",
+                    active ? "bg-panel/60 text-text" : "text-muted hover:text-text"
+                  )}
+                >
+                  {option}
+                </button>
+              );
+            })}
+          </div>
           <UserMenu />
         </div>
       </div>

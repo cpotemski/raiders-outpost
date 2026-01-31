@@ -20,7 +20,10 @@ export function ProjectItemTile({
 }: ProjectItemTileProps) {
   const rawLabel = item.displayName || item.itemId;
   const label = stripBlueprintLabel
-    ? rawLabel.replace(/\s*blueprint$/i, "")
+    ? rawLabel
+        .replace(/^\s*(blueprint|bauplan)\s*:\s*/i, "")
+        .replace(/\s*(blueprint|bauplan)\s*$/i, "")
+        .trim()
     : rawLabel;
   const isComplete =
     item.quantityRequired > 0 && item.quantityOwned >= item.quantityRequired;

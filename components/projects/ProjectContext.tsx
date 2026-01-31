@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useProjectProgress } from "@/hooks/useProjectProgress";
+import { useLocale } from "@/components/locale/LocaleProvider";
 import type { ProjectProgress } from "@/types/projects";
 
 type ProjectContextValue = {
@@ -18,13 +19,14 @@ type ProjectContextValue = {
 const ProjectContext = createContext<ProjectContextValue | null>(null);
 
 export function ProjectProvider({ children }: { children: React.ReactNode }) {
+  const { locale, ready: localeReady } = useLocale();
   const {
     loading,
     projects,
     memberCount,
     communityCountsByItemId,
     updateItemQuantity,
-  } = useProjectProgress();
+  } = useProjectProgress(locale, localeReady);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
 
   useEffect(() => {

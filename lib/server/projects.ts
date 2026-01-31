@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { loadArcProjects } from "@/lib/arc-projects";
 import { loadArcItems } from "@/lib/arc-items";
 import { getCommunityForUser } from "@/lib/server/community";
+import type { AppLocale } from "@/lib/locale";
 
 type ProjectWithStages = Prisma.ProjectGetPayload<{
   include: { stages: { include: { items: true } } };
@@ -17,12 +18,10 @@ const buildPayloadSignature = (
   const entries: string[] = [];
 
   for (const project of payload.projects) {
-    entries.push(
-      `project:${project.slug}:${project.name}:${project.stages.length}`
-    );
+    entries.push(`project:${project.slug}:${project.stages.length}`);
     for (const stage of project.stages) {
       entries.push(
-        `stage:${project.slug}:${stage.sortOrder}:${stage.name}:${stage.items.length}`
+        `stage:${project.slug}:${stage.sortOrder}:${stage.items.length}`
       );
       if (stage.items.length === 0) {
         entries.push(`stage-empty:${project.slug}:${stage.sortOrder}`);
@@ -42,12 +41,10 @@ const buildDbSignature = (projects: ProjectWithStages[]) => {
   const entries: string[] = [];
 
   for (const project of projects) {
-    entries.push(
-      `project:${project.slug}:${project.name}:${project.stages.length}`
-    );
+    entries.push(`project:${project.slug}:${project.stages.length}`);
     for (const stage of project.stages) {
       entries.push(
-        `stage:${project.slug}:${stage.sortOrder}:${stage.name}:${stage.items.length}`
+        `stage:${project.slug}:${stage.sortOrder}:${stage.items.length}`
       );
       if (stage.items.length === 0) {
         entries.push(`stage-empty:${project.slug}:${stage.sortOrder}`);
@@ -152,19 +149,18 @@ const ensureProjects = async (
   return projectsSeedPromise;
 };
 
-export const getProjectProgress = async (userId: string) => {
-  const projectsPayload = await loadArcProjects();
+export const getProjectProgress = async (
+  userId: string,
+  locale: AppLocale
+) => {
+  const projectsPayload = await loadArcProjects(locale);
   const [arcItems, projectRecords] = await Promise.all([
-    loadArcItems(),
+    loadArcItems(locale),
     ensureProjects(projectsPayload),
   ]);
 
   const imageById = new Map(
     arcItems.items.map((item) => [item.id ?? item.imageFile, item.imageFile])
-  );
-
-  const projectBySlug = new Map(
-    projectRecords.map((project) => [project.slug, project])
   );
 
   const projectItemIds: string[] = [];
@@ -237,18 +233,13 @@ export const getProjectProgress = async (userId: string) => {
 
   const projects = projectsPayload.projects.map((project) => {
     const stageIdMap = projectItemIdByStage.get(project.slug) ?? new Map();
-    const projectRecord = projectBySlug.get(project.slug);
-    const stageBySort = new Map(
-      projectRecord?.stages.map((stage) => [stage.sortOrder, stage]) ?? []
-    );
 
     return {
       ...project,
       stages: project.stages.map((stage) => {
-        const stageRecord = stageBySort.get(stage.sortOrder);
         return {
           ...stage,
-          name: stageRecord?.name ?? stage.name,
+          name: stage.name,
           items: stage.items.map((item) => {
             const projectItemId =
               stageIdMap.get(`${stage.sortOrder}::${item.itemId}`) ?? "";

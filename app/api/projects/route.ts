@@ -1,6 +1,7 @@
 import { getProjectProgress, updateProjectItems } from "@/lib/server/projects";
 import { getTokenFromRequest } from "@/lib/server/requests";
 import { getUserIdByToken } from "@/lib/server/users";
+import { normalizeLocale } from "@/lib/locale";
 
 export const runtime = "nodejs";
 
@@ -16,7 +17,9 @@ export const GET = async (request: Request) => {
     return Response.json({ error: "Unknown token" }, { status: 404 });
   }
 
-  const payload = await getProjectProgress(user.id);
+  const url = new URL(request.url);
+  const locale = normalizeLocale(url.searchParams.get("locale"));
+  const payload = await getProjectProgress(user.id, locale);
 
   return Response.json(payload);
 };

@@ -279,6 +279,19 @@ test("project selector switches active project", async ({ page }) => {
   await expect(page.getByText("Foundation")).toBeVisible();
 });
 
+test("hideout benches appear in project list", async ({ page }) => {
+  await login(page);
+  const select = page.getByTestId("project-select");
+  await select.selectOption("weapon_bench");
+  await expect(select).toHaveValue("weapon_bench");
+  await expect(page.getByRole("heading", { name: "Gunsmith" })).toBeVisible();
+  await expect(page.getByText("Level 01")).toBeVisible();
+  await expect(page.locator('[data-item-id="metal_parts"]')).toBeVisible();
+  await page.getByRole("main").screenshot({
+    path: "test-results/hideout-weapon-bench.png",
+  });
+});
+
 test("search filters project items", async ({ page }) => {
   await login(page);
   await page.getByTestId("project-select").selectOption("expedition_project");
@@ -638,4 +651,30 @@ test("defaults to blueprints project on load", async ({ page }) => {
   const select = page.getByTestId("project-select");
   await expect(select).toBeVisible();
   await expect(select).toHaveValue("blueprints");
+});
+
+test("language switch toggles localized project and item names", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ locale: "de-DE" });
+  const page = await context.newPage();
+
+  await login(page, "Vanguard");
+
+  const select = page.getByTestId("project-select");
+  await expect(select).toBeVisible();
+  await expect(select).toContainText("Expeditionsprojekt");
+  await page.getByRole("main").screenshot({
+    path: "test-results/language-switch-de.png",
+  });
+
+  await select.selectOption("expedition_project");
+  const batteryTile = page.locator('[data-item-id="battery"]');
+  await expect(batteryTile).toContainText("Akku");
+
+  await page.getByTestId("language-option-en").click();
+  await expect(select).toContainText("Expedition Project");
+  await expect(batteryTile).toContainText("Battery");
+
+  await context.close();
 });

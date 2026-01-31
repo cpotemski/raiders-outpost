@@ -3,13 +3,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
 import type { ProjectProgressPayload } from "@/types/projects";
+import type { AppLocale } from "@/lib/locale";
 
 const getIdentityHeaders = (token: string, name: string) => ({
   "x-arc-token": token,
   "x-arc-name": name,
 });
 
-export const useProjectProgress = () => {
+export const useProjectProgress = (
+  locale: AppLocale,
+  localeReady: boolean
+) => {
   const { identity, ready, clearIdentity } = useLocalIdentity();
   const [payload, setPayload] = useState<ProjectProgressPayload | null>(null);
   const [loading, setLoading] = useState(false);
@@ -17,11 +21,11 @@ export const useProjectProgress = () => {
   const flushTimeout = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!ready || !identity) return;
+    if (!ready || !identity || !localeReady) return;
     const controller = new AbortController();
     setLoading(true);
 
-    fetch("/api/projects", {
+    fetch(`/api/projects?locale=${locale}`, {
       method: "GET",
       headers: getIdentityHeaders(identity.token, identity.name),
       signal: controller.signal,
@@ -41,7 +45,7 @@ export const useProjectProgress = () => {
       .finally(() => setLoading(false));
 
     return () => controller.abort();
-  }, [clearIdentity, identity, ready]);
+  }, [clearIdentity, identity, locale, localeReady, ready]);
 
   const flushUpdates = useCallback(() => {
     if (!identity) return;

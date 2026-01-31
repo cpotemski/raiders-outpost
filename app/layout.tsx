@@ -7,6 +7,7 @@ import { cn } from "@/lib/cn";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { IdentitySync } from "@/components/auth/IdentitySync";
 import { ProjectProvider } from "@/components/projects/ProjectContext";
+import { LocaleProvider } from "@/components/locale/LocaleProvider";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -82,7 +83,7 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="de">
+    <html lang="en">
       <body
         className={cn(
           "min-h-screen bg-arc-grid font-sans text-text",
@@ -90,12 +91,14 @@ export default function RootLayout({
           plexMono.variable
         )}
       >
-        <ProjectProvider>
-          <TopNav />
-          <div className="mx-auto flex min-h-screen max-w-[1320px] flex-col px-4 pb-8 pt-6 sm:px-6 lg:px-8">
-            <main className="flex-1">{children}</main>
-          </div>
-        </ProjectProvider>
+        <LocaleProvider>
+          <ProjectProvider>
+            <TopNav />
+            <div className="mx-auto flex min-h-screen max-w-[1320px] flex-col px-4 pb-8 pt-6 sm:px-6 lg:px-8">
+              <main className="flex-1">{children}</main>
+            </div>
+          </ProjectProvider>
+        </LocaleProvider>
         <IdentitySync />
         <AuthGate />
       </body>
