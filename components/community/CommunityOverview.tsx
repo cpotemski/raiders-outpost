@@ -29,49 +29,22 @@ export function CommunityOverview({
 }: CommunityOverviewProps) {
   return (
     <>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="hud-label">Community Name</div>
-          <div className="text-lg font-semibold uppercase tracking-[0.12em]">
-            {community.name}
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="hud-label">Members</div>
-          <div className="text-sm font-semibold uppercase tracking-[0.12em]">
-            {community.members.length} LINKED
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-6 space-y-3">
-        <div>
-          <div className="hud-label">Invite Link</div>
-          <Input
-            readOnly
-            value={inviteUrl}
-            aria-label="Invite link"
-            className="mt-2 font-mono text-[11px]"
+      <div className="mt-6">
+        <div className="hud-label">Needs Overview</div>
+        <div className="mt-3">
+          <CommunityNeedsPanel
+            members={
+              needsPayload?.members ??
+              community.members.map((member) => ({
+                id: member.id,
+                name: member.name,
+                joinedAt: member.joinedAt,
+              }))
+            }
+            items={needsPayload?.items ?? []}
+            loading={needsLoading}
           />
         </div>
-        <div className="text-[11px] uppercase tracking-[0.08em] text-muted">
-          Share the uplink to sync more operators.
-        </div>
-      </div>
-
-      <div className="mt-6">
-        <CommunityNeedsPanel
-          members={
-            needsPayload?.members ??
-            community.members.map((member) => ({
-              id: member.id,
-              name: member.name,
-              joinedAt: member.joinedAt,
-            }))
-          }
-          items={needsPayload?.items ?? []}
-          loading={needsLoading}
-        />
       </div>
 
       <div className="mt-6">
@@ -109,12 +82,35 @@ export function CommunityOverview({
               </div>
             </div>
           ))}
+          <div
+            className="flex flex-col gap-3 rounded-[6px] border border-frame2 bg-panel2/60 px-3 py-2"
+            data-testid="community-invite-tile"
+          >
+            <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-text">
+              Invite Link
+            </div>
+            <Input
+              readOnly
+              value={inviteUrl}
+              aria-label="Invite link"
+              className="font-mono text-[11px]"
+            />
+            <div className="text-[10px] uppercase tracking-[0.16em] text-muted">
+              Share the uplink to sync more operators.
+            </div>
+          </div>
         </div>
         {removeError ? (
           <div className="mt-3 text-[11px] uppercase tracking-[0.08em] text-warn">
             {removeError}
           </div>
         ) : null}
+        <div
+          className="mt-3 text-[10px] uppercase tracking-[0.16em] text-muted"
+          data-testid="community-member-count"
+        >
+          Members ({community.members.length})
+        </div>
       </div>
     </>
   );

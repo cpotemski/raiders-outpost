@@ -688,11 +688,12 @@ test("community needs overview aggregates and filters by member", async ({
     include: { community: true },
   });
 
+  const communityName = existingMembership?.community.name ?? "Needline";
   let inviteCode = existingMembership?.community.inviteCode ?? "";
   if (!inviteCode) {
     const created = await prisma.community.create({
       data: {
-        name: "Needline",
+        name: communityName,
         inviteCode: `need-${Math.random().toString(36).slice(2, 8)}`,
         members: { create: { userId: user.id } },
       },
@@ -705,7 +706,7 @@ test("community needs overview aggregates and filters by member", async ({
   const inviteLink = `${origin}/community?invite=${inviteCode}`;
 
   await page.getByRole("link", { name: "Community", exact: true }).click();
-  await expect(page.getByText("Roster")).toBeVisible();
+  await expect(page.getByText(communityName)).toBeVisible();
 
   const context = await browser.newContext();
   const invitePage = await context.newPage();
@@ -713,13 +714,14 @@ test("community needs overview aggregates and filters by member", async ({
   await expect(invitePage.getByText("ARC// AUTH LINK")).toBeVisible();
   await invitePage.getByLabel("Operator Name").fill("Warden");
   await invitePage.getByRole("button", { name: "Link Uplink" }).click();
-  await expect(invitePage.getByText("Roster")).toBeVisible();
+  await expect(invitePage.getByText(communityName)).toBeVisible();
 
   await page.reload();
-  await expect(page.getByText("Roster")).toBeVisible();
+  await expect(page.getByText(communityName)).toBeVisible();
 
   const panel = page.getByTestId("community-needs-panel");
   await expect(panel).toBeVisible();
+  await expect(panel.getByPlaceholder("SEARCH...")).toHaveCount(0);
   await panel.screenshot({
     path: "test-results/community-needs-panel.png",
   });
@@ -748,11 +750,6 @@ test("community needs overview aggregates and filters by member", async ({
   const showToggle = panel.getByRole("button", { name: "Show" }).first();
   await expect(showToggle).toBeVisible();
 
-  const search = panel.getByPlaceholder("SEARCH...");
-  await expect(search).toBeVisible();
-  await search.fill("zzzzzz");
-  await expect(panel.locator("[data-item-id]")).toHaveCount(0);
-
   await context.close();
 });
 
@@ -778,10 +775,11 @@ test("expedition selection filters community needs", async ({ page }) => {
     include: { community: true },
   });
 
+  const communityName = existingMembership?.community.name ?? "ExpeditionLine";
   if (!existingMembership) {
     await prisma.community.create({
       data: {
-        name: "ExpeditionLine",
+        name: communityName,
         inviteCode: `exp-${Math.random().toString(36).slice(2, 8)}`,
         members: { create: { userId: user.id } },
       },
@@ -789,13 +787,11 @@ test("expedition selection filters community needs", async ({ page }) => {
   }
 
   await page.getByRole("link", { name: "Community", exact: true }).click();
-  await expect(page.getByText("Roster")).toBeVisible();
+  await expect(page.getByText(communityName)).toBeVisible();
 
   const panel = page.getByTestId("community-needs-panel");
   await expect(panel).toBeVisible();
 
-  const search = panel.getByPlaceholder("SEARCH...");
-  await search.fill(expedition.itemId);
   await expect(
     panel.locator(`[data-item-id="${expedition.itemId}"]`)
   ).toHaveCount(0);
@@ -812,12 +808,10 @@ test("expedition selection filters community needs", async ({ page }) => {
   });
 
   await page.getByRole("link", { name: "Community", exact: true }).click();
-  await expect(page.getByText("Roster")).toBeVisible();
+  await expect(page.getByText(communityName)).toBeVisible();
 
   const panelAfter = page.getByTestId("community-needs-panel");
   await expect(panelAfter).toBeVisible();
-  const searchAfter = panelAfter.getByPlaceholder("SEARCH...");
-  await searchAfter.fill(expedition.itemId);
   await expect(
     panelAfter.locator(`[data-item-id="${expedition.itemId}"]`)
   ).toHaveCount(1);
@@ -958,6 +952,13 @@ test("community creation and invite link join", async ({ page, browser }) => {
   await expect(
     page.getByRole("main").getByText("Vanguard", { exact: true })
   ).toBeVisible();
+  await expect(page.getByTestId("community-invite-tile")).toBeVisible();
+  await expect(page.getByTestId("community-member-count")).toContainText(
+    "Members (1)"
+  );
+  await page.getByRole("main").screenshot({
+    path: "test-results/community-roster.png",
+  });
 
   const inviteLink = await page.getByLabel("Invite link").inputValue();
   expect(inviteLink).toContain("/community?invite=");

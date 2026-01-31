@@ -30,16 +30,14 @@ export function CommunityRoster() {
     Boolean(community)
   );
 
+  let body = null;
+
   if (!ready) {
-    return <RosterStatus message="Syncing uplink..." />;
-  }
-
-  if (!identityName) {
-    return <RosterStatus message="No operator linked." />;
-  }
-
-  if (!community) {
-    return (
+    body = <RosterStatus message="Syncing uplink..." />;
+  } else if (!identityName) {
+    body = <RosterStatus message="No operator linked." />;
+  } else if (!community) {
+    body = (
       <CommunityEmptyState
         inviteCode={inviteCode}
         status={status}
@@ -49,10 +47,8 @@ export function CommunityRoster() {
         onSubmit={onCreate}
       />
     );
-  }
-
-  return (
-    <div className="border-t border-frame2 px-4 py-5">
+  } else {
+    body = (
       <CommunityOverview
         community={community}
         inviteUrl={inviteUrl}
@@ -65,15 +61,32 @@ export function CommunityRoster() {
           setConfirmMember(member);
         }}
       />
-      {confirmMember ? (
-        <CommunityRemoveDialog
-          member={confirmMember}
-          removeError={removeError}
-          removingId={removingId}
-          onClose={() => setConfirmMember(null)}
-          onConfirm={onRemove}
-        />
-      ) : null}
-    </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="arc-panel-header flex-col items-start gap-2 sm:flex-row sm:items-center">
+        <div>
+          {!community ? <p className="hud-label">Community</p> : null}
+          <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
+            {community?.name ?? "Roster"}
+          </h2>
+        </div>
+        <span className="hud-label">ARC//</span>
+      </div>
+      <div className="border-t border-frame2 px-4 py-5">
+        {body}
+        {confirmMember ? (
+          <CommunityRemoveDialog
+            member={confirmMember}
+            removeError={removeError}
+            removingId={removingId}
+            onClose={() => setConfirmMember(null)}
+            onConfirm={onRemove}
+          />
+        ) : null}
+      </div>
+    </>
   );
 }

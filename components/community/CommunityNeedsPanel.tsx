@@ -30,7 +30,6 @@ export function CommunityNeedsPanel({
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
     () => new Set()
   );
-  const [query, setQuery] = useState("");
 
   useEffect(() => {
     setSelectedMembers(new Set(members.map((member) => member.id)));
@@ -57,7 +56,6 @@ export function CommunityNeedsPanel({
       ["Common", 4],
       ["Unknown", 5],
     ]);
-    const search = query.trim().toLowerCase();
     const filtered = items
       .map((item) => {
         const memberNeeds = item.memberNeeds.filter((member) =>
@@ -74,13 +72,7 @@ export function CommunityNeedsPanel({
         };
       })
       .filter((item) => item.totalNeeded > 0)
-      .filter((item) => {
-        if (!search) return true;
-        return (
-          item.displayName.toLowerCase().includes(search) ||
-          item.itemId.toLowerCase().includes(search)
-        );
-      });
+      ;
 
     const groups = new Map<string, typeof filtered>();
     for (const item of filtered) {
@@ -103,23 +95,14 @@ export function CommunityNeedsPanel({
       });
       return { type, items: sorted };
     });
-  }, [items, query, selectedMembers]);
+  }, [items, selectedMembers]);
 
   return (
     <div
       className="arc-panel arc-corners overflow-hidden"
       data-testid="community-needs-panel"
     >
-      <div className="arc-panel-header">
-        <div>
-          <p className="hud-label">Needs Overview</p>
-          <h3 className="text-sm font-semibold uppercase tracking-[0.12em]">
-            Grouped Items
-          </h3>
-        </div>
-        <span className="hud-label">ARC//</span>
-      </div>
-      <div className="border-t border-frame2 bg-panel/80 px-4 py-4">
+      <div className="bg-panel/80 px-4 py-4">
         <div>
           <div className="hud-label">Include Operators</div>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -147,16 +130,6 @@ export function CommunityNeedsPanel({
         </div>
 
         <div className="mt-5 border-t border-frame2 pt-4">
-          <div className="mt-3">
-            <input
-              id="community-needs-search"
-              name="community-needs-search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="SEARCH..."
-              className="mt-2 h-8 w-full border-b border-frame2 bg-transparent px-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-text placeholder:text-muted/70 focus:border-accent/60 focus:outline-none"
-            />
-          </div>
           {loading ? (
             <div className="mt-3 text-[11px] uppercase tracking-[0.12em] text-muted">
               Scanning cache...
