@@ -38,6 +38,13 @@ const getLocalIdentity = async (page: Page) => {
   );
 };
 
+const openProject = async (page: Page, slug: string) => {
+  const card = page.getByTestId(`project-card-${slug}`);
+  await expect(card).toBeVisible();
+  await card.click();
+  await expect(page).toHaveURL(new RegExp(`/projects/${slug}$`));
+};
+
 const login = async (page: Page, name = "Vanguard") => {
   await page.goto("/");
   await page.evaluate(() => {
@@ -48,7 +55,7 @@ const login = async (page: Page, name = "Vanguard") => {
   await page.getByLabel("Operator Name").fill(name);
   await page.getByRole("button", { name: "Link Uplink" }).click();
   await expect(page.getByText(name)).toBeVisible();
-  await expect(page.getByTestId("project-select")).toBeVisible();
+  await expect(page.getByTestId("project-list")).toBeVisible();
 };
 
 const openUserMenu = async (page: Page) => {
@@ -93,6 +100,7 @@ test("seo metadata is present", async ({ page }) => {
 
 test("project images load from arc-items endpoint", async ({ page }) => {
   await login(page);
+  await openProject(page, "blueprints");
 
   const img = page.locator('img[src^="/api/arc-items/image"]').first();
   await expect(img).toBeVisible();
@@ -105,6 +113,7 @@ test("project images load from arc-items endpoint", async ({ page }) => {
 
 test("blueprint labels omit blueprint suffix", async ({ page }) => {
   await login(page);
+  await openProject(page, "blueprints");
 
   const firstTile = page.locator("[data-item-id]").first();
   await expect(firstTile).toBeVisible();
@@ -113,6 +122,7 @@ test("blueprint labels omit blueprint suffix", async ({ page }) => {
 
 test("plus button increments by one per click", async ({ page }) => {
   await login(page);
+  await openProject(page, "blueprints");
 
   const tile = page
     .locator("[data-item-id]")
@@ -224,7 +234,7 @@ test("mobile layout avoids horizontal overflow", async ({ page }) => {
 
   await page.getByLabel("Operator Name").fill("Vanguard");
   await page.getByRole("button", { name: "Link Uplink" }).click();
-  await expect(page.getByTestId("project-select")).toBeVisible();
+  await expect(page.getByTestId("project-list")).toBeVisible();
   await openUserMenu(page);
   const menuPanel = page.getByText("ARC// OPERATOR").locator("..").locator("..");
   await expect(menuPanel).toBeVisible();
@@ -245,7 +255,7 @@ test("mobile layout avoids horizontal overflow", async ({ page }) => {
     path: "test-results/mobile-user-menu.png",
   });
   await page.goBack();
-  await expect(page.getByTestId("project-select")).toBeVisible();
+  await expect(page.getByTestId("project-list")).toBeVisible();
   await page.getByRole("main").screenshot({
     path: "test-results/mobile-projects.png",
   });
@@ -280,6 +290,7 @@ test("mobile layout avoids horizontal overflow", async ({ page }) => {
 test("project control bar sticks beneath the top nav", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await login(page);
+  await openProject(page, "blueprints");
 
   const topNav = page.getByText("ARC // Raiders Outpost");
   const controlBar = page.getByTestId("project-control-bar");
@@ -325,20 +336,34 @@ test("project control bar sticks beneath the top nav", async ({ page }) => {
   expect(barTopAfterScroll).toBeLessThanOrEqual(1);
 });
 
-test("project selector switches active project", async ({ page }) => {
+test("project list navigates to project detail", async ({ page }) => {
   await login(page);
-  await page.getByTestId("project-select").selectOption("expedition_project");
-  await expect(page.getByTestId("project-select")).toHaveValue(
-    "expedition_project"
-  );
+  await openProject(page, "expedition_project");
   await expect(page.getByText("Foundation")).toBeVisible();
+});
+
+test("project list shows progress counts and ring", async ({ page }) => {
+  await login(page);
+  const card = page.getByTestId("project-card-blueprints");
+  await expect(card).toBeVisible();
+  const count = card.locator("[data-project-count]");
+  await expect(count).toBeVisible();
+  const countValue = await count.getAttribute("data-project-count");
+  expect(countValue).toBeTruthy();
+  const match = countValue?.match(/^(\d+)\s*\/\s*(\d+)$/);
+  if (!match) {
+    throw new Error(`Unexpected project count format: ${countValue}`);
+  }
+  const ring = card.locator("[data-project-progress]");
+  await expect(ring).toBeVisible();
+  await card.screenshot({
+    path: "test-results/project-list-progress.png",
+  });
 });
 
 test("hideout benches appear in project list", async ({ page }) => {
   await login(page);
-  const select = page.getByTestId("project-select");
-  await select.selectOption("weapon_bench");
-  await expect(select).toHaveValue("weapon_bench");
+  await openProject(page, "weapon_bench");
   await expect(page.getByRole("heading", { name: "Gunsmith" })).toBeVisible();
   await expect(page.getByText("Level 01")).toBeVisible();
   await expect(page.locator('[data-item-id="metal_parts"]')).toBeVisible();
@@ -349,10 +374,7 @@ test("hideout benches appear in project list", async ({ page }) => {
 
 test("search filters project items", async ({ page }) => {
   await login(page);
-  await page.getByTestId("project-select").selectOption("expedition_project");
-  await expect(page.getByTestId("project-select")).toHaveValue(
-    "expedition_project"
-  );
+  await openProject(page, "expedition_project");
 
   const search = page.getByPlaceholder("SEARCH...");
   await search.fill("Battery");
@@ -362,17 +384,13 @@ test("search filters project items", async ({ page }) => {
 
 test("trophy display includes queen reactor", async ({ page }) => {
   await login(page);
-  await page.getByTestId("project-select").selectOption("trophy_display_project");
-  await expect(page.getByTestId("project-select")).toHaveValue(
-    "trophy_display_project"
-  );
+  await openProject(page, "trophy_display_project");
   await expect(page.locator('[data-item-id="queen_reactor"]')).toBeVisible();
 });
 
 test("blueprint cache shows multiple blueprint items", async ({ page }) => {
   await login(page);
-  await page.getByTestId("project-select").selectOption("blueprints");
-  await expect(page.getByTestId("project-select")).toHaveValue("blueprints");
+  await openProject(page, "blueprints");
   const blueprints = page.locator('[data-item-id*="_blueprint"]');
   await expect(blueprints.first()).toBeVisible();
   await expect.poll(async () => blueprints.count()).toBeGreaterThan(10);
@@ -380,8 +398,7 @@ test("blueprint cache shows multiple blueprint items", async ({ page }) => {
 
 test("stage progress shows completed and total counts", async ({ page }) => {
   await login(page);
-  await page.getByTestId("project-select").selectOption("blueprints");
-  await expect(page.getByTestId("project-select")).toHaveValue("blueprints");
+  await openProject(page, "blueprints");
 
   const stagePanel = page.locator("[data-stage-key]").first();
   const count = stagePanel.locator("[data-stage-count]");
@@ -403,10 +420,8 @@ test("stage progress shows completed and total counts", async ({ page }) => {
 
 test("needed-only hides completed items", async ({ page }) => {
   await login(page);
-  await expect(page.getByTestId("project-select")).toBeVisible();
-
-  await page.getByTestId("project-select").selectOption("blueprints");
-  await expect(page.getByTestId("project-select")).toHaveValue("blueprints");
+  await expect(page.getByTestId("project-list")).toBeVisible();
+  await openProject(page, "blueprints");
 
   const firstTile = page.locator("[data-item-id]").first();
   const itemId = await firstTile.getAttribute("data-item-id");
@@ -422,8 +437,7 @@ test("needed-only hides completed items", async ({ page }) => {
 
 test("project item quantity persists", async ({ page }) => {
   await login(page);
-  await page.getByTestId("project-select").selectOption("blueprints");
-  await expect(page.getByTestId("project-select")).toHaveValue("blueprints");
+  await openProject(page, "blueprints");
   const identity = await getLocalIdentity(page);
   expect(identity.token).toBeTruthy();
 
@@ -460,8 +474,7 @@ test("project item quantity persists", async ({ page }) => {
   await expect(page.getByTestId("user-menu-trigger")).toContainText(
     "Vanguard"
   );
-  await page.getByTestId("project-select").selectOption("blueprints");
-  await expect(page.getByTestId("project-select")).toHaveValue("blueprints");
+  await expect(page).toHaveURL(/\/projects\/blueprints$/);
   await expect
     .poll(async () => {
       const qty = await firstTile.getAttribute("data-quantity");
@@ -489,9 +502,8 @@ test("project tiles show community ownership", async ({ page, browser }) => {
   await expect(invitePage.getByText("Echo Node")).toBeVisible();
 
   await page.getByRole("link", { name: "Projects", exact: true }).click();
-  await expect(page.getByTestId("project-select")).toBeVisible();
-  await page.getByTestId("project-select").selectOption("blueprints");
-  await expect(page.getByTestId("project-select")).toHaveValue("blueprints");
+  await expect(page.getByTestId("project-list")).toBeVisible();
+  await openProject(page, "blueprints");
 
   const firstTile = page.locator("[data-item-id]").first();
   const persistRequest = page.waitForResponse((response) => {
@@ -508,11 +520,8 @@ test("project tiles show community ownership", async ({ page, browser }) => {
     .toBeGreaterThan(0);
 
   await invitePage.goto("/");
-  await expect(invitePage.getByTestId("project-select")).toBeVisible();
-  await invitePage.getByTestId("project-select").selectOption("blueprints");
-  await expect(invitePage.getByTestId("project-select")).toHaveValue(
-    "blueprints"
-  );
+  await expect(invitePage.getByTestId("project-list")).toBeVisible();
+  await openProject(invitePage, "blueprints");
 
   const targetTile = invitePage.locator("[data-item-id]").first();
   const progressRing = targetTile.locator("[data-community-progress]");
@@ -616,6 +625,7 @@ test("community needs overview aggregates and filters by member", async ({
 test("mobile longpress increments quantity repeatedly", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await login(page);
+  await openProject(page, "blueprints");
 
   await expect(page.locator("[data-item-id]").first()).toBeVisible();
 
@@ -811,12 +821,9 @@ test("community members can remove operators", async ({ page, browser }) => {
   });
 });
 
-test("defaults to blueprints project on load", async ({ page }) => {
+test("project list includes blueprint cache", async ({ page }) => {
   await login(page);
-
-  const select = page.getByTestId("project-select");
-  await expect(select).toBeVisible();
-  await expect(select).toHaveValue("blueprints");
+  await expect(page.getByTestId("project-card-blueprints")).toBeVisible();
 });
 
 test("language switch toggles localized project and item names", async ({
@@ -827,19 +834,21 @@ test("language switch toggles localized project and item names", async ({
 
   await login(page, "Vanguard");
 
-  const select = page.getByTestId("project-select");
-  await expect(select).toBeVisible();
-  await expect(select).toContainText("Expeditionsprojekt");
+  const expeditionCard = page.getByTestId("project-card-expedition_project");
+  await expect(expeditionCard).toBeVisible();
+  await expect(expeditionCard).toContainText(/Expedition/i);
   await page.getByRole("main").screenshot({
     path: "test-results/language-switch-de.png",
   });
 
-  await select.selectOption("expedition_project");
+  await openProject(page, "expedition_project");
   const batteryTile = page.locator('[data-item-id="battery"]');
-  await expect(batteryTile).toContainText("Akku");
+  await expect(batteryTile).toContainText(/Akku/i);
 
   await page.getByTestId("language-option-en").click();
-  await expect(select).toContainText("Expedition Project");
+  await expect(
+    page.getByRole("heading", { name: "Expedition Project" })
+  ).toBeVisible();
   await expect(batteryTile).toContainText("Battery");
 
   await context.close();

@@ -1,85 +1,252 @@
 "use client";
 
-import { useState } from "react";
-import { ProjectDashboard } from "@/components/projects/ProjectDashboard";
+import Link from "next/link";
+import { useMemo } from "react";
 import { useProjectContext } from "@/components/projects/ProjectContext";
-import { cn } from "@/lib/cn";
 
 export default function StartPage() {
-  const { projects, selectedSlug, setSelectedSlug } = useProjectContext();
-  const [query, setQuery] = useState("");
-  const [neededOnly, setNeededOnly] = useState(false);
+  const { projects, loading } = useProjectContext();
+
+  const projectCards = useMemo(() => {
+    const ordered = projects.slice().sort((a, b) => {
+      const priority = (kind: typeof a.kind) => {
+        if (kind === "blueprints") return 0;
+        if (kind === "project") return 1;
+        return 2;
+      };
+      const priorityDiff = priority(a.kind) - priority(b.kind);
+      if (priorityDiff !== 0) return priorityDiff;
+      return a.name.localeCompare(b.name);
+    });
+
+    return ordered.map((project) => {
+      const items = project.stages.flatMap((stage) => stage.items);
+      const completedCount = items.filter(
+        (item) =>
+          item.quantityRequired > 0 && item.quantityOwned >= item.quantityRequired
+      ).length;
+      const totalCount = items.length;
+      const isCompleted =
+        totalCount === 0 ||
+        completedCount === totalCount ||
+        items.every(
+          (item) =>
+            item.quantityRequired > 0 &&
+            item.quantityOwned >= item.quantityRequired
+        );
+      const progressRatio = totalCount ? completedCount / totalCount : 1;
+      const progressPercent = Math.round(progressRatio * 100);
+      const ringRadius = 8;
+      const ringStroke = 2;
+      const ringCircumference = 2 * Math.PI * ringRadius;
+      const ringDash = progressRatio * ringCircumference;
+
+      return {
+        project,
+        completedCount,
+        totalCount,
+        isCompleted,
+        progressPercent,
+        ringRadius,
+        ringStroke,
+        ringCircumference,
+        ringDash,
+      };
+    });
+  }, [projects]);
+
+  const pendingProjects = projectCards.filter((entry) => !entry.isCompleted);
+  const completedProjects = projectCards.filter((entry) => entry.isCompleted);
 
   return (
-    <div className="space-y-4">
-      <div className="sticky top-0 z-40" data-testid="project-control-bar">
-        <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen">
-          <div className="arc-panel arc-panel-bottomless arc-corners px-4 py-2 sm:px-6 [--arc-corner-offset:6px]">
-            <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-3 px-4 sm:px-6 lg:px-8">
-              <label className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
-                Project
-                <span className="relative">
-                  <select
-                    value={selectedSlug ?? ""}
-                    onChange={(event) => setSelectedSlug(event.target.value)}
-                    aria-label="Project selection"
-                    data-testid="project-select"
-                    className="h-8 min-w-[180px] appearance-none border border-frame bg-panel px-2 pr-7 text-[11px] font-semibold uppercase tracking-[0.12em] text-text"
-                  >
-                    {projects.map((project) => (
-                      <option key={project.slug} value={project.slug}>
-                        {project.name}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted">
-                    <svg
-                      aria-hidden="true"
-                      className="h-3 w-3"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                    >
-                      <path
-                        d="M4 6l4 4 4-4"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="square"
-                      />
-                    </svg>
-                  </span>
-                </span>
-              </label>
-              <label className="relative">
-                <span className="sr-only">Quicksearch</span>
-                <input
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="SEARCH..."
-                  className="h-8 w-36 border-b border-frame2 bg-transparent px-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-text placeholder:text-muted/70 focus:border-accent/60 focus:outline-none"
-                />
-              </label>
-              <button
-                type="button"
-                aria-pressed={neededOnly}
-                aria-label="Filter needed only"
-                onClick={() => setNeededOnly((prev) => !prev)}
-                className={cn(
-                  "h-8 border px-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
-                  neededOnly
-                    ? "border-accent/70 text-text"
-                    : "border-frame2 text-muted hover:border-accent/60"
-                )}
-              >
-                Needed Only
-              </button>
-            </div>
+    <div className="flex flex-col gap-4">
+      <div className="arc-panel arc-corners overflow-hidden">
+        <div className="arc-panel-header">
+          <div>
+            <p className="hud-label">Project Hub</p>
+            <h2 className="text-sm font-semibold uppercase tracking-[0.12em]">
+              Projektauswahl
+            </h2>
+          </div>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+            {loading ? "Scanning..." : "Synced"}
           </div>
         </div>
+        <div className="border-t border-frame2 bg-panel/70 px-4 py-4 sm:px-6">
+          {loading && !projects.length ? (
+            <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
+              Scanning project cache...
+            </div>
+          ) : (
+            <div className="flex flex-col gap-5">
+              <div>
+                <div className="flex items-center justify-between pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+                  <span>Active Queue</span>
+                  <span>Pending</span>
+                </div>
+                <div
+                  className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+                  data-testid="project-list"
+                >
+                  {pendingProjects.length ? (
+                    pendingProjects.map(
+                      ({
+                        project,
+                        completedCount,
+                        totalCount,
+                        progressPercent,
+                        ringRadius,
+                        ringStroke,
+                        ringCircumference,
+                        ringDash,
+                      }) => (
+                        <Link
+                          key={project.slug}
+                          href={`/projects/${project.slug}`}
+                          data-testid={`project-card-${project.slug}`}
+                          className="arc-panel arc-corners group relative flex flex-col gap-3 overflow-hidden border-frame2/70 px-4 py-4 transition hover:border-accent/60"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-sm font-semibold uppercase tracking-[0.12em] break-words">
+                                {project.name}
+                              </h3>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span
+                                className="min-w-[48px] text-right text-[10px] font-semibold uppercase tracking-[0.12em] text-muted"
+                                data-project-count={`${completedCount}/${totalCount}`}
+                              >
+                                {completedCount} / {totalCount}
+                              </span>
+                              <svg
+                                aria-hidden="true"
+                                data-project-progress={progressPercent}
+                                viewBox="0 0 24 24"
+                                className="h-6 w-6"
+                              >
+                                <circle
+                                  cx="12"
+                                  cy="12"
+                                  r={ringRadius}
+                                  fill="none"
+                                  stroke="rgba(160, 180, 190, 0.35)"
+                                  strokeWidth={ringStroke}
+                                />
+                                <circle
+                                  cx="12"
+                                  cy="12"
+                                  r={ringRadius}
+                                  fill="none"
+                                  stroke="rgba(72, 199, 214, 0.75)"
+                                  strokeWidth={ringStroke}
+                                  strokeLinecap="square"
+                                  strokeDasharray={`${ringDash} ${ringCircumference}`}
+                                  transform="rotate(-90 12 12)"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-muted">
+                            <span>Open Project</span>
+                            <span>ARC// READY</span>
+                          </div>
+                        </Link>
+                      )
+                    )
+                  ) : (
+                    <div className="col-span-full border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
+                      No signal. Pending queue empty.
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+                  <span>Completed</span>
+                  <span>Archived</span>
+                </div>
+                <div
+                  className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+                  data-testid="project-list-completed"
+                >
+                  {completedProjects.length ? (
+                    completedProjects.map(
+                      ({
+                        project,
+                        completedCount,
+                        totalCount,
+                        progressPercent,
+                        ringRadius,
+                        ringStroke,
+                        ringCircumference,
+                        ringDash,
+                      }) => (
+                        <Link
+                          key={project.slug}
+                          href={`/projects/${project.slug}`}
+                          data-testid={`project-card-${project.slug}`}
+                          className="arc-panel arc-corners group relative flex flex-col gap-3 overflow-hidden border-frame2/70 px-4 py-4 transition hover:border-accent/60"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-sm font-semibold uppercase tracking-[0.12em] break-words">
+                                {project.name}
+                              </h3>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span
+                                className="min-w-[48px] text-right text-[10px] font-semibold uppercase tracking-[0.12em] text-muted"
+                                data-project-count={`${completedCount}/${totalCount}`}
+                              >
+                                {completedCount} / {totalCount}
+                              </span>
+                              <svg
+                                aria-hidden="true"
+                                data-project-progress={progressPercent}
+                                viewBox="0 0 24 24"
+                                className="h-6 w-6"
+                              >
+                                <circle
+                                  cx="12"
+                                  cy="12"
+                                  r={ringRadius}
+                                  fill="none"
+                                  stroke="rgba(160, 180, 190, 0.35)"
+                                  strokeWidth={ringStroke}
+                                />
+                                <circle
+                                  cx="12"
+                                  cy="12"
+                                  r={ringRadius}
+                                  fill="none"
+                                  stroke="rgba(72, 199, 214, 0.75)"
+                                  strokeWidth={ringStroke}
+                                  strokeLinecap="square"
+                                  strokeDasharray={`${ringDash} ${ringCircumference}`}
+                                  transform="rotate(-90 12 12)"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-muted">
+                            <span>Open Project</span>
+                            <span>ARC// READY</span>
+                          </div>
+                        </Link>
+                      )
+                    )
+                  ) : (
+                    <div className="col-span-full border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
+                      No archived signal detected.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-      <ProjectDashboard
-        query={query}
-        neededOnly={neededOnly}
-      />
     </div>
   );
 }

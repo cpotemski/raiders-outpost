@@ -3,15 +3,18 @@
 import { useMemo, useState } from "react";
 import { useProjectContext } from "@/components/projects/ProjectContext";
 import { ProjectStagePanel } from "@/components/projects/ProjectStagePanel";
+import type { ProjectProgress } from "@/types/projects";
 
 type ProjectDashboardProps = {
   query: string;
   neededOnly: boolean;
+  project?: ProjectProgress | null;
 };
 
 export function ProjectDashboard({
   query,
   neededOnly,
+  project,
 }: ProjectDashboardProps) {
   const {
     loading,
@@ -20,14 +23,15 @@ export function ProjectDashboard({
     communityCountsByItemId,
     updateItemQuantity,
   } = useProjectContext();
+  const activeProject = project ?? selectedProject;
   const [expandedCompleted, setExpandedCompleted] = useState<Set<string>>(
     () => new Set()
   );
 
   const filteredStages = useMemo(() => {
-    if (!selectedProject) return [];
+    if (!activeProject) return [];
     const q = query.trim().toLowerCase();
-    return selectedProject.stages.map((stage) => ({
+    return activeProject.stages.map((stage) => ({
       ...stage,
       items: stage.items.filter((item) => {
         if (neededOnly && item.quantityOwned >= item.quantityRequired) {
@@ -40,9 +44,9 @@ export function ProjectDashboard({
         );
       }),
     }));
-  }, [neededOnly, query, selectedProject]);
+  }, [activeProject, neededOnly, query]);
 
-  if (loading && !selectedProject) {
+  if (loading && !activeProject) {
     return (
       <div className="border-t border-frame2 px-4 py-5 text-sm uppercase tracking-[0.08em] text-muted">
         Scanning project cache...
@@ -50,13 +54,13 @@ export function ProjectDashboard({
     );
   }
 
-  return selectedProject ? (
+  return activeProject ? (
     <div className="flex flex-col gap-4 pb-24">
       <div className="arc-panel-header flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="hud-label">Project</p>
           <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
-            {selectedProject.name}
+            {activeProject.name}
           </h2>
         </div>
       </div>
@@ -64,7 +68,7 @@ export function ProjectDashboard({
         .slice()
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((stage) => {
-          const fullStage = selectedProject.stages.find(
+          const fullStage = activeProject.stages.find(
             (entry) => entry.stageKey === stage.stageKey
           );
           const isCompleted =
@@ -102,7 +106,7 @@ export function ProjectDashboard({
                   return next;
                 });
               }}
-              stripBlueprintLabel={selectedProject.kind === "blueprints"}
+              stripBlueprintLabel={activeProject.kind === "blueprints"}
               progressCompletedCount={progressCompletedCount}
               progressTotalCount={progressTotalCount}
             />
