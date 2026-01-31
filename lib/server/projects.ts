@@ -9,6 +9,59 @@ type ProjectWithStages = Prisma.ProjectGetPayload<{
 }>;
 
 let projectsSeedPromise: Promise<ProjectWithStages[]> | null = null;
+let projectsSeedSignature: string | null = null;
+
+const buildPayloadSignature = (
+  payload: Awaited<ReturnType<typeof loadArcProjects>>
+) => {
+  const entries: string[] = [];
+
+  for (const project of payload.projects) {
+    entries.push(
+      `project:${project.slug}:${project.name}:${project.stages.length}`
+    );
+    for (const stage of project.stages) {
+      entries.push(
+        `stage:${project.slug}:${stage.sortOrder}:${stage.name}:${stage.items.length}`
+      );
+      if (stage.items.length === 0) {
+        entries.push(`stage-empty:${project.slug}:${stage.sortOrder}`);
+      }
+      for (const item of stage.items) {
+        entries.push(
+          `item:${project.slug}:${stage.sortOrder}:${item.itemId}:${item.quantityRequired}`
+        );
+      }
+    }
+  }
+
+  return entries.sort().join("||");
+};
+
+const buildDbSignature = (projects: ProjectWithStages[]) => {
+  const entries: string[] = [];
+
+  for (const project of projects) {
+    entries.push(
+      `project:${project.slug}:${project.name}:${project.stages.length}`
+    );
+    for (const stage of project.stages) {
+      entries.push(
+        `stage:${project.slug}:${stage.sortOrder}:${stage.name}:${stage.items.length}`
+      );
+      if (stage.items.length === 0) {
+        entries.push(`stage-empty:${project.slug}:${stage.sortOrder}`);
+      }
+      for (const item of stage.items) {
+        entries.push(
+          `item:${project.slug}:${stage.sortOrder}:${item.itemName}:${item.quantityRequired}`
+        );
+      }
+    }
+  }
+
+  return entries.sort().join("||");
+};
 
 const seedProjects = async (payload: Awaited<ReturnType<typeof loadArcProjects>>) => {
 
@@ -53,22 +106,28 @@ const seedProjects = async (payload: Awaited<ReturnType<typeof loadArcProjects>>
   }
 };
 
-const ensureProjects = async () => {
-  if (projectsSeedPromise) {
+const ensureProjects = async (
+  payload?: Awaited<ReturnType<typeof loadArcProjects>>
+) => {
+  const nextPayload = payload ?? (await loadArcProjects());
+  const payloadSignature = buildPayloadSignature(nextPayload);
+
+  if (projectsSeedPromise && projectsSeedSignature === payloadSignature) {
     return projectsSeedPromise;
   }
 
+  projectsSeedSignature = payloadSignature;
   projectsSeedPromise = (async () => {
-    const payload = await loadArcProjects();
     const existingProjects = await prisma.project.findMany({
-      select: { id: true, slug: true },
+      include: {
+        stages: {
+          include: { items: true },
+        },
+      },
     });
-    const existingSlugs = new Set(existingProjects.map((project) => project.slug));
-    const requiredSlugs = new Set(payload.projects.map((project) => project.slug));
     const needsReseed =
       existingProjects.length === 0 ||
-      existingSlugs.size !== requiredSlugs.size ||
-      Array.from(requiredSlugs).some((slug) => !existingSlugs.has(slug));
+      buildDbSignature(existingProjects) !== payloadSignature;
 
     if (needsReseed) {
       await prisma.$transaction([
@@ -77,25 +136,27 @@ const ensureProjects = async () => {
         prisma.projectStage.deleteMany(),
         prisma.project.deleteMany(),
       ]);
-      await seedProjects(payload);
-    }
-    return prisma.project.findMany({
-      include: {
-        stages: {
-          include: { items: true },
+      await seedProjects(nextPayload);
+      return prisma.project.findMany({
+        include: {
+          stages: {
+            include: { items: true },
+          },
         },
-      },
-    });
+      });
+    }
+
+    return existingProjects;
   })();
 
   return projectsSeedPromise;
 };
 
 export const getProjectProgress = async (userId: string) => {
-  const [projectsPayload, arcItems, projectRecords] = await Promise.all([
-    loadArcProjects(),
+  const projectsPayload = await loadArcProjects();
+  const [arcItems, projectRecords] = await Promise.all([
     loadArcItems(),
-    ensureProjects(),
+    ensureProjects(projectsPayload),
   ]);
 
   const imageById = new Map(

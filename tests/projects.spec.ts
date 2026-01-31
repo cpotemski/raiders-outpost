@@ -272,6 +272,24 @@ test("search filters project items", async ({ page }) => {
   await expect(page.locator('[data-item-id="metal-parts"]')).toHaveCount(0);
 });
 
+test("trophy display includes queen reactor", async ({ page }) => {
+  await login(page);
+  await page.getByTestId("project-select").selectOption("trophy_display_project");
+  await expect(page.getByTestId("project-select")).toHaveValue(
+    "trophy_display_project"
+  );
+  await expect(page.locator('[data-item-id="queen_reactor"]')).toBeVisible();
+});
+
+test("blueprint cache shows multiple blueprint items", async ({ page }) => {
+  await login(page);
+  await page.getByTestId("project-select").selectOption("blueprints");
+  await expect(page.getByTestId("project-select")).toHaveValue("blueprints");
+  const blueprints = page.locator('[data-item-id*="_blueprint"]');
+  await expect(blueprints.first()).toBeVisible();
+  await expect.poll(async () => blueprints.count()).toBeGreaterThan(10);
+});
+
 test("needed-only hides completed items", async ({ page }) => {
   await login(page);
   await expect(page.getByTestId("project-select")).toBeVisible();

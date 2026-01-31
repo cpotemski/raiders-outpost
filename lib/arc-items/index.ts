@@ -58,7 +58,15 @@ const readArcItems = unstable_cache(
           const raw = await fs.readFile(path.join(DATA_DIR, file), "utf-8");
           const item = JSON.parse(raw) as ArcItemSource;
           const id = item.id ?? file.replace(/\.json$/, "");
-          const imageFile = imageSet.has(`${id}.png`) ? `${id}.png` : null;
+          const candidateImage =
+            item.imageFilename && item.imageFilename.includes("/")
+              ? path.basename(item.imageFilename)
+              : item.imageFilename;
+          const imageFile = candidateImage && imageSet.has(candidateImage)
+            ? candidateImage
+            : imageSet.has(`${id}.png`)
+              ? `${id}.png`
+              : null;
           return {
             id,
             name: item.name?.en ?? item.name?.de ?? item.name?.fr ?? id,
