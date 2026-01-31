@@ -10,3 +10,27 @@ export type Community = {
   inviteCode: string;
   members: CommunityMember[];
 };
+
+export type CommunityNeedsMember = {
+  id: string;
+  name: string;
+  joinedAt: string;
+};
+
+export type CommunityNeedsItem = {
+  itemId: string;
+  displayName: string;
+  itemType: string;
+  rarity: string;
+  totalNeeded: number;
+  memberNeeds: Array<{
+    memberId: string;
+    memberName: string;
+    needed: number;
+  }>;
+};
+
+export type CommunityNeedsPayload = {
+  members: CommunityNeedsMember[];
+  items: CommunityNeedsItem[];
+};

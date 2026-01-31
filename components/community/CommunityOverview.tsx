@@ -1,13 +1,20 @@
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { getInitials } from "@/lib/format";
-import type { Community, CommunityMember } from "@/types/community";
+import { CommunityNeedsPanel } from "@/components/community/CommunityNeedsPanel";
+import type {
+  Community,
+  CommunityMember,
+  CommunityNeedsPayload,
+} from "@/types/community";
 
 type CommunityOverviewProps = {
   community: Community;
   inviteUrl: string;
   removingId: string | null;
   removeError: string;
+  needsPayload: CommunityNeedsPayload | null;
+  needsLoading: boolean;
   onRequestRemove: (member: CommunityMember) => void;
 };
 
@@ -16,6 +23,8 @@ export function CommunityOverview({
   inviteUrl,
   removingId,
   removeError,
+  needsPayload,
+  needsLoading,
   onRequestRemove,
 }: CommunityOverviewProps) {
   return (
@@ -48,6 +57,21 @@ export function CommunityOverview({
         <div className="text-[11px] uppercase tracking-[0.08em] text-muted">
           Share the uplink to sync more operators.
         </div>
+      </div>
+
+      <div className="mt-6">
+        <CommunityNeedsPanel
+          members={
+            needsPayload?.members ??
+            community.members.map((member) => ({
+              id: member.id,
+              name: member.name,
+              joinedAt: member.joinedAt,
+            }))
+          }
+          items={needsPayload?.items ?? []}
+          loading={needsLoading}
+        />
       </div>
 
       <div className="mt-6">

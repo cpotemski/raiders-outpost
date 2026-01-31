@@ -264,6 +264,172 @@ export const getProjectProgress = async (
   };
 };
 
+type CommunityNeedsItem = {
+  itemId: string;
+  displayName: string;
+  totalNeeded: number;
+  memberNeeds: Array<{
+    memberId: string;
+    memberName: string;
+    needed: number;
+  }>;
+};
+
+export const getCommunityNeeds = async (
+  userId: string,
+  locale: AppLocale
+) => {
+  const community = await getCommunityForUser(userId);
+  if (!community) {
+    return { members: [], items: [] };
+  }
+
+  const projectsPayload = await loadArcProjects(locale);
+  const [projectRecords, arcItems] = await Promise.all([
+    ensureProjects(projectsPayload),
+    loadArcItems(locale),
+  ]);
+
+  const itemMetaById = new Map(
+    arcItems.items.map((item) => [
+      item.id ?? item.imageFile ?? "",
+      { itemType: item.itemType, rarity: item.rarity },
+    ])
+  );
+
+  const projectItemIdByStage = new Map<string, Map<string, string>>();
+  for (const project of projectRecords) {
+    const stageMap = new Map<string, string>();
+    for (const stage of project.stages) {
+      for (const item of stage.items) {
+        stageMap.set(`${stage.sortOrder}::${item.itemName}`, item.id);
+      }
+    }
+    projectItemIdByStage.set(project.slug, stageMap);
+  }
+
+  const projectItems = projectsPayload.projects.flatMap((project) => {
+    const stageMap = projectItemIdByStage.get(project.slug) ?? new Map();
+    return project.stages.flatMap((stage) =>
+      stage.items
+        .map((item) => {
+          const projectItemId = stageMap.get(
+            `${stage.sortOrder}::${item.itemId}`
+          );
+          if (!projectItemId) return null;
+          const meta = itemMetaById.get(item.itemId) ?? {
+            itemType: "Unknown",
+            rarity: "Unknown",
+          };
+          return {
+            projectItemId,
+            itemId: item.itemId,
+            displayName: item.displayName,
+            quantityRequired: item.quantityRequired,
+            itemType: meta.itemType,
+            rarity: meta.rarity,
+          };
+        })
+        .filter(
+          (entry): entry is {
+            projectItemId: string;
+            itemId: string;
+            displayName: string;
+            quantityRequired: number;
+          } => Boolean(entry)
+        )
+    );
+  });
+
+  const memberIds = community.members.map((member) => member.id);
+  const projectItemIds = projectItems.map((item) => item.projectItemId);
+
+  const progress = await prisma.userProjectItem.findMany({
+    where: {
+      userId: { in: memberIds },
+      projectItemId: { in: projectItemIds },
+    },
+    select: {
+      userId: true,
+      projectItemId: true,
+      quantityOwned: true,
+    },
+  });
+
+  const ownedByMemberItem = new Map<string, number>();
+  for (const entry of progress) {
+    ownedByMemberItem.set(
+      `${entry.userId}::${entry.projectItemId}`,
+      entry.quantityOwned
+    );
+  }
+
+  const itemTotals = new Map<
+    string,
+    {
+      displayName: string;
+      itemType: string;
+      rarity: string;
+      memberNeeds: Map<string, number>;
+    }
+  >();
+
+  for (const member of community.members) {
+    for (const item of projectItems) {
+      const owned =
+        ownedByMemberItem.get(`${member.id}::${item.projectItemId}`) ?? 0;
+      const needed = Math.max(0, item.quantityRequired - owned);
+      if (!needed) continue;
+      const entry = itemTotals.get(item.itemId) ?? {
+        displayName: item.displayName,
+        itemType: item.itemType,
+        rarity: item.rarity,
+        memberNeeds: new Map(),
+      };
+      entry.memberNeeds.set(
+        member.id,
+        (entry.memberNeeds.get(member.id) ?? 0) + needed
+      );
+      if (!itemTotals.has(item.itemId)) {
+        itemTotals.set(item.itemId, entry);
+      }
+    }
+  }
+
+  const items: CommunityNeedsItem[] = Array.from(itemTotals.entries()).map(
+    ([itemId, data]) => {
+      const memberNeeds = community.members
+        .map((member) => ({
+          memberId: member.id,
+          memberName: member.name,
+          needed: data.memberNeeds.get(member.id) ?? 0,
+        }))
+        .filter((entry) => entry.needed > 0);
+      const totalNeeded = memberNeeds.reduce(
+        (sum, entry) => sum + entry.needed,
+        0
+      );
+      return {
+        itemId,
+        displayName: data.displayName,
+        itemType: data.itemType,
+        rarity: data.rarity,
+        totalNeeded,
+        memberNeeds,
+      };
+    }
+  );
+
+  return {
+    members: community.members.map((member) => ({
+      id: member.id,
+      name: member.name,
+      joinedAt: member.joinedAt.toISOString(),
+    })),
+    items,
+  };
+};
+
 export const updateProjectItems = async (
   userId: string,
   updates: { projectItemId: string; quantityOwned: number }[]

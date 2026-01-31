@@ -447,6 +447,83 @@ test("project tiles show community ownership", async ({ page, browser }) => {
   await context.close();
 });
 
+test("community needs overview aggregates and filters by member", async ({
+  page,
+  browser,
+}) => {
+  await login(page, "Atlas");
+
+  const identity = await getLocalIdentity(page);
+  const user = await prisma.user.findUnique({
+    where: { token: identity.token ?? "" },
+    select: { id: true },
+  });
+  if (!user) {
+    throw new Error("Missing user for community needs test.");
+  }
+
+  const existingMembership = await prisma.communityMember.findUnique({
+    where: { userId: user.id },
+    include: { community: true },
+  });
+
+  let inviteCode = existingMembership?.community.inviteCode ?? "";
+  if (!inviteCode) {
+    const created = await prisma.community.create({
+      data: {
+        name: "Needline",
+        inviteCode: `need-${Math.random().toString(36).slice(2, 8)}`,
+        members: { create: { userId: user.id } },
+      },
+      select: { inviteCode: true },
+    });
+    inviteCode = created.inviteCode;
+  }
+
+  const origin = await page.evaluate(() => window.location.origin);
+  const inviteLink = `${origin}/community?invite=${inviteCode}`;
+
+  await page.getByRole("link", { name: "Community", exact: true }).click();
+  await expect(page.getByText("Roster")).toBeVisible();
+
+  const context = await browser.newContext();
+  const invitePage = await context.newPage();
+  await invitePage.goto(inviteLink);
+  await expect(invitePage.getByText("ARC// AUTH LINK")).toBeVisible();
+  await invitePage.getByLabel("Operator Name").fill("Warden");
+  await invitePage.getByRole("button", { name: "Link Uplink" }).click();
+  await expect(invitePage.getByText("Roster")).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByText("Roster")).toBeVisible();
+
+  const panel = page.getByTestId("community-needs-panel");
+  await expect(panel).toBeVisible();
+  await panel.screenshot({
+    path: "test-results/community-needs-panel.png",
+  });
+  const firstRow = panel.locator("[data-item-id]").first();
+  await expect(firstRow).toBeVisible();
+  const itemId = await firstRow.getAttribute("data-item-id");
+  expect(itemId).toBeTruthy();
+  const targetRow = panel.locator(`[data-item-id="${itemId}"]`);
+  const totalBefore = Number(await targetRow.getAttribute("data-total-needed"));
+  expect(totalBefore).toBeGreaterThan(0);
+
+  const wardenToggle = panel.getByRole("button", { name: "Warden" });
+  await expect(wardenToggle).toBeVisible();
+  await wardenToggle.click();
+
+  await expect
+    .poll(async () => {
+      const value = await targetRow.getAttribute("data-total-needed");
+      return Number(value ?? "0");
+    })
+    .toBeLessThan(totalBefore);
+
+  await context.close();
+});
+
 test("mobile longpress increments quantity repeatedly", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await login(page);

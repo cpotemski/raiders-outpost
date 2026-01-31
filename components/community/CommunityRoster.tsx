@@ -5,6 +5,7 @@ import { CommunityOverview } from "@/components/community/CommunityOverview";
 import { CommunityRemoveDialog } from "@/components/community/CommunityRemoveDialog";
 import { RosterStatus } from "@/components/community/RosterStatus";
 import { useCommunityRoster } from "@/hooks/useCommunityRoster";
+import { useCommunityNeeds } from "@/hooks/useCommunityNeeds";
 
 export function CommunityRoster() {
   const {
@@ -25,6 +26,9 @@ export function CommunityRoster() {
     onRemove,
     resetRemoveError,
   } = useCommunityRoster();
+  const { payload: needsPayload, loading: needsLoading } = useCommunityNeeds(
+    Boolean(community)
+  );
 
   if (!ready) {
     return <RosterStatus message="Syncing uplink..." />;
@@ -54,6 +58,8 @@ export function CommunityRoster() {
         inviteUrl={inviteUrl}
         removingId={removingId}
         removeError={removeError}
+        needsPayload={needsPayload}
+        needsLoading={needsLoading}
         onRequestRemove={(member) => {
           resetRemoveError();
           setConfirmMember(member);
