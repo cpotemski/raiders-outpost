@@ -11,6 +11,8 @@ type ProjectStagePanelProps = {
   isExpanded: boolean;
   onToggleExpanded: () => void;
   stripBlueprintLabel?: boolean;
+  progressCompletedCount?: number;
+  progressTotalCount?: number;
 };
 
 export function ProjectStagePanel({
@@ -21,6 +23,8 @@ export function ProjectStagePanel({
   isExpanded,
   onToggleExpanded,
   stripBlueprintLabel,
+  progressCompletedCount,
+  progressTotalCount,
 }: ProjectStagePanelProps) {
   const isCompleted = useMemo(() => {
     if (!stage.items.length) return true;
@@ -29,11 +33,13 @@ export function ProjectStagePanel({
         item.quantityRequired > 0 && item.quantityOwned >= item.quantityRequired
     );
   }, [stage.items]);
-  const completedCount = stage.items.filter(
-    (item) =>
-      item.quantityRequired > 0 && item.quantityOwned >= item.quantityRequired
-  ).length;
-  const totalCount = stage.items.length;
+  const completedCount =
+    progressCompletedCount ??
+    stage.items.filter(
+      (item) =>
+        item.quantityRequired > 0 && item.quantityOwned >= item.quantityRequired
+    ).length;
+  const totalCount = progressTotalCount ?? stage.items.length;
   const progressRatio = totalCount ? completedCount / totalCount : 1;
   const progressPercent = Math.round(progressRatio * 100);
   const ringRadius = 6;
@@ -42,7 +48,10 @@ export function ProjectStagePanel({
   const ringDash = progressRatio * ringCircumference;
 
   return (
-    <div className="arc-panel arc-corners overflow-hidden">
+    <div
+      className="arc-panel arc-corners overflow-hidden"
+      data-stage-key={stage.stageKey}
+    >
       <div className="arc-panel-header">
         <div>
           <p className="hud-label">Stage</p>
@@ -51,6 +60,12 @@ export function ProjectStagePanel({
           </h3>
         </div>
         <div className="flex items-center gap-2">
+          <span
+            className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted"
+            data-stage-count={`${completedCount}/${totalCount}`}
+          >
+            {completedCount} / {totalCount}
+          </span>
           <svg
             aria-hidden="true"
             data-stage-progress={progressPercent}

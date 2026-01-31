@@ -378,6 +378,29 @@ test("blueprint cache shows multiple blueprint items", async ({ page }) => {
   await expect.poll(async () => blueprints.count()).toBeGreaterThan(10);
 });
 
+test("stage progress shows completed and total counts", async ({ page }) => {
+  await login(page);
+  await page.getByTestId("project-select").selectOption("blueprints");
+  await expect(page.getByTestId("project-select")).toHaveValue("blueprints");
+
+  const stagePanel = page.locator("[data-stage-key]").first();
+  const count = stagePanel.locator("[data-stage-count]");
+  await expect(count).toBeVisible();
+  const countValue = await count.getAttribute("data-stage-count");
+  expect(countValue).toBeTruthy();
+  const match = countValue?.match(/^(\d+)\s*\/\s*(\d+)$/);
+  if (!match) {
+    throw new Error(`Unexpected stage count format: ${countValue}`);
+  }
+  const total = Number(match[2]);
+  const tileCount = await stagePanel.locator("[data-item-id]").count();
+  expect(tileCount).toBe(total);
+
+  await stagePanel.screenshot({
+    path: "test-results/stage-progress-count.png",
+  });
+});
+
 test("needed-only hides completed items", async ({ page }) => {
   await login(page);
   await expect(page.getByTestId("project-select")).toBeVisible();

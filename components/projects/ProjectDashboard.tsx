@@ -74,6 +74,13 @@ export function ProjectDashboard({
                 item.quantityRequired > 0 &&
                 item.quantityOwned >= item.quantityRequired
             );
+          const progressItems = fullStage?.items ?? stage.items;
+          const progressCompletedCount = progressItems.filter(
+            (item) =>
+              item.quantityRequired > 0 &&
+              item.quantityOwned >= item.quantityRequired
+          ).length;
+          const progressTotalCount = progressItems.length;
           const isExpanded =
             !isCompleted || expandedCompleted.has(stage.stageKey);
           return (
@@ -96,6 +103,8 @@ export function ProjectDashboard({
                 });
               }}
               stripBlueprintLabel={selectedProject.kind === "blueprints"}
+              progressCompletedCount={progressCompletedCount}
+              progressTotalCount={progressTotalCount}
             />
           );
         })}
