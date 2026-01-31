@@ -1,4 +1,6 @@
 import "dotenv/config";
+import fs from "fs";
+import path from "path";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
@@ -13,6 +15,60 @@ const pool = new Pool({
 const prisma = new PrismaClient({
   adapter: new PrismaPg(pool),
 });
+
+const getUniqueExpeditionItem = () => {
+  const dataPath = path.join(
+    process.cwd(),
+    "node_modules",
+    "arcraiders-data",
+    "projects.json"
+  );
+  const raw = fs.readFileSync(dataPath, "utf8");
+  const projects = JSON.parse(raw) as Array<{
+    id?: string;
+    phases?: Array<{
+      requirementItemIds?: Array<{ itemId?: string; quantity?: number }>;
+    }>;
+  }>;
+
+  const expeditionProjects = projects.filter((project) =>
+    project.id?.startsWith("expedition_project")
+  );
+  const expeditionItems = new Map<
+    string,
+    { projectSlug: string; required: number }
+  >();
+  const nonExpeditionItems = new Set<string>();
+
+  for (const project of projects) {
+    const isExpedition = project.id?.startsWith("expedition_project");
+    for (const phase of project.phases ?? []) {
+      for (const requirement of phase.requirementItemIds ?? []) {
+        if (!requirement.itemId) continue;
+        const required = Number(requirement.quantity ?? 0);
+        if (isExpedition) {
+          if (!expeditionItems.has(requirement.itemId)) {
+            expeditionItems.set(requirement.itemId, {
+              projectSlug: project.id ?? "",
+              required,
+            });
+          }
+        } else {
+          nonExpeditionItems.add(requirement.itemId);
+        }
+      }
+    }
+  }
+
+  for (const [itemId, data] of expeditionItems.entries()) {
+    if (data.required <= 0) continue;
+    if (nonExpeditionItems.has(itemId)) continue;
+    if (!data.projectSlug) continue;
+    return { itemId, projectSlug: data.projectSlug };
+  }
+
+  return null;
+};
 
 const getTileQuantity = async (tile: Locator) => {
   const value = await tile.getAttribute("data-quantity");
@@ -63,6 +119,26 @@ const openUserMenu = async (page: Page) => {
   await expect(trigger).toBeVisible();
   await trigger.click();
   await expect(page).toHaveURL(/\/operator/);
+};
+
+const setActiveExpedition = async (page: Page, slug: string | null) => {
+  const result = await page.evaluate(async (expeditionSlug) => {
+    const token = localStorage.getItem("arc:identity:token");
+    const res = await fetch("/api/user/expedition", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-arc-token": token ?? "",
+      },
+      body: JSON.stringify({ expeditionSlug }),
+    });
+    return res.ok;
+  }, slug);
+  if (!result) {
+    throw new Error("Failed to set expedition selection.");
+  }
+  await page.reload();
+  await expect(page.getByTestId("project-list")).toBeVisible();
 };
 
 test.afterAll(async () => {
@@ -338,6 +414,7 @@ test("project control bar sticks beneath the top nav", async ({ page }) => {
 
 test("project list navigates to project detail", async ({ page }) => {
   await login(page);
+  await setActiveExpedition(page, "expedition_project");
   await openProject(page, "expedition_project");
   await expect(page.getByText("Foundation")).toBeVisible();
 });
@@ -372,8 +449,49 @@ test("hideout benches appear in project list", async ({ page }) => {
   });
 });
 
+test("hideout projects are ordered after other projects", async ({ page }) => {
+  await login(page);
+  const hideoutSlugs = [
+    "equipment_bench",
+    "explosives_bench",
+    "med_station",
+    "refiner",
+    "scrappy",
+    "stash",
+    "utility_bench",
+    "weapon_bench",
+    "workbench",
+  ];
+  const list = page.getByTestId("project-list");
+  await expect(list).toBeVisible();
+
+  const slugs = await list.evaluate((node) => {
+    return Array.from(
+      node.querySelectorAll('[data-testid^="project-card-"]')
+    )
+      .map((card) => card.getAttribute("data-testid"))
+      .filter((value): value is string => Boolean(value))
+      .map((value) => value.replace("project-card-", ""));
+  });
+
+  const hideoutIndices = slugs
+    .map((slug, index) => (hideoutSlugs.includes(slug) ? index : -1))
+    .filter((index) => index >= 0);
+  expect(hideoutIndices.length).toBeGreaterThan(0);
+  const firstHideoutIndex = Math.min(...hideoutIndices);
+  const nonHideoutAfter = slugs
+    .slice(firstHideoutIndex)
+    .filter((slug) => !hideoutSlugs.includes(slug));
+  expect(nonHideoutAfter).toHaveLength(0);
+
+  await list.screenshot({
+    path: "test-results/project-list-order.png",
+  });
+});
+
 test("search filters project items", async ({ page }) => {
   await login(page);
+  await setActiveExpedition(page, "expedition_project");
   await openProject(page, "expedition_project");
 
   const search = page.getByPlaceholder("SEARCH...");
@@ -388,7 +506,7 @@ test("trophy display includes queen reactor", async ({ page }) => {
   await expect(page.locator('[data-item-id="queen_reactor"]')).toBeVisible();
 });
 
-test("blueprint cache shows multiple blueprint items", async ({ page }) => {
+test("blueprints show multiple blueprint items", async ({ page }) => {
   await login(page);
   await openProject(page, "blueprints");
   const blueprints = page.locator('[data-item-id*="_blueprint"]');
@@ -420,6 +538,7 @@ test("stage progress shows completed and total counts", async ({ page }) => {
 
 test("rarity tile background matches arc effect", async ({ page }) => {
   await login(page);
+  await setActiveExpedition(page, "expedition_project");
   await openProject(page, "expedition_project");
 
   const tile = page.locator("[data-item-id]").first();
@@ -637,6 +756,73 @@ test("community needs overview aggregates and filters by member", async ({
   await context.close();
 });
 
+test("expedition selection filters community needs", async ({ page }) => {
+  const expedition = getUniqueExpeditionItem();
+  if (!expedition) {
+    throw new Error("No unique expedition item found for test.");
+  }
+
+  await login(page, "Tracer");
+
+  const identity = await getLocalIdentity(page);
+  const user = await prisma.user.findUnique({
+    where: { token: identity.token ?? "" },
+    select: { id: true },
+  });
+  if (!user) {
+    throw new Error("Missing user for expedition selection test.");
+  }
+
+  const existingMembership = await prisma.communityMember.findUnique({
+    where: { userId: user.id },
+    include: { community: true },
+  });
+
+  if (!existingMembership) {
+    await prisma.community.create({
+      data: {
+        name: "ExpeditionLine",
+        inviteCode: `exp-${Math.random().toString(36).slice(2, 8)}`,
+        members: { create: { userId: user.id } },
+      },
+    });
+  }
+
+  await page.getByRole("link", { name: "Community", exact: true }).click();
+  await expect(page.getByText("Roster")).toBeVisible();
+
+  const panel = page.getByTestId("community-needs-panel");
+  await expect(panel).toBeVisible();
+
+  const search = panel.getByPlaceholder("SEARCH...");
+  await search.fill(expedition.itemId);
+  await expect(
+    panel.locator(`[data-item-id="${expedition.itemId}"]`)
+  ).toHaveCount(0);
+
+  await openUserMenu(page);
+  const expeditionOption = page.getByTestId(
+    `expedition-option-${expedition.projectSlug}`
+  );
+  await expect(expeditionOption).toBeVisible();
+  await expeditionOption.click();
+  await expect(expeditionOption).toHaveAttribute("aria-pressed", "true");
+  await page.getByTestId("expedition-config").screenshot({
+    path: "test-results/expedition-config.png",
+  });
+
+  await page.getByRole("link", { name: "Community", exact: true }).click();
+  await expect(page.getByText("Roster")).toBeVisible();
+
+  const panelAfter = page.getByTestId("community-needs-panel");
+  await expect(panelAfter).toBeVisible();
+  const searchAfter = panelAfter.getByPlaceholder("SEARCH...");
+  await searchAfter.fill(expedition.itemId);
+  await expect(
+    panelAfter.locator(`[data-item-id="${expedition.itemId}"]`)
+  ).toHaveCount(1);
+});
+
 test("mobile longpress increments quantity repeatedly", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await login(page);
@@ -836,7 +1022,7 @@ test("community members can remove operators", async ({ page, browser }) => {
   });
 });
 
-test("project list includes blueprint cache", async ({ page }) => {
+test("project list includes blueprints", async ({ page }) => {
   await login(page);
   await expect(page.getByTestId("project-card-blueprints")).toBeVisible();
 });
@@ -848,6 +1034,7 @@ test("language switch toggles localized project and item names", async ({
   const page = await context.newPage();
 
   await login(page, "Vanguard");
+  await setActiveExpedition(page, "expedition_project");
 
   const expeditionCard = page.getByTestId("project-card-expedition_project");
   await expect(expeditionCard).toBeVisible();

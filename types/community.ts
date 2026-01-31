@@ -2,6 +2,7 @@ export type CommunityMember = {
   id: string;
   name: string;
   joinedAt: string;
+  activeExpeditionSlug?: string | null;
 };
 
 export type Community = {
@@ -15,6 +16,7 @@ export type CommunityNeedsMember = {
   id: string;
   name: string;
   joinedAt: string;
+  activeExpeditionSlug?: string | null;
 };
 
 export type CommunityNeedsItem = {

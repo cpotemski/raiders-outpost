@@ -4,16 +4,21 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useProjectProgress } from "@/hooks/useProjectProgress";
 import { useLocale } from "@/components/locale/LocaleProvider";
 import type { ProjectProgress } from "@/types/projects";
+import { isExpeditionProjectSlug } from "@/lib/expeditions";
 
 type ProjectContextValue = {
   loading: boolean;
+  allProjects: ProjectProgress[];
   projects: ProjectProgress[];
   selectedProject: ProjectProgress | null;
   selectedSlug: string | null;
   setSelectedSlug: (slug: string) => void;
   memberCount: number;
+  expeditionMemberCountsBySlug: Record<string, number>;
   communityCountsByItemId: Record<string, number>;
+  activeExpeditionSlug: string | null;
   updateItemQuantity: (projectItemId: string, nextQuantity: number) => void;
+  refreshProjects: () => void;
 };
 
 const ProjectContext = createContext<ProjectContextValue | null>(null);
@@ -24,43 +29,70 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     loading,
     projects,
     memberCount,
+    expeditionMemberCountsBySlug,
     communityCountsByItemId,
+    activeExpeditionSlug,
     updateItemQuantity,
+    refresh,
   } = useProjectProgress(locale, localeReady);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!projects.length) return;
-    setSelectedSlug((prev) => {
-      if (prev) return prev;
-      const blueprint = projects.find((project) => project.kind === "blueprints");
-      return blueprint?.slug ?? projects[0]?.slug ?? null;
+  const visibleProjects = useMemo(() => {
+    if (!activeExpeditionSlug) {
+      return projects.filter(
+        (project) => !isExpeditionProjectSlug(project.slug)
+      );
+    }
+    return projects.filter((project) => {
+      if (!isExpeditionProjectSlug(project.slug)) return true;
+      return project.slug === activeExpeditionSlug;
     });
-  }, [projects]);
+  }, [activeExpeditionSlug, projects]);
+
+  useEffect(() => {
+    if (!visibleProjects.length) return;
+    setSelectedSlug((prev) => {
+      if (prev && visibleProjects.some((project) => project.slug === prev)) {
+        return prev;
+      }
+      const blueprint = visibleProjects.find(
+        (project) => project.kind === "blueprints"
+      );
+      return blueprint?.slug ?? visibleProjects[0]?.slug ?? null;
+    });
+  }, [visibleProjects]);
 
   const selectedProject = useMemo(() => {
-    return projects.find((project) => project.slug === selectedSlug) ?? null;
-  }, [projects, selectedSlug]);
+    return visibleProjects.find((project) => project.slug === selectedSlug) ?? null;
+  }, [selectedSlug, visibleProjects]);
 
   const value = useMemo<ProjectContextValue>(
     () => ({
       loading,
-      projects,
+      allProjects: projects,
+      projects: visibleProjects,
       selectedProject,
       selectedSlug,
       setSelectedSlug,
       memberCount,
+      expeditionMemberCountsBySlug,
       communityCountsByItemId,
+      activeExpeditionSlug,
       updateItemQuantity,
+      refreshProjects: refresh,
     }),
     [
       loading,
       projects,
+      visibleProjects,
       selectedProject,
       selectedSlug,
       memberCount,
+      expeditionMemberCountsBySlug,
       communityCountsByItemId,
+      activeExpeditionSlug,
       updateItemQuantity,
+      refresh,
     ]
   );
 

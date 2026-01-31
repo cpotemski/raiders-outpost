@@ -6,6 +6,7 @@ import { ProjectItemTile } from "@/components/projects/ProjectItemTile";
 type ProjectStagePanelProps = {
   stage: ProjectStageProgress;
   memberCount: number;
+  expeditionMemberCountsBySlug: Record<string, number>;
   communityCountsByItemId: Record<string, number>;
   onAdjust: (projectItemId: string, nextQuantity: number) => void;
   isExpanded: boolean;
@@ -18,6 +19,7 @@ type ProjectStagePanelProps = {
 export function ProjectStagePanel({
   stage,
   memberCount,
+  expeditionMemberCountsBySlug,
   communityCountsByItemId,
   onAdjust,
   isExpanded,
@@ -117,6 +119,7 @@ export function ProjectStagePanel({
                   key={item.itemId}
                   item={item}
                   memberCount={memberCount}
+                  expeditionMemberCountsBySlug={expeditionMemberCountsBySlug}
                   communityCount={
                     communityCountsByItemId[item.projectItemId] ?? 0
                   }

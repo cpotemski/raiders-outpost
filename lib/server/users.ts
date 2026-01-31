@@ -14,6 +14,7 @@ export const getUserByToken = async (token: string) => {
       id: true,
       name: true,
       token: true,
+      activeExpeditionSlug: true,
       createdAt: true,
     },
   });
@@ -27,6 +28,7 @@ export const updateUserName = async (token: string, name: string) => {
       id: true,
       name: true,
       token: true,
+      activeExpeditionSlug: true,
       createdAt: true,
     },
   });
@@ -41,7 +43,32 @@ export const upsertUserWithToken = async (name: string, token: string) => {
       id: true,
       name: true,
       token: true,
+      activeExpeditionSlug: true,
       createdAt: true,
+    },
+  });
+};
+
+export const getUserExpeditionByToken = async (token: string) => {
+  return prisma.user.findUnique({
+    where: { token },
+    select: {
+      id: true,
+      activeExpeditionSlug: true,
+    },
+  });
+};
+
+export const updateUserExpedition = async (
+  token: string,
+  activeExpeditionSlug: string | null
+) => {
+  return prisma.user.update({
+    where: { token },
+    data: { activeExpeditionSlug },
+    select: {
+      id: true,
+      activeExpeditionSlug: true,
     },
   });
 };

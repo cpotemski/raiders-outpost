@@ -1,5 +1,7 @@
 export type ProjectItemProgress = {
   projectItemId: string;
+  projectSlug: string;
+  isExpedition: boolean;
   itemId: string;
   displayName: string;
   quantityRequired: number;
@@ -28,5 +30,7 @@ export type ProjectProgress = {
 export type ProjectProgressPayload = {
   projects: ProjectProgress[];
   memberCount: number;
+  expeditionMemberCountsBySlug: Record<string, number>;
   communityCountsByItemId: Record<string, number>;
+  activeExpeditionSlug: string | null;
 };

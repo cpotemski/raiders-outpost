@@ -8,13 +8,25 @@ export default function StartPage() {
   const { projects, loading } = useProjectContext();
 
   const projectCards = useMemo(() => {
+    const hideoutSlugs = new Set([
+      "equipment_bench",
+      "explosives_bench",
+      "med_station",
+      "refiner",
+      "scrappy",
+      "stash",
+      "utility_bench",
+      "weapon_bench",
+      "workbench",
+    ]);
     const ordered = projects.slice().sort((a, b) => {
-      const priority = (kind: typeof a.kind) => {
-        if (kind === "blueprints") return 0;
-        if (kind === "project") return 1;
+      const priority = (project: typeof a) => {
+        if (hideoutSlugs.has(project.slug)) return 2;
+        if (project.kind === "blueprints") return 0;
+        if (project.kind === "project") return 1;
         return 2;
       };
-      const priorityDiff = priority(a.kind) - priority(b.kind);
+      const priorityDiff = priority(a) - priority(b);
       if (priorityDiff !== 0) return priorityDiff;
       return a.name.localeCompare(b.name);
     });
@@ -108,7 +120,7 @@ export default function StartPage() {
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0 flex-1">
-                              <h3 className="text-sm font-semibold uppercase tracking-[0.12em] break-words">
+                              <h3 className="text-xs font-semibold uppercase tracking-[0.12em] break-words sm:text-sm">
                                 {project.name}
                               </h3>
                             </div>
@@ -190,7 +202,7 @@ export default function StartPage() {
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0 flex-1">
-                              <h3 className="text-sm font-semibold uppercase tracking-[0.12em] break-words">
+                              <h3 className="text-xs font-semibold uppercase tracking-[0.12em] break-words sm:text-sm">
                                 {project.name}
                               </h3>
                             </div>

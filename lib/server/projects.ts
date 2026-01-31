@@ -4,6 +4,7 @@ import { loadArcProjects } from "@/lib/arc-projects";
 import { loadArcItems } from "@/lib/arc-items";
 import { getCommunityForUser } from "@/lib/server/community";
 import type { AppLocale } from "@/lib/locale";
+import { isExpeditionProjectSlug } from "@/lib/expeditions";
 
 type ProjectWithStages = Prisma.ProjectGetPayload<{
   include: { stages: { include: { items: true } } };
@@ -158,6 +159,10 @@ export const getProjectProgress = async (
     loadArcItems(locale),
     ensureProjects(projectsPayload),
   ]);
+  const activeUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { activeExpeditionSlug: true },
+  });
 
   const itemMetaById = new Map(
     arcItems.items.map((item) => [
@@ -172,6 +177,13 @@ export const getProjectProgress = async (
 
   const projectItemIds: string[] = [];
   const projectItemIdByStage = new Map<string, Map<string, string>>();
+  const expeditionSlugs = new Set(
+    projectsPayload.projects
+      .filter((project) => isExpeditionProjectSlug(project.slug))
+      .map((project) => project.slug)
+  );
+  const projectSlugByItemId = new Map<string, string>();
+  const isExpeditionByItemId = new Map<string, boolean>();
 
   for (const project of projectRecords) {
     const stageMap = new Map<string, string>();
@@ -179,6 +191,8 @@ export const getProjectProgress = async (
       for (const item of stage.items) {
         stageMap.set(`${stage.sortOrder}::${item.itemName}`, item.id);
         projectItemIds.push(item.id);
+        projectSlugByItemId.set(item.id, project.slug);
+        isExpeditionByItemId.set(item.id, expeditionSlugs.has(project.slug));
       }
     }
     projectItemIdByStage.set(project.slug, stageMap);
@@ -201,11 +215,27 @@ export const getProjectProgress = async (
 
   const community = await getCommunityForUser(userId);
   let memberCount = 0;
+  let expeditionMemberCountsBySlug: Record<string, number> = {};
   let communityCountsByItemId: Record<string, number> = {};
 
   if (community) {
     memberCount = community.members.length;
     const memberIds = community.members.map((member) => member.id);
+    expeditionMemberCountsBySlug = community.members.reduce<
+      Record<string, number>
+    >((acc, member) => {
+      const slug = member.activeExpeditionSlug;
+      if (slug && expeditionSlugs.has(slug)) {
+        acc[slug] = (acc[slug] ?? 0) + 1;
+      }
+      return acc;
+    }, {});
+    const memberExpeditionById = new Map(
+      community.members.map((member) => [
+        member.id,
+        member.activeExpeditionSlug ?? null,
+      ])
+    );
 
     const requiredByItemId = new Map(
       projectRecords
@@ -229,7 +259,18 @@ export const getProjectProgress = async (
     communityCountsByItemId = communityProgress.reduce<Record<string, number>>(
       (acc, entry) => {
         const required = requiredByItemId.get(entry.projectItemId) ?? 0;
-        if (required > 0 && entry.quantityOwned >= required) {
+        if (required <= 0 || entry.quantityOwned < required) {
+          return acc;
+        }
+        const isExpedition = isExpeditionByItemId.get(entry.projectItemId);
+        if (isExpedition) {
+          const itemSlug = projectSlugByItemId.get(entry.projectItemId);
+          const memberSlug = memberExpeditionById.get(entry.userId) ?? null;
+          if (!itemSlug || memberSlug !== itemSlug) {
+            return acc;
+          }
+        }
+        if (required > 0) {
           acc[entry.projectItemId] = (acc[entry.projectItemId] ?? 0) + 1;
         }
         return acc;
@@ -255,8 +296,11 @@ export const getProjectProgress = async (
               rarity: "Unknown",
               itemType: "Unknown",
             };
+            const isExpedition = expeditionSlugs.has(project.slug);
             return {
               projectItemId,
+              projectSlug: project.slug,
+              isExpedition,
               itemId: item.itemId,
               displayName: item.displayName,
               quantityRequired: item.quantityRequired,
@@ -274,7 +318,9 @@ export const getProjectProgress = async (
   return {
     projects,
     memberCount,
+    expeditionMemberCountsBySlug,
     communityCountsByItemId,
+    activeExpeditionSlug: activeUser?.activeExpeditionSlug ?? null,
   };
 };
 
@@ -310,6 +356,11 @@ export const getCommunityNeeds = async (
       { itemType: item.itemType, rarity: item.rarity },
     ])
   );
+  const expeditionSlugs = new Set(
+    projectsPayload.projects
+      .filter((project) => isExpeditionProjectSlug(project.slug))
+      .map((project) => project.slug)
+  );
 
   const projectItemIdByStage = new Map<string, Map<string, string>>();
   for (const project of projectRecords) {
@@ -324,6 +375,7 @@ export const getCommunityNeeds = async (
 
   const projectItems = projectsPayload.projects.flatMap((project) => {
     const stageMap = projectItemIdByStage.get(project.slug) ?? new Map();
+    const isExpedition = expeditionSlugs.has(project.slug);
     return project.stages.flatMap((stage) =>
       stage.items
         .map((item) => {
@@ -337,6 +389,8 @@ export const getCommunityNeeds = async (
           };
           return {
             projectItemId,
+            projectSlug: project.slug,
+            isExpedition,
             itemId: item.itemId,
             displayName: item.displayName,
             quantityRequired: item.quantityRequired,
@@ -347,6 +401,8 @@ export const getCommunityNeeds = async (
         .filter(
           (entry): entry is {
             projectItemId: string;
+            projectSlug: string;
+            isExpedition: boolean;
             itemId: string;
             displayName: string;
             quantityRequired: number;
@@ -391,7 +447,16 @@ export const getCommunityNeeds = async (
   >();
 
   for (const member of community.members) {
+    const activeExpedition = expeditionSlugs.has(
+      member.activeExpeditionSlug ?? ""
+    )
+      ? member.activeExpeditionSlug
+      : null;
     for (const item of projectItems) {
+      if (item.isExpedition) {
+        if (!activeExpedition) continue;
+        if (item.projectSlug !== activeExpedition) continue;
+      }
       const owned =
         ownedByMemberItem.get(`${member.id}::${item.projectItemId}`) ?? 0;
       const needed = Math.max(0, item.quantityRequired - owned);
@@ -441,6 +506,7 @@ export const getCommunityNeeds = async (
       id: member.id,
       name: member.name,
       joinedAt: member.joinedAt.toISOString(),
+      activeExpeditionSlug: member.activeExpeditionSlug ?? null,
     })),
     items,
   };

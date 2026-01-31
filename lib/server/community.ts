@@ -5,7 +5,12 @@ export type CommunityPayload = {
   id: string;
   name: string;
   inviteCode: string;
-  members: Array<{ id: string; name: string; joinedAt: Date }>;
+  members: Array<{
+    id: string;
+    name: string;
+    joinedAt: Date;
+    activeExpeditionSlug: string | null;
+  }>;
 };
 
 const generateInviteCode = () => {
@@ -59,7 +64,7 @@ export const getCommunityForUser = async (
             orderBy: { joinedAt: "asc" },
             include: {
               user: {
-                select: { id: true, name: true },
+                select: { id: true, name: true, activeExpeditionSlug: true },
               },
             },
           },
@@ -80,6 +85,7 @@ export const getCommunityForUser = async (
       id: member.user.id,
       name: member.user.name,
       joinedAt: member.joinedAt,
+      activeExpeditionSlug: member.user.activeExpeditionSlug ?? null,
     })),
   };
 };

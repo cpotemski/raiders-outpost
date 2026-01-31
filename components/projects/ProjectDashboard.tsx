@@ -20,6 +20,7 @@ export function ProjectDashboard({
     loading,
     selectedProject,
     memberCount,
+    expeditionMemberCountsBySlug,
     communityCountsByItemId,
     updateItemQuantity,
   } = useProjectContext();
@@ -92,6 +93,7 @@ export function ProjectDashboard({
               key={stage.stageKey}
               stage={stage}
               memberCount={memberCount}
+              expeditionMemberCountsBySlug={expeditionMemberCountsBySlug}
               communityCountsByItemId={communityCountsByItemId}
               onAdjust={updateItemQuantity}
               isExpanded={isExpanded}

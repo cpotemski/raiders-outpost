@@ -17,6 +17,7 @@ export const useProjectProgress = (
   const { identity, ready, clearIdentity } = useLocalIdentity();
   const [payload, setPayload] = useState<ProjectProgressPayload | null>(null);
   const [loading, setLoading] = useState(false);
+  const [refreshIndex, setRefreshIndex] = useState(0);
   const pendingUpdates = useRef<Map<string, number>>(new Map());
   const flushTimeout = useRef<number | null>(null);
 
@@ -45,7 +46,7 @@ export const useProjectProgress = (
       .finally(() => setLoading(false));
 
     return () => controller.abort();
-  }, [clearIdentity, identity, locale, localeReady, ready]);
+  }, [clearIdentity, identity, locale, localeReady, ready, refreshIndex]);
 
   const flushUpdates = useCallback(() => {
     if (!identity) return;
@@ -106,10 +107,17 @@ export const useProjectProgress = (
         const required = targetItem?.quantityRequired ?? 0;
         const wasComplete = required > 0 && currentOwned >= required;
         const nextComplete = required > 0 && nextQuantity >= required;
+        const expeditionMismatch =
+          targetItem?.isExpedition &&
+          targetItem.projectSlug &&
+          prev.activeExpeditionSlug !== targetItem.projectSlug;
 
         const nextCount =
           prev.memberCount > 0
             ? (() => {
+                if (expeditionMismatch) {
+                  return undefined;
+                }
                 const currentCount =
                   prev.communityCountsByItemId[projectItemId] ?? 0;
                 if (!wasComplete && nextComplete) {
@@ -151,13 +159,19 @@ export const useProjectProgress = (
   );
 
   const allProjects = useMemo(() => payload?.projects ?? [], [payload]);
+  const refresh = useCallback(() => {
+    setRefreshIndex((prev) => prev + 1);
+  }, []);
 
   return {
     loading,
     payload,
     projects: allProjects,
     memberCount: payload?.memberCount ?? 0,
+    expeditionMemberCountsBySlug: payload?.expeditionMemberCountsBySlug ?? {},
     communityCountsByItemId: payload?.communityCountsByItemId ?? {},
+    activeExpeditionSlug: payload?.activeExpeditionSlug ?? null,
     updateItemQuantity,
+    refresh,
   };
 };

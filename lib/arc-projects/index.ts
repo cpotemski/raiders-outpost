@@ -86,7 +86,7 @@ const buildBlueprintFallback = async (
 
   return {
     slug: "blueprints",
-    name: locale === "de" ? "Blueprint-Cache" : "Blueprint Cache",
+    name: locale === "de" ? "Blueprints" : "Blueprints",
     kind: "blueprints",
     repeatable: false,
     timeLimitedUntil: null,
@@ -131,7 +131,7 @@ const mapHideoutProject = (
   return {
     slug: entry.id,
     name: resolveName(entry.name, locale, entry.id),
-    kind: "project",
+    kind: "workshop",
     repeatable: false,
     timeLimitedUntil: null,
     stages,
@@ -218,7 +218,7 @@ const readArcProjects = (locale: AppLocale) =>
       projects: [...projects, await buildBlueprintFallback(locale)],
     };
     },
-    ["arc-projects", locale],
+    ["arc-projects-v2", locale],
     { revalidate: 3600 }
   );
 

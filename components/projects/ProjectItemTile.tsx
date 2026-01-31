@@ -7,6 +7,7 @@ import type { ProjectItemProgress } from "@/types/projects";
 type ProjectItemTileProps = {
   item: ProjectItemProgress;
   memberCount: number;
+  expeditionMemberCountsBySlug: Record<string, number>;
   communityCount: number;
   onAdjust: (projectItemId: string, nextQuantity: number) => void;
   stripBlueprintLabel?: boolean;
@@ -15,6 +16,7 @@ type ProjectItemTileProps = {
 export function ProjectItemTile({
   item,
   memberCount,
+  expeditionMemberCountsBySlug,
   communityCount,
   onAdjust,
   stripBlueprintLabel,
@@ -42,7 +44,13 @@ export function ProjectItemTile({
     /_blueprint$/i.test(item.itemId);
   const isComplete =
     item.quantityRequired > 0 && item.quantityOwned >= item.quantityRequired;
-  const progressRatio = memberCount ? communityCount / memberCount : 0;
+  const expeditionMemberCount =
+    item.isExpedition && item.projectSlug
+      ? expeditionMemberCountsBySlug[item.projectSlug] ?? 0
+      : memberCount;
+  const progressRatio = expeditionMemberCount
+    ? communityCount / expeditionMemberCount
+    : 0;
   const progressPercent = Math.round(progressRatio * 100);
   const ringRadius = 6;
   const ringStroke = 2;
