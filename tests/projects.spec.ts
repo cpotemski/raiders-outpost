@@ -111,6 +111,26 @@ test("blueprint labels omit blueprint suffix", async ({ page }) => {
   await expect(firstTile).not.toContainText(/Blueprint/i);
 });
 
+test("plus button increments by one per click", async ({ page }) => {
+  await login(page);
+
+  const tile = page
+    .locator("[data-item-id]")
+    .filter({
+      has: page.locator(
+        '[data-testid="qty-plus"][aria-hidden="false"]'
+      ),
+    })
+    .first();
+  await expect(tile).toBeVisible();
+  const increaseButton = tile.getByTestId("qty-plus");
+  const before = await getTileQuantity(tile);
+  await increaseButton.click();
+  await expect
+    .poll(async () => getTileQuantity(tile))
+    .toBe(before + 1);
+});
+
 test("project tile images scale to fill on desktop", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await login(page);

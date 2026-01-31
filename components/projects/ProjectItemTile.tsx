@@ -125,7 +125,12 @@ export function ProjectItemTile({
           }
           startHold(-1);
         }}
-        onClick={() => applyDelta(-1)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            applyDelta(-1);
+          }
+        }}
         onContextMenu={(event) => event.preventDefault()}
         onPointerUp={clearHold}
         onPointerLeave={clearHold}
@@ -149,7 +154,12 @@ export function ProjectItemTile({
           }
           startHold(1);
         }}
-        onClick={() => applyDelta(1)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            applyDelta(1);
+          }
+        }}
         onContextMenu={(event) => event.preventDefault()}
         onPointerUp={clearHold}
         onPointerLeave={clearHold}
