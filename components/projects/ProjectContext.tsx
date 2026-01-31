@@ -29,7 +29,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!projects.length) return;
-    setSelectedSlug((prev) => prev ?? projects[0]?.slug ?? null);
+    setSelectedSlug((prev) => {
+      if (prev) return prev;
+      const blueprint = projects.find((project) => project.kind === "blueprints");
+      return blueprint?.slug ?? projects[0]?.slug ?? null;
+    });
   }, [projects]);
 
   const selectedProject = useMemo(() => {

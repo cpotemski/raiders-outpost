@@ -631,3 +631,11 @@ test("community members can remove operators", async ({ page, browser }) => {
     path: "test-results/community-remove.png",
   });
 });
+
+test("defaults to blueprints project on load", async ({ page }) => {
+  await login(page);
+
+  const select = page.getByTestId("project-select");
+  await expect(select).toBeVisible();
+  await expect(select).toHaveValue("blueprints");
+});
