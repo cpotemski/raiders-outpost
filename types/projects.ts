@@ -5,6 +5,8 @@ export type ProjectItemProgress = {
   quantityRequired: number;
   quantityOwned: number;
   imageFile: string | null;
+  rarity: string;
+  itemType: string;
 };
 
 export type ProjectStageProgress = {

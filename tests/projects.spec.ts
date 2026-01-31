@@ -418,6 +418,21 @@ test("stage progress shows completed and total counts", async ({ page }) => {
   });
 });
 
+test("rarity tile background matches arc effect", async ({ page }) => {
+  await login(page);
+  await openProject(page, "expedition_project");
+
+  const tile = page.locator("[data-item-id]").first();
+  await expect(tile).toBeVisible();
+
+  const backgroundImage = await tile.evaluate(
+    (node) => getComputedStyle(node).backgroundImage
+  );
+  expect(backgroundImage).not.toContain("blueprint-bg");
+  expect(backgroundImage).toContain("radial-gradient");
+  await tile.screenshot({ path: "test-results/rarity-tile.png" });
+});
+
 test("needed-only hides completed items", async ({ page }) => {
   await login(page);
   await expect(page.getByTestId("project-list")).toBeVisible();

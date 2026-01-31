@@ -159,8 +159,15 @@ export const getProjectProgress = async (
     ensureProjects(projectsPayload),
   ]);
 
-  const imageById = new Map(
-    arcItems.items.map((item) => [item.id ?? item.imageFile, item.imageFile])
+  const itemMetaById = new Map(
+    arcItems.items.map((item) => [
+      item.id ?? item.imageFile ?? "",
+      {
+        imageFile: item.imageFile,
+        rarity: item.rarity,
+        itemType: item.itemType,
+      },
+    ])
   );
 
   const projectItemIds: string[] = [];
@@ -243,13 +250,20 @@ export const getProjectProgress = async (
           items: stage.items.map((item) => {
             const projectItemId =
               stageIdMap.get(`${stage.sortOrder}::${item.itemId}`) ?? "";
+            const meta = itemMetaById.get(item.itemId) ?? {
+              imageFile: null,
+              rarity: "Unknown",
+              itemType: "Unknown",
+            };
             return {
               projectItemId,
               itemId: item.itemId,
               displayName: item.displayName,
               quantityRequired: item.quantityRequired,
               quantityOwned: ownedByItemId.get(projectItemId) ?? 0,
-              imageFile: imageById.get(item.itemId) ?? null,
+              imageFile: meta.imageFile ?? null,
+              rarity: meta.rarity,
+              itemType: meta.itemType,
             };
           }),
         };

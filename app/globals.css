@@ -16,6 +16,12 @@
   --warn: #f2b24a;     /* amber */
   --good: #79d48a;
   --bad: #ff5b5b;
+
+  --rarity-common: #68696c;
+  --rarity-uncommon: #34b853;
+  --rarity-rare: #05a5f6;
+  --rarity-epic: #ca309d;
+  --rarity-legendary: #fec600;
 }
 
 html, body {

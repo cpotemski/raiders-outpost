@@ -26,6 +26,20 @@ export function ProjectItemTile({
         .replace(/\s*(blueprint|bauplan)\s*$/i, "")
         .trim()
     : rawLabel;
+  const rarityKey = (item.rarity || "unknown")
+    .toLowerCase()
+    .replace(/[^a-z]/g, "");
+  const rarityColor =
+    {
+      common: "var(--rarity-common)",
+      uncommon: "var(--rarity-uncommon)",
+      rare: "var(--rarity-rare)",
+      epic: "var(--rarity-epic)",
+      legendary: "var(--rarity-legendary)",
+    }[rarityKey] ?? null;
+  const isBlueprint =
+    item.itemType.toLowerCase() === "blueprint" ||
+    /_blueprint$/i.test(item.itemId);
   const isComplete =
     item.quantityRequired > 0 && item.quantityOwned >= item.quantityRequired;
   const progressRatio = memberCount ? communityCount / memberCount : 0;
@@ -182,6 +196,21 @@ export function ProjectItemTile({
 
   const minusHandlers = createPressHandlers(-1, minusPress);
   const plusHandlers = createPressHandlers(1, plusPress);
+  const rarityTint = rarityColor
+    ? {
+        strong: `color-mix(in srgb, ${rarityColor} 55%, transparent)`,
+        mid: `color-mix(in srgb, ${rarityColor} 32%, transparent)`,
+        low: `color-mix(in srgb, ${rarityColor} 18%, transparent)`,
+      }
+    : null;
+  const itemBackground = isBlueprint
+    ? `url(${blueprintBg.src})`
+    : rarityTint
+      ? [
+          `radial-gradient(120% 120% at 20% 18%, ${rarityTint.strong} 0%, transparent 55%)`,
+          `linear-gradient(135deg, ${rarityTint.mid} 0%, ${rarityTint.low} 42%, rgba(7, 10, 16, 0.92) 100%)`,
+        ].join(", ")
+      : "linear-gradient(135deg, rgba(18, 24, 40, 0.75), rgba(7, 10, 16, 0.9))";
 
   return (
     <div
@@ -194,7 +223,7 @@ export function ProjectItemTile({
         isComplete ? "border-accent/80 shadow-arcHover" : "border-frame2"
       )}
       style={{
-        backgroundImage: `url(${blueprintBg.src})`,
+        backgroundImage: itemBackground,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
@@ -205,7 +234,7 @@ export function ProjectItemTile({
           isComplete ? "opacity-100" : "opacity-90"
         )}
       >
-        <div className="absolute inset-0 bg-panel/40" />
+        <div className="absolute inset-0 bg-transparent" />
       </div>
       <span
         className={cn(
@@ -310,9 +339,12 @@ export function ProjectItemTile({
             className={cn(
               "h-full w-full object-contain transition",
               isComplete
-                ? "opacity-100 drop-shadow-[0_0_6px_rgba(72,199,214,0.35)]"
-                : "opacity-85 group-hover:opacity-100"
+                ? "opacity-100 drop-shadow-[0_0_10px_rgba(72,199,214,0.45)]"
+                : "opacity-90 drop-shadow-[0_0_6px_rgba(72,199,214,0.25)] group-hover:opacity-100"
             )}
+            style={{
+              filter: "saturate(1.18) contrast(1.12) brightness(1.06)",
+            }}
             draggable={false}
           />
         </div>
