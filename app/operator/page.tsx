@@ -1,109 +1,41 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
 import { useProjectContext } from "@/components/projects/ProjectContext";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 import { isExpeditionProjectSlug } from "@/lib/expeditions";
 import { useLabels } from "@/components/locale/useLabels";
-
-const copyTokenToClipboard = async (token: string) => {
-  if (navigator?.clipboard?.writeText) {
-    await navigator.clipboard.writeText(token);
-    return true;
-  }
-
-  const textarea = document.createElement("textarea");
-  textarea.value = token;
-  textarea.style.position = "fixed";
-  textarea.style.opacity = "0";
-  document.body.appendChild(textarea);
-  textarea.select();
-  try {
-    document.execCommand("copy");
-    return true;
-  } catch {
-    return false;
-  } finally {
-    document.body.removeChild(textarea);
-  }
-};
+import { copyTextToClipboard } from "@/lib/clipboard";
+import { useAuthCode } from "@/hooks/useAuthCode";
+import { useExpeditionSelection } from "@/hooks/useExpeditionSelection";
 
 export default function RaiderPage() {
   const { identity, ready, clearIdentity } = useLocalIdentity();
   const { allProjects, loading: projectsLoading, refreshProjects } =
     useProjectContext();
   const labels = useLabels();
-  const [authCode, setAuthCode] = useState("");
   const [copied, setCopied] = useState(false);
-  const [loadingCode, setLoadingCode] = useState(false);
-  const [activeExpeditionSlug, setActiveExpeditionSlug] = useState<
-    string | null
-  >(null);
-  const [loadingExpedition, setLoadingExpedition] = useState(false);
-  const [savingExpedition, setSavingExpedition] = useState(false);
-  const [expeditionErrorKey, setExpeditionErrorKey] = useState<
-    "updateFailed" | ""
-  >("");
+  const { authCode } = useAuthCode(identity?.token ?? null);
+  const {
+    activeExpeditionSlug,
+    loading: loadingExpedition,
+    saving: savingExpedition,
+    errorKey: expeditionErrorKey,
+    setExpedition,
+  } = useExpeditionSelection({
+    token: identity?.token ?? null,
+    onInvalid: clearIdentity,
+    onUpdated: () => refreshProjects(),
+  });
 
   const onCopy = async () => {
     if (!authCode) return;
-    await copyTokenToClipboard(authCode);
+    await copyTextToClipboard(authCode);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1400);
   };
-
-  const onGenerate = useCallback(async () => {
-    if (!identity || loadingCode) return;
-    setLoadingCode(true);
-    try {
-      const res = await fetch("/api/auth/code", {
-        method: "POST",
-        headers: { "x-arc-token": identity.token },
-      });
-      const payload = await res.json().catch(() => null);
-      if (res.ok && payload?.code) {
-        setAuthCode(payload.code);
-      }
-    } finally {
-      setLoadingCode(false);
-    }
-  }, [identity, loadingCode]);
-
-  useEffect(() => {
-    if (!identity) return;
-    if (authCode || loadingCode) return;
-    onGenerate();
-  }, [authCode, identity, loadingCode, onGenerate]);
-
-  useEffect(() => {
-    if (!identity) return;
-    const controller = new AbortController();
-    setLoadingExpedition(true);
-    setExpeditionErrorKey("");
-
-    fetch("/api/user/expedition", {
-      method: "GET",
-      headers: { "x-arc-token": identity.token },
-      signal: controller.signal,
-    })
-      .then((res) => {
-        if (res.status === 401 || res.status === 404) {
-          clearIdentity();
-          return null;
-        }
-        return res.ok ? res.json() : null;
-      })
-      .then((payload: { activeExpeditionSlug?: string | null } | null) => {
-        if (!payload) return;
-        setActiveExpeditionSlug(payload.activeExpeditionSlug ?? null);
-      })
-      .catch(() => null)
-      .finally(() => setLoadingExpedition(false));
-
-    return () => controller.abort();
-  }, [clearIdentity, identity]);
 
   const expeditionProjects = useMemo(
     () =>
@@ -122,39 +54,6 @@ export default function RaiderPage() {
       )?.name ?? labels.unknownExpedition
     );
   }, [activeExpeditionSlug, expeditionProjects, labels]);
-
-  const setExpedition = async (nextSlug: string | null) => {
-    if (!identity) return;
-    if (savingExpedition) return;
-    if (nextSlug === activeExpeditionSlug) return;
-    setSavingExpedition(true);
-    setExpeditionErrorKey("");
-    try {
-      const res = await fetch("/api/user/expedition", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-arc-token": identity.token,
-        },
-        body: JSON.stringify({ expeditionSlug: nextSlug }),
-      });
-      if (res.status === 401 || res.status === 404) {
-        clearIdentity();
-        return;
-      }
-      const payload = await res.json().catch(() => null);
-      if (!res.ok || !payload) {
-        setExpeditionErrorKey("updateFailed");
-        return;
-      }
-      setActiveExpeditionSlug(payload.activeExpeditionSlug ?? null);
-      refreshProjects();
-    } catch {
-      setExpeditionErrorKey("updateFailed");
-    } finally {
-      setSavingExpedition(false);
-    }
-  };
 
   if (!ready) return null;
 

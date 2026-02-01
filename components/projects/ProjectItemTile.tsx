@@ -1,5 +1,4 @@
-import { useEffect, useRef } from "react";
-import type { PointerEvent } from "react";
+import { useMemo } from "react";
 import { cn } from "@/lib/cn";
 import type { ProjectItemProgress } from "@/types/projects";
 import {
@@ -7,6 +6,9 @@ import {
   getItemTileBackground,
 } from "@/components/projects/itemTileUtils";
 import { useLabels } from "@/components/locale/useLabels";
+import { useQuantityPress } from "@/hooks/useQuantityPress";
+import { ItemTileMedia } from "@/components/items/ItemTileMedia";
+import { ProgressRing } from "@/components/ui/ProgressRing";
 
 type ProjectItemTileProps = {
   item: ProjectItemProgress;
@@ -41,163 +43,32 @@ export function ProjectItemTile({
     ? communityCount / expeditionMemberCount
     : 0;
   const progressPercent = Math.round(progressRatio * 100);
-  const ringRadius = 6;
-  const ringStroke = 2;
-  const ringCircumference = 2 * Math.PI * ringRadius;
-  const ringDash = progressRatio * ringCircumference;
-
   const canAdjust = Boolean(item.projectItemId);
   const canDecrement = canAdjust && item.quantityOwned > 0;
   const canIncrement =
     canAdjust && item.quantityOwned < item.quantityRequired;
   const repeatStep = Math.max(1, Math.floor(item.quantityRequired * 0.1));
-  const quantityRef = useRef(item.quantityOwned);
-  const holdTimeout = useRef<number | null>(null);
-  const holdInterval = useRef<number | null>(null);
-  const minusPress = useRef({
-    pointerId: null as number | null,
-    startX: 0,
-    startY: 0,
-    holdStarted: false,
-    pressTimeout: null as number | null,
+  const { minusHandlers, plusHandlers, applyDelta } = useQuantityPress({
+    value: item.quantityOwned,
+    min: 0,
+    max: item.quantityRequired,
+    repeatStep,
+    enabled: canAdjust,
+    onChange: (next) => onAdjust(item.projectItemId, next),
   });
-  const plusPress = useRef({
-    pointerId: null as number | null,
-    startX: 0,
-    startY: 0,
-    holdStarted: false,
-    pressTimeout: null as number | null,
-  });
-
-  useEffect(() => {
-    quantityRef.current = item.quantityOwned;
-  }, [item.quantityOwned]);
-
-  useEffect(() => {
-    return () => {
-      clearHold();
-      if (minusPress.current.pressTimeout) {
-        window.clearTimeout(minusPress.current.pressTimeout);
-      }
-      if (plusPress.current.pressTimeout) {
-        window.clearTimeout(plusPress.current.pressTimeout);
-      }
-    };
-  }, []);
-
-  const clearHold = () => {
-    if (holdTimeout.current) {
-      window.clearTimeout(holdTimeout.current);
-      holdTimeout.current = null;
-    }
-    if (holdInterval.current) {
-      window.clearInterval(holdInterval.current);
-      holdInterval.current = null;
-    }
-  };
-
-  const applyDelta = (delta: number) => {
-    if (!canAdjust) return;
-    const next = Math.max(
-      0,
-      Math.min(item.quantityRequired, quantityRef.current + delta)
-    );
-    if (next === quantityRef.current) return;
-    quantityRef.current = next;
-    onAdjust(item.projectItemId, next);
-  };
-
-  const startHold = (delta: number, initialDelta = delta) => {
-    if (delta < 0 && !canDecrement) return;
-    if (delta > 0 && !canIncrement) return;
-    applyDelta(initialDelta);
-    clearHold();
-    holdTimeout.current = window.setTimeout(() => {
-      holdInterval.current = window.setInterval(() => {
-        applyDelta(delta < 0 ? -repeatStep : repeatStep);
-      }, 240);
-    }, 360);
-  };
-
-  const pressDelayMs = 140;
-  const moveThreshold = 8;
-
-  const createPressHandlers = (
-    delta: number,
-    pressRef: typeof minusPress
-  ) => {
-    const resetPressState = () => {
-      if (pressRef.current.pressTimeout) {
-        window.clearTimeout(pressRef.current.pressTimeout);
-      }
-      pressRef.current.pressTimeout = null;
-      pressRef.current.pointerId = null;
-      pressRef.current.holdStarted = false;
-    };
-
-    const cancelPress = () => {
-      resetPressState();
-      clearHold();
-    };
-
-    return {
-      onPointerDown: (event: PointerEvent<HTMLButtonElement>) => {
-        if (event.pointerType === "mouse" && event.button !== 0) return;
-        if (event.pointerType === "mouse") {
-          event.preventDefault();
-          startHold(delta);
-          return;
-        }
-
-        pressRef.current.pointerId = event.pointerId;
-        pressRef.current.startX = event.clientX;
-        pressRef.current.startY = event.clientY;
-        pressRef.current.holdStarted = false;
-        if (pressRef.current.pressTimeout) {
-          window.clearTimeout(pressRef.current.pressTimeout);
-        }
-        pressRef.current.pressTimeout = window.setTimeout(() => {
-          pressRef.current.holdStarted = true;
-          startHold(delta, delta < 0 ? -repeatStep : repeatStep);
-        }, pressDelayMs);
-        event.currentTarget.setPointerCapture?.(event.pointerId);
-      },
-      onPointerMove: (event: PointerEvent<HTMLButtonElement>) => {
-        if (pressRef.current.pointerId !== event.pointerId) return;
-        const dx = event.clientX - pressRef.current.startX;
-        const dy = event.clientY - pressRef.current.startY;
-        if (Math.hypot(dx, dy) > moveThreshold) {
-          cancelPress();
-        }
-      },
-      onPointerUp: (event: PointerEvent<HTMLButtonElement>) => {
-        if (pressRef.current.pointerId !== event.pointerId) {
-          clearHold();
-          return;
-        }
-
-        if (pressRef.current.pressTimeout) {
-          window.clearTimeout(pressRef.current.pressTimeout);
-          pressRef.current.pressTimeout = null;
-          if (!pressRef.current.holdStarted) {
-            applyDelta(delta);
-          }
-        }
-        resetPressState();
-        clearHold();
-      },
-      onPointerLeave: cancelPress,
-      onPointerCancel: cancelPress,
-    };
-  };
-
-  const minusHandlers = createPressHandlers(-1, minusPress);
-  const plusHandlers = createPressHandlers(1, plusPress);
   const { itemBackground } = getItemTileBackground({
     itemId: item.itemId,
     itemType: item.itemType,
     rarity: item.rarity,
   });
+  const mediaFallback = useMemo(
+    () => (
+      <div className="flex h-12 w-12 items-center justify-center text-[9px] uppercase tracking-[0.16em] text-muted">
+        {labels.noSignalTitle}
+      </div>
+    ),
+    [labels.noSignalTitle]
+  );
 
   return (
     <div
@@ -281,32 +152,13 @@ export function ProjectItemTile({
         +
       </button>
       {memberCount ? (
-        <svg
-          aria-hidden="true"
+        <ProgressRing
+          radius={6}
+          stroke={2}
+          progress={progressRatio}
           data-community-progress={progressPercent}
-          viewBox="0 0 16 16"
           className="absolute right-2 top-2 z-20 h-4 w-4"
-        >
-          <circle
-            cx="8"
-            cy="8"
-            r={ringRadius}
-            fill="none"
-            stroke="rgba(160, 180, 190, 0.35)"
-            strokeWidth={ringStroke}
-          />
-          <circle
-            cx="8"
-            cy="8"
-            r={ringRadius}
-            fill="none"
-            stroke="rgba(72, 199, 214, 0.75)"
-            strokeWidth={ringStroke}
-            strokeLinecap="square"
-            strokeDasharray={`${ringDash} ${ringCircumference}`}
-            transform="rotate(-90 8 8)"
-          />
-        </svg>
+        />
       ) : (
         <span
           className={cn(
@@ -315,31 +167,18 @@ export function ProjectItemTile({
           )}
         />
       )}
-      {item.imageFile ? (
-        <div className="pointer-events-none absolute inset-6 z-0 flex items-center justify-center sm:inset-7">
-          <img
-            src={`/api/arc-items/image?file=${encodeURIComponent(
-              item.imageFile
-            )}`}
-            alt=""
-            loading="lazy"
-            className={cn(
-              "h-full w-full object-contain transition",
-              isComplete
-                ? "opacity-100 drop-shadow-[0_0_10px_rgba(72,199,214,0.45)]"
-                : "opacity-90 drop-shadow-[0_0_6px_rgba(72,199,214,0.25)] group-hover:opacity-100"
-            )}
-            style={{
-              filter: "saturate(1.18) contrast(1.12) brightness(1.06)",
-            }}
-            draggable={false}
-          />
-        </div>
-      ) : (
-        <div className="flex h-12 w-12 items-center justify-center text-[9px] uppercase tracking-[0.16em] text-muted">
-          {labels.noSignalTitle}
-        </div>
-      )}
+      <ItemTileMedia
+        imageFile={item.imageFile}
+        wrapperClassName="pointer-events-none absolute inset-6 z-0 flex items-center justify-center sm:inset-7"
+        imgClassName={cn(
+          "h-full w-full object-contain transition",
+          isComplete
+            ? "opacity-100 drop-shadow-[0_0_10px_rgba(72,199,214,0.45)]"
+            : "opacity-90 drop-shadow-[0_0_6px_rgba(72,199,214,0.25)] group-hover:opacity-100"
+        )}
+        filterStyle="saturate(1.18) contrast(1.12) brightness(1.06)"
+        fallback={mediaFallback}
+      />
       <span className="line-clamp-2 absolute bottom-2 left-2 right-2 z-20 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.12em] text-text/90">
         {label}
       </span>

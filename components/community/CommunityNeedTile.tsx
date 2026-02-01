@@ -7,6 +7,7 @@ import {
   getItemTileBackground,
 } from "@/components/projects/itemTileUtils";
 import { useLabels } from "@/components/locale/useLabels";
+import { ItemTileMedia } from "@/components/items/ItemTileMedia";
 
 type CommunityNeedTileProps = {
   item: CommunityNeedsItem;
@@ -55,26 +56,19 @@ export function CommunityNeedTile({
       <span className="absolute left-2 top-2 z-20 text-[10px] font-semibold uppercase tracking-[0.12em] text-text">
         {item.totalNeeded}x
       </span>
-      {imageFile ? (
-        <div className="pointer-events-none absolute inset-6 z-0 flex items-center justify-center sm:inset-7">
-          <img
-            src={`/api/arc-items/image?file=${encodeURIComponent(imageFile)}`}
-            alt=""
-            loading="lazy"
-            className="h-full w-full object-contain opacity-90 drop-shadow-[0_0_6px_rgba(72,199,214,0.25)] transition group-hover:opacity-100"
-            style={{
-              filter: "saturate(1.15) contrast(1.1) brightness(1.04)",
-            }}
-            draggable={false}
-          />
-        </div>
-      ) : (
-        <div className="absolute inset-4 z-0 flex items-center justify-center">
-          <div className="text-[9px] uppercase tracking-[0.18em] text-muted/70">
-            {labels.noSignalTitle}
+      <ItemTileMedia
+        imageFile={imageFile}
+        wrapperClassName="pointer-events-none absolute inset-6 z-0 flex items-center justify-center sm:inset-7"
+        imgClassName="h-full w-full object-contain opacity-90 drop-shadow-[0_0_6px_rgba(72,199,214,0.25)] transition group-hover:opacity-100"
+        filterStyle="saturate(1.15) contrast(1.1) brightness(1.04)"
+        fallback={
+          <div className="absolute inset-4 z-0 flex items-center justify-center">
+            <div className="text-[9px] uppercase tracking-[0.18em] text-muted/70">
+              {labels.noSignalTitle}
+            </div>
           </div>
-        </div>
-      )}
+        }
+      />
       <span className="line-clamp-2 absolute bottom-2 left-2 right-2 z-20 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.12em] text-text/90">
         {label}
       </span>

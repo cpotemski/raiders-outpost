@@ -3,6 +3,8 @@ import { cn } from "@/lib/cn";
 import type { ProjectStageProgress } from "@/types/projects";
 import { ProjectItemTile } from "@/components/projects/ProjectItemTile";
 import { useLabels } from "@/components/locale/useLabels";
+import { getProgressStats } from "@/lib/progress";
+import { ProgressRing } from "@/components/ui/ProgressRing";
 
 type ProjectStagePanelProps = {
   stage: ProjectStageProgress;
@@ -13,8 +15,7 @@ type ProjectStagePanelProps = {
   isExpanded: boolean;
   onToggleExpanded: () => void;
   stripBlueprintLabel?: boolean;
-  progressCompletedCount?: number;
-  progressTotalCount?: number;
+  progressItems?: ProjectStageProgress["items"];
 };
 
 export function ProjectStagePanel({
@@ -26,30 +27,14 @@ export function ProjectStagePanel({
   isExpanded,
   onToggleExpanded,
   stripBlueprintLabel,
-  progressCompletedCount,
-  progressTotalCount,
+  progressItems,
 }: ProjectStagePanelProps) {
   const labels = useLabels();
-  const isCompleted = useMemo(() => {
-    if (!stage.items.length) return true;
-    return stage.items.every(
-      (item) =>
-        item.quantityRequired > 0 && item.quantityOwned >= item.quantityRequired
-    );
-  }, [stage.items]);
-  const completedCount =
-    progressCompletedCount ??
-    stage.items.filter(
-      (item) =>
-        item.quantityRequired > 0 && item.quantityOwned >= item.quantityRequired
-    ).length;
-  const totalCount = progressTotalCount ?? stage.items.length;
-  const progressRatio = totalCount ? completedCount / totalCount : 1;
+  const { completedCount, totalCount, isCompleted, progressRatio } = useMemo(
+    () => getProgressStats(progressItems ?? stage.items),
+    [progressItems, stage.items]
+  );
   const progressPercent = Math.round(progressRatio * 100);
-  const ringRadius = 6;
-  const ringStroke = 2;
-  const ringCircumference = 2 * Math.PI * ringRadius;
-  const ringDash = progressRatio * ringCircumference;
 
   return (
     <div
@@ -69,32 +54,13 @@ export function ProjectStagePanel({
           >
             {completedCount} / {totalCount}
           </span>
-          <svg
-            aria-hidden="true"
+          <ProgressRing
+            radius={6}
+            stroke={2}
+            progress={progressRatio}
             data-stage-progress={progressPercent}
-            viewBox="0 0 16 16"
             className="h-4 w-4"
-          >
-            <circle
-              cx="8"
-              cy="8"
-              r={ringRadius}
-              fill="none"
-              stroke="rgba(160, 180, 190, 0.35)"
-              strokeWidth={ringStroke}
-            />
-            <circle
-              cx="8"
-              cy="8"
-              r={ringRadius}
-              fill="none"
-              stroke="rgba(72, 199, 214, 0.75)"
-              strokeWidth={ringStroke}
-              strokeLinecap="square"
-              strokeDasharray={`${ringDash} ${ringCircumference}`}
-              transform="rotate(-90 8 8)"
-            />
-          </svg>
+          />
           {isCompleted ? (
             <button
               type="button"

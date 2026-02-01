@@ -73,20 +73,14 @@ export function ProjectDashboard({
           const fullStage = activeProject.stages.find(
             (entry) => entry.stageKey === stage.stageKey
           );
-          const isCompleted =
-            !fullStage?.items.length ||
-            fullStage.items.every(
-              (item) =>
-                item.quantityRequired > 0 &&
-                item.quantityOwned >= item.quantityRequired
-            );
           const progressItems = fullStage?.items ?? stage.items;
-          const progressCompletedCount = progressItems.filter(
-            (item) =>
-              item.quantityRequired > 0 &&
-              item.quantityOwned >= item.quantityRequired
-          ).length;
-          const progressTotalCount = progressItems.length;
+          const isCompleted = progressItems.length
+            ? progressItems.every(
+                (item) =>
+                  item.quantityRequired > 0 &&
+                  item.quantityOwned >= item.quantityRequired
+              )
+            : true;
           const isExpanded =
             !isCompleted || expandedCompleted.has(stage.stageKey);
           return (
@@ -110,8 +104,7 @@ export function ProjectDashboard({
                 });
               }}
               stripBlueprintLabel={activeProject.kind === "blueprints"}
-              progressCompletedCount={progressCompletedCount}
-              progressTotalCount={progressTotalCount}
+              progressItems={progressItems}
             />
           );
         })}
