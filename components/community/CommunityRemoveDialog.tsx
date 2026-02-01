@@ -1,5 +1,8 @@
+"use client";
+
 import { Button } from "@/components/ui/Button";
 import type { CommunityMember } from "@/types/community";
+import { useLabels } from "@/components/locale/useLabels";
 
 type CommunityRemoveDialogProps = {
   member: CommunityMember;
@@ -16,13 +19,14 @@ export function CommunityRemoveDialog({
   onClose,
   onConfirm,
 }: CommunityRemoveDialogProps) {
+  const labels = useLabels();
   const isRemoving = removingId === member.id;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-8">
       <button
         type="button"
-        aria-label="Close confirmation"
+        aria-label={labels.closeOverlay}
         className="absolute inset-0 cursor-default"
         onClick={onClose}
       />
@@ -30,13 +34,13 @@ export function CommunityRemoveDialog({
         <div className="arc-panel arc-corners overflow-hidden">
           <div className="arc-panel-header">
             <div>
-              <p className="hud-label">Confirm Removal</p>
+              <p className="hud-label">{labels.confirmRemoval}</p>
               <h3 className="text-base font-semibold uppercase tracking-[0.12em]">
-                Sever Uplink
+                {labels.severUplink}
               </h3>
             </div>
             <div className="flex items-center gap-2">
-              <span className="hud-label">Action</span>
+              <span className="hud-label">{labels.actionLabel}</span>
               <button
                 type="button"
                 onClick={onClose}
@@ -48,7 +52,7 @@ export function CommunityRemoveDialog({
           </div>
           <div className="border-t border-frame2 bg-panel/80 px-4 py-4">
             <div className="text-[11px] uppercase tracking-[0.12em] text-muted">
-              Remove raider from crew?
+              {labels.removeRaiderPrompt}
             </div>
             <div className="mt-2 text-sm font-semibold uppercase tracking-[0.14em] text-text">
               {member.name}
@@ -66,7 +70,7 @@ export function CommunityRemoveDialog({
                 onClick={onClose}
                 disabled={isRemoving}
               >
-                Cancel
+                {labels.cancel}
               </Button>
               <Button
                 type="button"
@@ -78,7 +82,7 @@ export function CommunityRemoveDialog({
                 }}
                 disabled={isRemoving}
               >
-                {isRemoving ? "Severing" : "Confirm"}
+                {isRemoving ? labels.severing : labels.confirm}
               </Button>
             </div>
           </div>

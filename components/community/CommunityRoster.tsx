@@ -6,8 +6,10 @@ import { CommunityRemoveDialog } from "@/components/community/CommunityRemoveDia
 import { RosterStatus } from "@/components/community/RosterStatus";
 import { useCommunityRoster } from "@/hooks/useCommunityRoster";
 import { useCommunityNeeds } from "@/hooks/useCommunityNeeds";
+import { useLabels } from "@/components/locale/useLabels";
 
 export function CommunityRoster() {
+  const labels = useLabels();
   const {
     ready,
     identityName,
@@ -33,9 +35,9 @@ export function CommunityRoster() {
   let body = null;
 
   if (!ready) {
-    body = <RosterStatus message="Syncing uplink..." />;
+    body = <RosterStatus message={labels.syncingUplink} />;
   } else if (!identityName) {
-    body = <RosterStatus message="No raider linked." />;
+    body = <RosterStatus message={labels.noRaiderLinked} />;
   } else if (!community) {
     body = (
       <CommunityEmptyState
@@ -68,9 +70,11 @@ export function CommunityRoster() {
     <>
       <div className="arc-panel-header flex-col items-start gap-2 sm:flex-row sm:items-center">
         <div>
-          {!community ? <p className="hud-label">Community</p> : null}
+          {!community ? (
+            <p className="hud-label">{labels.communityLabel}</p>
+          ) : null}
           <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
-            {community?.name ?? "Roster"}
+            {community?.name ?? labels.rosterTitle}
           </h2>
         </div>
         <span className="hud-label">ARC//</span>

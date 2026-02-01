@@ -6,10 +6,12 @@ import { useMemo, useState } from "react";
 import { ProjectDashboard } from "@/components/projects/ProjectDashboard";
 import { useProjectContext } from "@/components/projects/ProjectContext";
 import { cn } from "@/lib/cn";
+import { useLabels } from "@/components/locale/useLabels";
 
 export default function ProjectDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { projects, loading } = useProjectContext();
+  const labels = useLabels();
   const [query, setQuery] = useState("");
   const [neededOnly, setNeededOnly] = useState(false);
 
@@ -27,21 +29,21 @@ export default function ProjectDetailPage() {
                 href="/"
                 className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted transition hover:text-text"
               >
-                &lt; zurück zur Projektauswahl
+                {labels.backToProjectSelection}
               </Link>
               <label className="relative">
-                <span className="sr-only">Quicksearch</span>
+                <span className="sr-only">{labels.quicksearch}</span>
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="SEARCH..."
+                  placeholder={labels.searchPlaceholder}
                   className="h-8 w-36 border-b border-frame2 bg-transparent px-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-text placeholder:text-muted/70 focus:border-accent/60 focus:outline-none"
                 />
               </label>
               <button
                 type="button"
                 aria-pressed={neededOnly}
-                aria-label="Filter needed only"
+                aria-label={labels.filterNeededOnly}
                 onClick={() => setNeededOnly((prev) => !prev)}
                 className={cn(
                   "h-8 border px-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
@@ -50,7 +52,7 @@ export default function ProjectDetailPage() {
                     : "border-frame2 text-muted hover:border-accent/60"
                 )}
               >
-                Needed Only
+                {labels.neededOnly}
               </button>
             </div>
           </div>
@@ -58,7 +60,7 @@ export default function ProjectDetailPage() {
       </div>
       {loading && !project ? (
         <div className="border-t border-frame2 px-4 py-5 text-sm uppercase tracking-[0.08em] text-muted">
-          Scanning project cache...
+          {labels.scanningProjectCache}
         </div>
       ) : project ? (
         <ProjectDashboard
@@ -68,7 +70,7 @@ export default function ProjectDetailPage() {
         />
       ) : (
         <div className="border border-frame2/70 bg-panel2/40 px-4 py-4 text-[11px] uppercase tracking-[0.12em] text-muted">
-          No signal. Project data not found.
+          {labels.noSignalProjectData}
         </div>
       )}
     </div>

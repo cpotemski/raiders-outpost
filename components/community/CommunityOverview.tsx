@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { getInitials } from "@/lib/format";
 import { CommunityNeedsPanel } from "@/components/community/CommunityNeedsPanel";
+import { useLabels } from "@/components/locale/useLabels";
 import type {
   Community,
   CommunityMember,
@@ -27,10 +28,11 @@ export function CommunityOverview({
   needsLoading,
   onRequestRemove,
 }: CommunityOverviewProps) {
+  const labels = useLabels();
   return (
     <>
       <div className="mt-6">
-        <div className="hud-label">Needs Overview</div>
+        <div className="hud-label">{labels.needsOverview}</div>
         <CommunityNeedsPanel
           members={
             needsPayload?.members ??
@@ -46,7 +48,7 @@ export function CommunityOverview({
       </div>
 
       <div className="mt-6">
-        <div className="hud-label">Members</div>
+        <div className="hud-label">{labels.membersLabel}</div>
         <div className="mt-3 space-y-2">
           {community.members.map((member) => (
             <div
@@ -62,7 +64,7 @@ export function CommunityOverview({
                     {member.name}
                   </div>
                   <div className="text-[10px] uppercase tracking-[0.18em] text-muted">
-                    Synced
+                    {labels.synced}
                   </div>
                 </div>
               </div>
@@ -71,11 +73,11 @@ export function CommunityOverview({
                   type="button"
                   variant="default"
                   className="px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-warn hover:border-warn/70"
-                  aria-label={`Remove ${member.name}`}
+                  aria-label={`${labels.severUplink} ${member.name}`}
                   disabled={removingId === member.id}
                   onClick={() => onRequestRemove(member)}
                 >
-                  Sever Uplink
+                  {labels.severUplink}
                 </Button>
               </div>
             </div>
@@ -85,16 +87,16 @@ export function CommunityOverview({
             data-testid="community-invite-tile"
           >
             <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-text">
-              Invite Link
+              {labels.inviteLinkTitle}
             </div>
             <Input
               readOnly
               value={inviteUrl}
-              aria-label="Invite link"
+              aria-label={labels.inviteLinkAria}
               className="font-mono text-[11px]"
             />
             <div className="text-[10px] uppercase tracking-[0.16em] text-muted">
-              Share the uplink to sync more raiders.
+              {labels.inviteHelp}
             </div>
           </div>
         </div>
@@ -107,7 +109,7 @@ export function CommunityOverview({
           className="mt-3 text-[10px] uppercase tracking-[0.16em] text-muted"
           data-testid="community-member-count"
         >
-          Members ({community.members.length})
+          {labels.membersLabel} ({community.members.length})
         </div>
       </div>
     </>

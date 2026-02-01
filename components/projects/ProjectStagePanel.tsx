@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { cn } from "@/lib/cn";
 import type { ProjectStageProgress } from "@/types/projects";
 import { ProjectItemTile } from "@/components/projects/ProjectItemTile";
+import { useLabels } from "@/components/locale/useLabels";
 
 type ProjectStagePanelProps = {
   stage: ProjectStageProgress;
@@ -28,6 +29,7 @@ export function ProjectStagePanel({
   progressCompletedCount,
   progressTotalCount,
 }: ProjectStagePanelProps) {
+  const labels = useLabels();
   const isCompleted = useMemo(() => {
     if (!stage.items.length) return true;
     return stage.items.every(
@@ -56,7 +58,7 @@ export function ProjectStagePanel({
     >
       <div className="arc-panel-header">
         <div>
-          <p className="hud-label">Stage</p>
+          <p className="hud-label">{labels.stageLabel}</p>
           <h3 className="text-sm font-semibold uppercase tracking-[0.12em]">
             {stage.name}
           </h3>
@@ -105,7 +107,7 @@ export function ProjectStagePanel({
                   : "border-frame2 text-muted hover:border-accent/60"
               )}
             >
-              {isExpanded ? "Hide" : "Show"}
+              {isExpanded ? labels.hide : labels.show}
             </button>
           ) : null}
         </div>
@@ -130,7 +132,7 @@ export function ProjectStagePanel({
             </div>
           ) : (
             <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
-              Data not found. Scanning...
+              {labels.dataNotFoundScanning}
             </div>
           )}
         </div>

@@ -6,6 +6,7 @@ import {
   getItemLabel,
   getItemTileBackground,
 } from "@/components/projects/itemTileUtils";
+import { useLabels } from "@/components/locale/useLabels";
 
 type ProjectItemTileProps = {
   item: ProjectItemProgress;
@@ -24,6 +25,7 @@ export function ProjectItemTile({
   onAdjust,
   stripBlueprintLabel,
 }: ProjectItemTileProps) {
+  const labels = useLabels();
   const label = getItemLabel(
     item.displayName,
     item.itemId,
@@ -226,14 +228,14 @@ export function ProjectItemTile({
           "absolute left-2 top-2 z-20 text-[10px] font-semibold uppercase tracking-[0.12em]",
           isComplete ? "text-accent" : "text-text"
         )}
-        aria-label={`${item.quantityOwned} of ${item.quantityRequired}`}
+        aria-label={`${item.quantityOwned} ${labels.of} ${item.quantityRequired}`}
       >
         {item.quantityOwned}/{item.quantityRequired}
       </span>
       <button
         type="button"
         data-testid="qty-minus"
-        aria-label={`Decrease ${label}`}
+        aria-label={`${labels.decrease} ${label}`}
         aria-hidden={!canDecrement}
         onPointerDown={minusHandlers.onPointerDown}
         onPointerMove={minusHandlers.onPointerMove}
@@ -257,7 +259,7 @@ export function ProjectItemTile({
       <button
         type="button"
         data-testid="qty-plus"
-        aria-label={`Increase ${label}`}
+        aria-label={`${labels.increase} ${label}`}
         aria-hidden={!canIncrement}
         onPointerDown={plusHandlers.onPointerDown}
         onPointerMove={plusHandlers.onPointerMove}
@@ -335,14 +337,14 @@ export function ProjectItemTile({
         </div>
       ) : (
         <div className="flex h-12 w-12 items-center justify-center text-[9px] uppercase tracking-[0.16em] text-muted">
-          No Signal
+          {labels.noSignalTitle}
         </div>
       )}
       <span className="line-clamp-2 absolute bottom-2 left-2 right-2 z-20 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.12em] text-text/90">
         {label}
       </span>
       <span className="sr-only">
-        {label} {item.quantityOwned} of {item.quantityRequired}
+        {label} {item.quantityOwned} {labels.of} {item.quantityRequired}
       </span>
     </div>
   );

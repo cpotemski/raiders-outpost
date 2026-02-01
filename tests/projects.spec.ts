@@ -205,6 +205,27 @@ test("project images load from arc-items endpoint", async ({ page }) => {
     .toBeGreaterThan(0);
 });
 
+test("language switch toggles between english and german labels", async ({
+  page,
+}) => {
+  await login(page);
+  await expect(page.getByText("Project Selection")).toBeVisible();
+
+  const languageSwitch = page.getByTestId("language-switch");
+  await expect(languageSwitch).toBeVisible();
+  await languageSwitch.getByRole("button", { name: "de" }).click();
+
+  await expect(page.getByText("Projektauswahl")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Projekte", exact: true })).toBeVisible();
+  await page.getByRole("main").screenshot({
+    path: "test-results/i18n-de.png",
+  });
+
+  await languageSwitch.getByRole("button", { name: "en" }).click();
+  await expect(page.getByText("Project Selection")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Projects", exact: true })).toBeVisible();
+});
+
 test("blueprint labels omit blueprint suffix", async ({ page }) => {
   await login(page);
   await openProject(page, "blueprints");

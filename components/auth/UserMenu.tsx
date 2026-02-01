@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
 import { cn } from "@/lib/cn";
+import { useLabels } from "@/components/locale/useLabels";
 
 export function UserMenu() {
   const { identity, ready } = useLocalIdentity();
+  const labels = useLabels();
 
   if (!ready) return null;
 
@@ -27,11 +29,11 @@ export function UserMenu() {
       />
       <span
         className="max-w-[120px] truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-text sm:max-w-[160px]"
-        title={identity?.name ?? "No Signal"}
+        title={identity?.name ?? labels.noSignalTitle}
       >
-        {identity?.name ?? "No Signal"}
+        {identity?.name ?? labels.noSignalTitle}
       </span>
-      <span className="text-[9px] text-muted">ID</span>
+      <span className="text-[9px] text-muted">{labels.idLabel}</span>
     </Link>
   );
 }

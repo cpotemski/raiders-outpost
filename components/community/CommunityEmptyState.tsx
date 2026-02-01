@@ -1,5 +1,8 @@
+"use client";
+
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { useLabels } from "@/components/locale/useLabels";
 
 type CommunityEmptyStateProps = {
   inviteCode: string;
@@ -18,29 +21,30 @@ export function CommunityEmptyState({
   onNameChange,
   onSubmit,
 }: CommunityEmptyStateProps) {
+  const labels = useLabels();
   return (
     <div className="border-t border-frame2 px-4 py-5">
       <div className="text-sm font-semibold uppercase tracking-[0.1em] text-text">
-        No signal.
+        {labels.noSignal}
       </div>
       <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-muted">
-        Establish an uplink to create a crew.
+        {labels.establishUplink}
       </div>
       {inviteCode ? (
         <div className="mt-4 text-[11px] uppercase tracking-[0.08em] text-warn">
-          {status === "joining" ? "Joining uplink..." : error || ""}
+          {status === "joining" ? labels.joiningUplink : error || ""}
         </div>
       ) : (
         <form className="mt-4 space-y-4" onSubmit={onSubmit}>
           <div>
             <label className="hud-label" htmlFor="community-name">
-              Community Name
+              {labels.communityNameLabel}
             </label>
             <Input
               id="community-name"
               value={name}
               onChange={(event) => onNameChange(event.target.value)}
-              placeholder="Enter community name"
+              placeholder={labels.communityNamePlaceholder}
             />
             {error ? (
               <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-warn">
@@ -48,7 +52,7 @@ export function CommunityEmptyState({
               </div>
             ) : (
               <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-muted">
-                Field gear, no ranks. One crew.
+                {labels.fieldGearTagline}
               </div>
             )}
           </div>
@@ -59,9 +63,9 @@ export function CommunityEmptyState({
               className="px-5"
               disabled={status === "saving"}
             >
-              Create Community
+              {labels.createCommunity}
             </Button>
-            <span className="hud-label">SCANNING CACHE...</span>
+            <span className="hud-label">{labels.scanningCacheLabel}</span>
           </div>
         </form>
       )}

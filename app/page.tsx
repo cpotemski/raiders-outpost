@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { useProjectContext } from "@/components/projects/ProjectContext";
+import { useLabels } from "@/components/locale/useLabels";
 
 export default function StartPage() {
   const { projects, loading } = useProjectContext();
+  const labels = useLabels();
 
   const projectCards = useMemo(() => {
     const hideoutSlugs = new Set([
@@ -75,26 +77,26 @@ export default function StartPage() {
       <div className="arc-panel arc-corners overflow-hidden">
         <div className="arc-panel-header">
           <div>
-            <p className="hud-label">Project Hub</p>
+            <p className="hud-label">{labels.projectHub}</p>
             <h2 className="text-sm font-semibold uppercase tracking-[0.12em]">
-              Projektauswahl
+              {labels.projectSelection}
             </h2>
           </div>
           <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
-            {loading ? "Scanning..." : "Synced"}
+            {loading ? labels.scanning : labels.synced}
           </div>
         </div>
         <div className="border-t border-frame2 bg-panel/70 px-4 py-4 sm:px-6">
           {loading && !projects.length ? (
             <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
-              Scanning project cache...
+              {labels.scanningProjectCache}
             </div>
           ) : (
             <div className="flex flex-col gap-5">
               <div>
                 <div className="flex items-center justify-between pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-                  <span>Active Queue</span>
-                  <span>Pending</span>
+                  <span>{labels.activeQueue}</span>
+                  <span>{labels.pending}</span>
                 </div>
                 <div
                   className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
@@ -160,7 +162,7 @@ export default function StartPage() {
                             </div>
                           </div>
                           <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-muted">
-                            <span>Open Project</span>
+                            <span>{labels.openProject}</span>
                             <span>ARC// READY</span>
                           </div>
                         </Link>
@@ -168,15 +170,15 @@ export default function StartPage() {
                     )
                   ) : (
                     <div className="col-span-full border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
-                      No signal. Pending queue empty.
+                      {labels.noSignalPendingQueue}
                     </div>
                   )}
                 </div>
               </div>
               <div>
                 <div className="flex items-center justify-between pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-                  <span>Completed</span>
-                  <span>Archived</span>
+                  <span>{labels.completed}</span>
+                  <span>{labels.archived}</span>
                 </div>
                 <div
                   className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
@@ -242,7 +244,7 @@ export default function StartPage() {
                             </div>
                           </div>
                           <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-muted">
-                            <span>Open Project</span>
+                            <span>{labels.openProject}</span>
                             <span>ARC// READY</span>
                           </div>
                         </Link>
@@ -250,7 +252,7 @@ export default function StartPage() {
                     )
                   ) : (
                     <div className="col-span-full border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
-                      No archived signal detected.
+                      {labels.noArchivedSignal}
                     </div>
                   )}
                 </div>

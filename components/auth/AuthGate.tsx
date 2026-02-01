@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/Input";
 import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
 import { useLocale } from "@/components/locale/LocaleProvider";
 import { cn } from "@/lib/cn";
+import { useLabels } from "@/components/locale/useLabels";
 
 type OnboardingStage = {
   stageKey: string;
@@ -25,10 +26,13 @@ type OnboardingProject = {
 export function AuthGate() {
   const { identity, ready, saveIdentity } = useLocalIdentity();
   const { locale, ready: localeReady } = useLocale();
+  const labels = useLabels();
   const [mode, setMode] = useState<"register" | "code">("register");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
-  const [error, setError] = useState("");
+  const [errorKey, setErrorKey] = useState<
+    "nameRequired" | "authFailed" | "codeRequired" | "codeExpired" | "codeInvalid" | ""
+  >("");
   const [submitting, setSubmitting] = useState(false);
   const [onboardingProjects, setOnboardingProjects] = useState<
     OnboardingProject[]
@@ -90,13 +94,13 @@ export function AuthGate() {
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (submitting) return;
-    setError("");
+    setErrorKey("");
     setSubmitting(true);
     try {
       if (mode === "register") {
         const trimmed = name.trim();
         if (!trimmed) {
-          setError("Name required");
+          setErrorKey("nameRequired");
           return;
         }
         const baseline = buildBaselinePayload();
@@ -113,7 +117,7 @@ export function AuthGate() {
         });
         const payload = await res.json().catch(() => null);
         if (!res.ok || !payload?.user?.token) {
-          setError("Auth failed");
+          setErrorKey("authFailed");
           return;
         }
         const nextName =
@@ -122,7 +126,7 @@ export function AuthGate() {
       } else {
         const trimmedCode = code.trim().toUpperCase();
         if (!trimmedCode) {
-          setError("Code required");
+          setErrorKey("codeRequired");
           return;
         }
         const res = await fetch("/api/auth/code/redeem", {
@@ -133,10 +137,10 @@ export function AuthGate() {
         const payload = await res.json().catch(() => null);
         if (!res.ok || !payload?.user?.token) {
           if (res.status === 410) {
-            setError("Code expired");
+            setErrorKey("codeExpired");
             return;
           }
-          setError("Code invalid");
+          setErrorKey("codeInvalid");
           return;
         }
         const nextName =
@@ -146,7 +150,7 @@ export function AuthGate() {
         saveIdentity(nextName, payload.user.token);
       }
     } catch {
-      setError(mode === "register" ? "Auth failed" : "Code invalid");
+      setErrorKey(mode === "register" ? "authFailed" : "codeInvalid");
     } finally {
       setSubmitting(false);
     }
@@ -162,9 +166,9 @@ export function AuthGate() {
             <div className="text-xs font-semibold uppercase tracking-[0.2em]">
               ARC// AUTH LINK
             </div>
-            <div className="hud-label">No registration required</div>
+            <div className="hud-label">{labels.authNoRegistration}</div>
           </div>
-          <span className="hud-label">LOCAL</span>
+          <span className="hud-label">{labels.localLabel}</span>
         </div>
         <form className="space-y-4 px-5 py-6" onSubmit={onSubmit}>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em]">
@@ -172,7 +176,7 @@ export function AuthGate() {
               type="button"
               onClick={() => {
                 setMode("register");
-                setError("");
+                setErrorKey("");
               }}
               className={`border-b pb-1 ${
                 mode === "register"
@@ -180,14 +184,14 @@ export function AuthGate() {
                   : "border-transparent text-muted hover:text-text"
               }`}
             >
-              Register
+              {labels.authRegister}
             </button>
             <span className="text-muted">/</span>
             <button
               type="button"
               onClick={() => {
                 setMode("code");
-                setError("");
+                setErrorKey("");
               }}
               className={`border-b pb-1 ${
                 mode === "code"
@@ -195,40 +199,38 @@ export function AuthGate() {
                   : "border-transparent text-muted hover:text-text"
               }`}
             >
-              Use Code
+              {labels.authUseCode}
             </button>
           </div>
           <div>
             {mode === "register" ? (
               <>
                 <label className="hud-label" htmlFor="operator-name">
-                  Raider Name
+                  {labels.raiderNameLabel}
                 </label>
                 <Input
                   id="operator-name"
                   value={name}
                   onChange={(event) => {
                     setName(event.target.value);
-                    if (error) setError("");
+                    if (errorKey) setErrorKey("");
                   }}
-                  placeholder="Enter callsign"
+                  placeholder={labels.callsignPlaceholder}
                   autoFocus
                 />
                 <div className="mt-4 border-t border-frame2/70 pt-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="text-[11px] font-semibold uppercase tracking-[0.16em]">
-                        Progress Baseline
+                        {labels.progressBaseline}
                       </div>
-                      <div className="hud-label">
-                        Select completed projects
-                      </div>
+                      <div className="hud-label">{labels.selectCompletedProjects}</div>
                     </div>
                   </div>
                   <div className="mt-3 space-y-3">
                     {onboardingLoading ? (
                       <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
-                        Scanning project cache...
+                        {labels.scanningProjectCache}
                       </div>
                     ) : onboardingProjects.length ? (
                       <div className="space-y-2">
@@ -262,7 +264,7 @@ export function AuthGate() {
                                     toggleProjectSelection(project.slug)
                                   }
                                 />
-                                COMPLETE
+                                {labels.completeLabel}
                               </label>
                             </div>
                           );
@@ -270,16 +272,16 @@ export function AuthGate() {
                       </div>
                     ) : (
                       <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
-                        No signal. Data not found.
+                        {labels.noSignalDataNotFound}
                       </div>
                     )}
                   </div>
                   {expeditionProjects.length ? (
                     <div className="mt-4 border-t border-frame2/70 pt-4">
                       <div className="text-[11px] font-semibold uppercase tracking-[0.16em]">
-                        Expedition Control
+                        {labels.expeditionControl}
                       </div>
-                      <div className="hud-label">Select active expedition</div>
+                      <div className="hud-label">{labels.selectActiveExpedition}</div>
                       <div
                         className="mt-3 flex flex-wrap items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted"
                         data-testid="expedition-config"
@@ -288,10 +290,10 @@ export function AuthGate() {
                           {expeditionNext
                             ? expeditionProjects.find(
                                 (project) => project.slug === expeditionNext
-                              )?.name ?? "UNKNOWN EXPEDITION"
-                            : "NO EXPEDITION"}
+                              )?.name ?? labels.unknownExpedition
+                            : labels.noExpedition}
                         </span>
-                        <span>READY</span>
+                        <span>{labels.expeditionReady}</span>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         <button
@@ -306,7 +308,7 @@ export function AuthGate() {
                               : "border-frame2 text-muted hover:border-accent/60"
                           )}
                         >
-                          No Expedition
+                          {labels.noExpedition}
                         </button>
                         {expeditionProjects.map((project) => {
                           const isNext = expeditionNext === project.slug;
@@ -336,28 +338,28 @@ export function AuthGate() {
             ) : (
               <>
                 <label className="hud-label" htmlFor="auth-code">
-                  Auth Code
+                  {labels.authCodeLabel}
                 </label>
                 <Input
                   id="auth-code"
                   value={code}
                   onChange={(event) => {
                     setCode(event.target.value.toUpperCase());
-                    if (error) setError("");
+                    if (errorKey) setErrorKey("");
                   }}
-                  placeholder="ENTER 8-CHAR CODE"
+                  placeholder={labels.authCodePlaceholder}
                   className="font-mono tracking-[0.2em]"
                   autoFocus
                 />
               </>
             )}
-            {error ? (
+            {errorKey ? (
               <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-warn">
-                {error}
+                {labels[errorKey]}
               </div>
             ) : mode === "code" ? (
               <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-muted">
-                Code valid for 5 minutes
+                {labels.authCodeValid}
               </div>
             ) : null}
           </div>
@@ -368,9 +370,9 @@ export function AuthGate() {
               className="px-5"
               disabled={submitting}
             >
-              Sync Uplink
+              {labels.syncUplink}
             </Button>
-            <span className="hud-label">SCANNING CACHE...</span>
+            <span className="hud-label">{labels.scanningCacheLabel}</span>
           </div>
         </form>
       </div>

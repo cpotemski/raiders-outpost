@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useProjectContext } from "@/components/projects/ProjectContext";
 import { ProjectStagePanel } from "@/components/projects/ProjectStagePanel";
 import type { ProjectProgress } from "@/types/projects";
+import { useLabels } from "@/components/locale/useLabels";
 
 type ProjectDashboardProps = {
   query: string;
@@ -16,6 +17,7 @@ export function ProjectDashboard({
   neededOnly,
   project,
 }: ProjectDashboardProps) {
+  const labels = useLabels();
   const {
     loading,
     selectedProject,
@@ -50,7 +52,7 @@ export function ProjectDashboard({
   if (loading && !activeProject) {
     return (
       <div className="border-t border-frame2 px-4 py-5 text-sm uppercase tracking-[0.08em] text-muted">
-        Scanning project cache...
+        {labels.scanningProjectCache}
       </div>
     );
   }
@@ -59,7 +61,7 @@ export function ProjectDashboard({
     <div className="flex flex-col gap-4 pb-24">
       <div className="arc-panel-header flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="hud-label">Project</p>
+          <p className="hud-label">{labels.projectLabel}</p>
           <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
             {activeProject.name}
           </h2>
@@ -117,7 +119,7 @@ export function ProjectDashboard({
     </div>
   ) : (
     <div className="border border-frame2/70 bg-panel2/40 px-4 py-4 text-[11px] uppercase tracking-[0.12em] text-muted">
-      No signal. Project data not found.
+      {labels.noSignalProjectData}
     </div>
   );
 }

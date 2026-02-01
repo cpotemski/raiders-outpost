@@ -6,6 +6,7 @@ import { useProjectContext } from "@/components/projects/ProjectContext";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 import { isExpeditionProjectSlug } from "@/lib/expeditions";
+import { useLabels } from "@/components/locale/useLabels";
 
 const copyTokenToClipboard = async (token: string) => {
   if (navigator?.clipboard?.writeText) {
@@ -33,6 +34,7 @@ export default function RaiderPage() {
   const { identity, ready, clearIdentity } = useLocalIdentity();
   const { allProjects, loading: projectsLoading, refreshProjects } =
     useProjectContext();
+  const labels = useLabels();
   const [authCode, setAuthCode] = useState("");
   const [copied, setCopied] = useState(false);
   const [loadingCode, setLoadingCode] = useState(false);
@@ -41,7 +43,9 @@ export default function RaiderPage() {
   >(null);
   const [loadingExpedition, setLoadingExpedition] = useState(false);
   const [savingExpedition, setSavingExpedition] = useState(false);
-  const [expeditionError, setExpeditionError] = useState("");
+  const [expeditionErrorKey, setExpeditionErrorKey] = useState<
+    "updateFailed" | ""
+  >("");
 
   const onCopy = async () => {
     if (!authCode) return;
@@ -77,7 +81,7 @@ export default function RaiderPage() {
     if (!identity) return;
     const controller = new AbortController();
     setLoadingExpedition(true);
-    setExpeditionError("");
+    setExpeditionErrorKey("");
 
     fetch("/api/user/expedition", {
       method: "GET",
@@ -111,20 +115,20 @@ export default function RaiderPage() {
   );
 
   const activeExpeditionLabel = useMemo(() => {
-    if (!activeExpeditionSlug) return "NO EXPEDITION";
+    if (!activeExpeditionSlug) return labels.noExpedition;
     return (
       expeditionProjects.find(
         (project) => project.slug === activeExpeditionSlug
-      )?.name ?? "UNKNOWN EXPEDITION"
+      )?.name ?? labels.unknownExpedition
     );
-  }, [activeExpeditionSlug, expeditionProjects]);
+  }, [activeExpeditionSlug, expeditionProjects, labels]);
 
   const setExpedition = async (nextSlug: string | null) => {
     if (!identity) return;
     if (savingExpedition) return;
     if (nextSlug === activeExpeditionSlug) return;
     setSavingExpedition(true);
-    setExpeditionError("");
+    setExpeditionErrorKey("");
     try {
       const res = await fetch("/api/user/expedition", {
         method: "PUT",
@@ -140,13 +144,13 @@ export default function RaiderPage() {
       }
       const payload = await res.json().catch(() => null);
       if (!res.ok || !payload) {
-        setExpeditionError("Update failed");
+        setExpeditionErrorKey("updateFailed");
         return;
       }
       setActiveExpeditionSlug(payload.activeExpeditionSlug ?? null);
       refreshProjects();
     } catch {
-      setExpeditionError("Update failed");
+      setExpeditionErrorKey("updateFailed");
     } finally {
       setSavingExpedition(false);
     }
@@ -157,7 +161,7 @@ export default function RaiderPage() {
   if (!identity) {
     return (
       <div className="arc-panel arc-corners border border-frame2/70 bg-panel2/40 px-4 py-4 text-[11px] uppercase tracking-[0.12em] text-muted">
-        No signal. Raider not linked.
+        {labels.noSignalRaiderNotLinked}
       </div>
     );
   }
@@ -169,21 +173,21 @@ export default function RaiderPage() {
           <span className="text-xs font-semibold uppercase tracking-[0.18em]">
             ARC// RAIDER
           </span>
-          <span className="hud-label">LOCAL</span>
+          <span className="hud-label">{labels.localLabel}</span>
         </div>
         <div className="space-y-4 px-4 py-5">
           <div>
-            <div className="hud-label">Raider</div>
+            <div className="hud-label">{labels.raiderLabel}</div>
             <div className="text-sm font-semibold uppercase tracking-[0.12em]">
               {identity.name}
             </div>
           </div>
           <div>
-            <div className="hud-label">Auth Code</div>
+            <div className="hud-label">{labels.authCodeLabel}</div>
             <div className="mt-2 flex flex-wrap items-start gap-2">
               <div
                 className="flex-1 rounded-[8px] border border-frame bg-panel2 px-3 py-2 font-mono text-[12px] text-text tracking-[0.2em]"
-                aria-label="Auth code value"
+                aria-label={labels.authCodeValueAria}
               >
                 {authCode || "--------"}
               </div>
@@ -194,18 +198,18 @@ export default function RaiderPage() {
                 className="px-2 py-1 text-[10px]"
                 disabled={!authCode}
               >
-                {copied ? "Copied" : "Copy"}
+                {copied ? labels.copied : labels.copy}
               </Button>
             </div>
           </div>
           <div>
-            <div className="hud-label">Active Expedition</div>
+            <div className="hud-label">{labels.activeExpeditionLabel}</div>
             <div
               className="mt-2 flex flex-wrap items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted"
               data-testid="expedition-config"
             >
               <span>{activeExpeditionLabel}</span>
-              <span>{loadingExpedition ? "Scanning..." : "Synced"}</span>
+              <span>{loadingExpedition ? labels.scanning : labels.synced}</span>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
               <button
@@ -221,11 +225,11 @@ export default function RaiderPage() {
                 )}
                 disabled={savingExpedition || loadingExpedition}
               >
-                No Expedition
+                {labels.noExpedition}
               </button>
               {projectsLoading && !expeditionProjects.length ? (
                 <div className="flex h-8 items-center border border-frame2/70 bg-panel2/40 px-3 text-[10px] uppercase tracking-[0.16em] text-muted">
-                  Scanning expedition index...
+                  {labels.scanningExpeditionIndex}
                 </div>
               ) : expeditionProjects.length ? (
                 expeditionProjects.map((project) => {
@@ -251,18 +255,18 @@ export default function RaiderPage() {
                 })
               ) : (
                 <div className="flex h-8 items-center border border-frame2/70 bg-panel2/40 px-3 text-[10px] uppercase tracking-[0.16em] text-muted">
-                  No signal. Expedition data not found.
+                  {labels.noSignalExpeditionData}
                 </div>
               )}
             </div>
-            {expeditionError ? (
+            {expeditionErrorKey ? (
               <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-warn">
-                {expeditionError}
+                {labels[expeditionErrorKey]}
               </div>
             ) : null}
           </div>
           <div className="flex items-center justify-between">
-            <span className="hud-label">READY</span>
+            <span className="hud-label">{labels.expeditionReady}</span>
             <Button
               type="button"
               variant="default"
@@ -271,7 +275,7 @@ export default function RaiderPage() {
               }}
               className="px-3"
             >
-              Log Out
+              {labels.logOut}
             </Button>
           </div>
         </div>

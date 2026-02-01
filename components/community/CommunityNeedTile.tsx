@@ -1,9 +1,12 @@
+"use client";
+
 import type { CommunityNeedsItem } from "@/types/community";
 import { cn } from "@/lib/cn";
 import {
   getItemLabel,
   getItemTileBackground,
 } from "@/components/projects/itemTileUtils";
+import { useLabels } from "@/components/locale/useLabels";
 
 type CommunityNeedTileProps = {
   item: CommunityNeedsItem;
@@ -16,6 +19,7 @@ export function CommunityNeedTile({
   active,
   onToggle,
 }: CommunityNeedTileProps) {
+  const labels = useLabels();
   const { itemBackground, isBlueprint } = getItemTileBackground({
     itemId: item.itemId,
     itemType: item.itemType,
@@ -67,7 +71,7 @@ export function CommunityNeedTile({
       ) : (
         <div className="absolute inset-4 z-0 flex items-center justify-center">
           <div className="text-[9px] uppercase tracking-[0.18em] text-muted/70">
-            No Signal
+            {labels.noSignalTitle}
           </div>
         </div>
       )}
@@ -75,7 +79,7 @@ export function CommunityNeedTile({
         {label}
       </span>
       <span className="sr-only">
-        {label} needs {item.totalNeeded}
+        {label} {labels.needsVerb} {item.totalNeeded}
       </span>
     </button>
   );

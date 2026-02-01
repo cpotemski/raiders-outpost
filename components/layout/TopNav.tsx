@@ -5,15 +5,16 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { useLocale } from "@/components/locale/LocaleProvider";
-
-const tabs = [
-  { href: "/", label: "Projects" },
-  { href: "/community", label: "Community" },
-];
+import { useLabels } from "@/components/locale/useLabels";
 
 export function TopNav() {
   const pathname = usePathname();
   const { locale, setLocale } = useLocale();
+  const labels = useLabels();
+  const tabs = [
+    { href: "/", label: labels.navProjects },
+    { href: "/community", label: labels.navCommunity },
+  ];
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname?.startsWith(href);
@@ -28,7 +29,7 @@ export function TopNav() {
               ARC // Raiders Outpost
             </span>
             <span className="hud-label text-[10px] sm:text-xs">
-              Project Console
+              {labels.navConsole}
             </span>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import type { CommunityNeedsItem, CommunityNeedsMember } from "@/types/community";
 import { cn } from "@/lib/cn";
 import { CommunityNeedTile } from "@/components/community/CommunityNeedTile";
+import { useLabels } from "@/components/locale/useLabels";
 
 type CommunityNeedsPanelProps = {
   members: CommunityNeedsMember[];
@@ -15,6 +16,7 @@ export function CommunityNeedsPanel({
   items,
   loading,
 }: CommunityNeedsPanelProps) {
+  const labels = useLabels();
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(
     () => new Set(members.map((member) => member.id))
   );
@@ -73,7 +75,7 @@ export function CommunityNeedsPanel({
 
     const groups = new Map<string, typeof filtered>();
     for (const item of filtered) {
-      const key = item.itemType || "Unknown";
+      const key = item.itemType || labels.unknownLabel;
       const group = groups.get(key) ?? [];
       group.push(item);
       groups.set(key, group);
@@ -92,7 +94,7 @@ export function CommunityNeedsPanel({
       });
       return { type, items: sorted };
     });
-  }, [items, selectedMembers]);
+  }, [items, labels.unknownLabel, selectedMembers]);
 
   const activeItem = useMemo(() => {
     if (!activeItemId) return null;
@@ -120,7 +122,7 @@ export function CommunityNeedsPanel({
     >
       <div className="bg-panel/80 px-4 py-4">
         <div>
-          <div className="hud-label">Include Raiders</div>
+          <div className="hud-label">{labels.includeRaiders}</div>
           <div className="mt-2 flex flex-wrap gap-2">
             {members.map((member) => {
               const active = selectedMembers.has(member.id);
@@ -148,7 +150,7 @@ export function CommunityNeedsPanel({
         <div className="mt-5 border-t border-frame2 pt-4">
           {loading ? (
             <div className="mt-3 text-[11px] uppercase tracking-[0.12em] text-muted">
-              Scanning cache...
+              {labels.scanningCache}
             </div>
           ) : groupedItems.length ? (
             <div className="mt-3 space-y-4">
@@ -178,7 +180,9 @@ export function CommunityNeedsPanel({
                       aria-expanded={!collapsedGroups.has(group.type)}
                       aria-controls={`needs-group-${group.type}`}
                     >
-                      {collapsedGroups.has(group.type) ? "Show" : "Hide"}
+                      {collapsedGroups.has(group.type)
+                        ? labels.show
+                        : labels.hide}
                     </button>
                   </div>
                   {!collapsedGroups.has(group.type) ? (
@@ -205,7 +209,7 @@ export function CommunityNeedsPanel({
             </div>
           ) : (
             <div className="mt-3 border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
-              No signal. Data not found.
+              {labels.noSignalDataNotFound}
             </div>
           )}
         </div>
@@ -215,7 +219,7 @@ export function CommunityNeedsPanel({
             <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
               <button
                 type="button"
-                aria-label="Close overlay"
+                aria-label={labels.closeOverlay}
                 onClick={() => setActiveItemId(null)}
                 className="absolute inset-0 bg-panel/80"
                 data-testid="community-need-backdrop"
@@ -233,7 +237,7 @@ export function CommunityNeedsPanel({
                     onClick={() => setActiveItemId(null)}
                     className="border border-frame2 px-2 py-1 text-[9px] uppercase tracking-[0.16em] text-muted hover:border-accent/60 hover:text-text"
                   >
-                    Close
+                    {labels.close}
                   </button>
                 </div>
                 <div className="mt-3 space-y-1">
