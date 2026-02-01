@@ -114,6 +114,24 @@ const login = async (page: Page, name = "Vanguard") => {
   await expect(page.getByTestId("project-list")).toBeVisible();
 };
 
+const getOnboardingProjects = async (page: Page) => {
+  const res = await page.request.get("/api/onboarding/projects?locale=en");
+  if (!res.ok()) {
+    throw new Error("Failed to load onboarding projects.");
+  }
+  return (await res.json()) as {
+    projects: Array<{
+      slug: string;
+      name: string;
+      isExpedition: boolean;
+      stages: Array<{
+        stageKey: string;
+        sortOrder: number;
+      }>;
+    }>;
+  };
+};
+
 const openUserMenu = async (page: Page) => {
   const trigger = page.getByTestId("user-menu-trigger");
   await expect(trigger).toBeVisible();
@@ -417,6 +435,78 @@ test("project list navigates to project detail", async ({ page }) => {
   await setActiveExpedition(page, "expedition_project");
   await openProject(page, "expedition_project");
   await expect(page.getByText("Foundation")).toBeVisible();
+});
+
+test("onboarding baseline completes selected stage", async ({ page }) => {
+  const onboarding = await getOnboardingProjects(page);
+  const project = onboarding.projects.find(
+    (entry) => !entry.isExpedition && entry.stages.length > 0
+  );
+  if (!project) {
+    test.skip(true, "No onboarding project with stages available.");
+    return;
+  }
+
+  const stage = project.stages[0];
+
+  await page.goto("/");
+  await page.evaluate(() => {
+    localStorage.clear();
+  });
+  await page.reload();
+  await expect(page.getByText("ARC// AUTH LINK")).toBeVisible();
+  await page.getByLabel("Operator Name").fill("Baseline");
+  const projectComplete = page.getByTestId(
+    `onboarding-project-complete-${project.slug}`
+  );
+  await expect(projectComplete).toBeVisible();
+  await projectComplete.click();
+  const authPanel = page.locator(".arc-panel").first();
+  await authPanel.screenshot({
+    path: "test-results/onboarding-baseline.png",
+  });
+  await page.getByRole("button", { name: "Link Uplink" }).click();
+  await expect(page.getByTestId("project-list")).toBeVisible();
+  await openProject(page, project.slug);
+
+  const stagePanel = page.locator(`[data-stage-key="${stage.stageKey}"]`);
+  await expect(stagePanel).toBeVisible();
+  const countValue = await stagePanel
+    .locator("[data-stage-count]")
+    .getAttribute("data-stage-count");
+  expect(countValue).toBeTruthy();
+  const match = countValue?.match(/^(\d+)\s*\/\s*(\d+)$/);
+  if (!match) {
+    throw new Error(`Unexpected stage count format: ${countValue}`);
+  }
+  expect(Number(match[1])).toBe(Number(match[2]));
+});
+
+test("onboarding next expedition sets active expedition", async ({ page }) => {
+  const onboarding = await getOnboardingProjects(page);
+  const expedition = onboarding.projects.find((entry) => entry.isExpedition);
+  if (!expedition) {
+    test.skip(true, "No expedition project available.");
+    return;
+  }
+
+  await page.goto("/");
+  await page.evaluate(() => {
+    localStorage.clear();
+  });
+  await page.reload();
+  await expect(page.getByText("ARC// AUTH LINK")).toBeVisible();
+  await page.getByLabel("Operator Name").fill("Scout");
+  const nextToggle = page.getByTestId(
+    `onboarding-expedition-next-${expedition.slug}`
+  );
+  await expect(nextToggle).toBeVisible();
+  await nextToggle.click();
+  await page.getByRole("button", { name: "Link Uplink" }).click();
+  await expect(page.getByTestId("project-list")).toBeVisible();
+  await expect(
+    page.getByTestId(`project-card-${expedition.slug}`)
+  ).toBeVisible();
 });
 
 test("project list shows progress counts and ring", async ({ page }) => {

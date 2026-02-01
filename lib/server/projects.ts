@@ -104,7 +104,7 @@ const seedProjects = async (payload: Awaited<ReturnType<typeof loadArcProjects>>
   }
 };
 
-const ensureProjects = async (
+export const ensureProjects = async (
   payload?: Awaited<ReturnType<typeof loadArcProjects>>
 ) => {
   const nextPayload = payload ?? (await loadArcProjects());

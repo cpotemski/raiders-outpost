@@ -93,14 +93,14 @@ export default function RootLayout({
       >
         <LocaleProvider>
           <ProjectProvider>
+            <IdentitySync />
+            <AuthGate />
             <TopNav />
             <div className="mx-auto flex min-h-screen max-w-[1320px] flex-col px-4 pb-8 pt-6 sm:px-6 lg:px-8">
               <main className="flex-1">{children}</main>
             </div>
           </ProjectProvider>
         </LocaleProvider>
-        <IdentitySync />
-        <AuthGate />
       </body>
     </html>
   );

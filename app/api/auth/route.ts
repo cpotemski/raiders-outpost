@@ -1,4 +1,5 @@
 import { generateUserToken } from "@/lib/server/auth";
+import { applyOnboardingBaseline } from "@/lib/server/onboarding";
 import { getUserByToken, updateUserName, upsertUserWithToken } from "@/lib/server/users";
 
 export const runtime = "nodejs";
@@ -8,6 +9,10 @@ export const POST = async (request: Request) => {
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   const token = typeof body?.token === "string" ? body.token.trim() : "";
   const create = body?.create === true;
+  const locale = body?.locale;
+  const baseline = Array.isArray(body?.baseline) ? body.baseline : null;
+  const expeditionNext =
+    typeof body?.expeditionNext === "string" ? body.expeditionNext : null;
 
   if (create) {
     if (!name) {
@@ -15,6 +20,12 @@ export const POST = async (request: Request) => {
     }
     const nextToken = token || generateUserToken();
     const user = await upsertUserWithToken(name, nextToken);
+    await applyOnboardingBaseline({
+      userId: user.id,
+      locale,
+      baseline,
+      expeditionNext,
+    });
     return Response.json({ user });
   }
 
