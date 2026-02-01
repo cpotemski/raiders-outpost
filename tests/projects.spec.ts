@@ -108,8 +108,8 @@ const login = async (page: Page, name = "Vanguard") => {
   });
   await page.reload();
   await expect(page.getByText("ARC// AUTH LINK")).toBeVisible();
-  await page.getByLabel("Operator Name").fill(name);
-  await page.getByRole("button", { name: "Link Uplink" }).click();
+  await page.getByLabel("Raider Name").fill(name);
+  await page.getByRole("button", { name: "Sync Uplink" }).click();
   await expect(page.getByText(name)).toBeVisible();
   await expect(page.getByTestId("project-list")).toBeVisible();
 };
@@ -326,11 +326,11 @@ test("mobile layout avoids horizontal overflow", async ({ page }) => {
     })
     .toBeFalsy();
 
-  await page.getByLabel("Operator Name").fill("Vanguard");
-  await page.getByRole("button", { name: "Link Uplink" }).click();
+  await page.getByLabel("Raider Name").fill("Vanguard");
+  await page.getByRole("button", { name: "Sync Uplink" }).click();
   await expect(page.getByTestId("project-list")).toBeVisible();
   await openUserMenu(page);
-  const menuPanel = page.getByText("ARC// OPERATOR").locator("..").locator("..");
+  const menuPanel = page.getByText("ARC// RAIDER").locator("..").locator("..");
   await expect(menuPanel).toBeVisible();
   await expect
     .poll(async () => {
@@ -455,7 +455,7 @@ test("onboarding baseline completes selected stage", async ({ page }) => {
   });
   await page.reload();
   await expect(page.getByText("ARC// AUTH LINK")).toBeVisible();
-  await page.getByLabel("Operator Name").fill("Baseline");
+  await page.getByLabel("Raider Name").fill("Baseline");
   const projectComplete = page.getByTestId(
     `onboarding-project-complete-${project.slug}`
   );
@@ -465,7 +465,7 @@ test("onboarding baseline completes selected stage", async ({ page }) => {
   await authPanel.screenshot({
     path: "test-results/onboarding-baseline.png",
   });
-  await page.getByRole("button", { name: "Link Uplink" }).click();
+  await page.getByRole("button", { name: "Sync Uplink" }).click();
   await expect(page.getByTestId("project-list")).toBeVisible();
   await openProject(page, project.slug);
 
@@ -482,7 +482,7 @@ test("onboarding baseline completes selected stage", async ({ page }) => {
   expect(Number(match[1])).toBe(Number(match[2]));
 });
 
-test("onboarding next expedition sets active expedition", async ({ page }) => {
+test("onboarding active expedition sets active expedition", async ({ page }) => {
   const onboarding = await getOnboardingProjects(page);
   const expedition = onboarding.projects.find((entry) => entry.isExpedition);
   if (!expedition) {
@@ -496,13 +496,16 @@ test("onboarding next expedition sets active expedition", async ({ page }) => {
   });
   await page.reload();
   await expect(page.getByText("ARC// AUTH LINK")).toBeVisible();
-  await page.getByLabel("Operator Name").fill("Scout");
-  const nextToggle = page.getByTestId(
-    `onboarding-expedition-next-${expedition.slug}`
+  await page.getByLabel("Raider Name").fill("Scout");
+  const activeToggle = page.getByTestId(
+    `expedition-option-${expedition.slug}`
   );
-  await expect(nextToggle).toBeVisible();
-  await nextToggle.click();
-  await page.getByRole("button", { name: "Link Uplink" }).click();
+  await expect(activeToggle).toBeVisible();
+  await activeToggle.click();
+  await page.locator(".arc-panel").first().screenshot({
+    path: "test-results/onboarding-expedition-active.png",
+  });
+  await page.getByRole("button", { name: "Sync Uplink" }).click();
   await expect(page.getByTestId("project-list")).toBeVisible();
   await expect(
     page.getByTestId(`project-card-${expedition.slug}`)
@@ -721,8 +724,8 @@ test("project tiles show community ownership", async ({ page, browser }) => {
   const invitePage = await context.newPage();
   await invitePage.goto(inviteLink);
   await expect(invitePage.getByText("ARC// AUTH LINK")).toBeVisible();
-  await invitePage.getByLabel("Operator Name").fill("Nomad");
-  await invitePage.getByRole("button", { name: "Link Uplink" }).click();
+  await invitePage.getByLabel("Raider Name").fill("Nomad");
+  await invitePage.getByRole("button", { name: "Sync Uplink" }).click();
   await expect(invitePage.getByText("Echo Node")).toBeVisible();
 
   await page.getByRole("link", { name: "Projects", exact: true }).click();
@@ -802,8 +805,8 @@ test("community needs overview aggregates and filters by member", async ({
   const invitePage = await context.newPage();
   await invitePage.goto(inviteLink);
   await expect(invitePage.getByText("ARC// AUTH LINK")).toBeVisible();
-  await invitePage.getByLabel("Operator Name").fill("Warden");
-  await invitePage.getByRole("button", { name: "Link Uplink" }).click();
+  await invitePage.getByLabel("Raider Name").fill("Warden");
+  await invitePage.getByRole("button", { name: "Sync Uplink" }).click();
   await expect(invitePage.getByText(communityName)).toBeVisible();
 
   await page.reload();
@@ -1037,7 +1040,7 @@ test("auth code links existing account", async ({ page, browser }) => {
   await expect(secondPage.getByText("ARC// AUTH LINK")).toBeVisible();
   await secondPage.getByRole("button", { name: "Use Code" }).click();
   await secondPage.getByLabel("Auth Code").fill(code ?? "");
-  await secondPage.getByRole("button", { name: "Link Uplink" }).click();
+  await secondPage.getByRole("button", { name: "Sync Uplink" }).click();
   await expect(secondPage.getByText("Atlas")).toBeVisible();
   await context.close();
 });
@@ -1068,8 +1071,8 @@ test("community creation and invite link join", async ({ page, browser }) => {
   const invitePage = await context.newPage();
   await invitePage.goto(inviteLink);
   await expect(invitePage.getByText("ARC// AUTH LINK")).toBeVisible();
-  await invitePage.getByLabel("Operator Name").fill("Nomad");
-  await invitePage.getByRole("button", { name: "Link Uplink" }).click();
+  await invitePage.getByLabel("Raider Name").fill("Nomad");
+  await invitePage.getByRole("button", { name: "Sync Uplink" }).click();
   await expect(
     invitePage.getByRole("main").getByText("Nomad", { exact: true })
   ).toBeVisible();
@@ -1080,7 +1083,7 @@ test("community creation and invite link join", async ({ page, browser }) => {
   await context.close();
 });
 
-test("community members can remove operators", async ({ page, browser }) => {
+test("community members can remove raiders", async ({ page, browser }) => {
   await login(page, "Vanguard");
 
   await page.getByRole("link", { name: "Community", exact: true }).click();
@@ -1094,8 +1097,8 @@ test("community members can remove operators", async ({ page, browser }) => {
   const invitePage = await context.newPage();
   await invitePage.goto(inviteLink);
   await expect(invitePage.getByText("ARC// AUTH LINK")).toBeVisible();
-  await invitePage.getByLabel("Operator Name").fill("Nomad");
-  await invitePage.getByRole("button", { name: "Link Uplink" }).click();
+  await invitePage.getByLabel("Raider Name").fill("Nomad");
+  await invitePage.getByRole("button", { name: "Sync Uplink" }).click();
   await expect(invitePage.getByText("Echo Node")).toBeVisible();
   await context.close();
 

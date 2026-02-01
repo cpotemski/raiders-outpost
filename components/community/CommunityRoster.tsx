@@ -35,7 +35,7 @@ export function CommunityRoster() {
   if (!ready) {
     body = <RosterStatus message="Syncing uplink..." />;
   } else if (!identityName) {
-    body = <RosterStatus message="No operator linked." />;
+    body = <RosterStatus message="No raider linked." />;
   } else if (!community) {
     body = (
       <CommunityEmptyState

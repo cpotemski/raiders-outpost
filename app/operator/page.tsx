@@ -29,7 +29,7 @@ const copyTokenToClipboard = async (token: string) => {
   }
 };
 
-export default function OperatorPage() {
+export default function RaiderPage() {
   const { identity, ready, clearIdentity } = useLocalIdentity();
   const { allProjects, loading: projectsLoading, refreshProjects } =
     useProjectContext();
@@ -157,7 +157,7 @@ export default function OperatorPage() {
   if (!identity) {
     return (
       <div className="arc-panel arc-corners border border-frame2/70 bg-panel2/40 px-4 py-4 text-[11px] uppercase tracking-[0.12em] text-muted">
-        No signal. Operator not linked.
+        No signal. Raider not linked.
       </div>
     );
   }
@@ -167,13 +167,13 @@ export default function OperatorPage() {
       <div className="arc-panel arc-corners overflow-hidden">
         <div className="arc-panel-header">
           <span className="text-xs font-semibold uppercase tracking-[0.18em]">
-            ARC// OPERATOR
+            ARC// RAIDER
           </span>
           <span className="hud-label">LOCAL</span>
         </div>
         <div className="space-y-4 px-4 py-5">
           <div>
-            <div className="hud-label">Operator</div>
+            <div className="hud-label">Raider</div>
             <div className="text-sm font-semibold uppercase tracking-[0.12em]">
               {identity.name}
             </div>

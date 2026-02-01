@@ -37,7 +37,6 @@ export function AuthGate() {
   const [projectSelections, setProjectSelections] = useState<
     Record<string, boolean>
   >({});
-  const [expeditionDone, setExpeditionDone] = useState<string[]>([]);
   const [expeditionNext, setExpeditionNext] = useState<string | null>(null);
 
   useEffect(() => {
@@ -67,23 +66,8 @@ export function AuthGate() {
     setProjectSelections((prev) => ({ ...prev, [slug]: !prev[slug] }));
   };
 
-  const toggleExpeditionDone = (slug: string) => {
-    setExpeditionDone((prev) => {
-      if (prev.includes(slug)) {
-        return prev.filter((entry) => entry !== slug);
-      }
-      return [...prev, slug];
-    });
-  };
-
   const toggleExpeditionNext = (slug: string) => {
     setExpeditionNext((prev) => (prev === slug ? null : slug));
-  };
-
-  const clearOnboarding = () => {
-    setProjectSelections({});
-    setExpeditionDone([]);
-    setExpeditionNext(null);
   };
 
   const buildBaselinePayload = () => {
@@ -95,14 +79,6 @@ export function AuthGate() {
       const completed = new Set<number>();
       project.stages.forEach((stage) => completed.add(stage.sortOrder));
       selectionMap.set(project.slug, completed);
-    }
-
-    for (const slug of expeditionDone) {
-      const project = onboardingProjects.find((entry) => entry.slug === slug);
-      if (!project) continue;
-      const selection = selectionMap.get(slug) ?? new Set<number>();
-      project.stages.forEach((stage) => selection.add(stage.sortOrder));
-      selectionMap.set(slug, selection);
     }
 
     return Array.from(selectionMap.entries()).map(([slug, stages]) => ({
@@ -166,7 +142,7 @@ export function AuthGate() {
         const nextName =
           typeof payload.user.name === "string"
             ? payload.user.name
-            : "Operator";
+            : "Raider";
         saveIdentity(nextName, payload.user.token);
       }
     } catch {
@@ -226,7 +202,7 @@ export function AuthGate() {
             {mode === "register" ? (
               <>
                 <label className="hud-label" htmlFor="operator-name">
-                  Operator Name
+                  Raider Name
                 </label>
                 <Input
                   id="operator-name"
@@ -248,13 +224,6 @@ export function AuthGate() {
                         Select completed projects
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={clearOnboarding}
-                      className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted hover:text-text"
-                    >
-                      Skip setup
-                    </button>
                   </div>
                   <div className="mt-3 space-y-3">
                     {onboardingLoading ? (
@@ -269,21 +238,16 @@ export function AuthGate() {
                             <div
                               key={project.slug}
                               data-testid={`onboarding-project-${project.slug}`}
-                              className="flex flex-wrap items-center justify-between gap-3 border border-frame2/70 bg-panel2/40 px-3 py-2"
+                              className="flex items-center justify-between gap-3 border border-frame2/70 bg-panel2/40 px-3 py-2"
                             >
-                              <div className="min-w-0">
+                              <div className="min-w-0 flex-1">
                                 <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text">
                                   {project.name}
-                                </div>
-                                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-                                  {project.isExpedition
-                                    ? "Expedition"
-                                    : "Module"}
                                 </div>
                               </div>
                               <label
                                 className={cn(
-                                  "flex items-center gap-2 border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]",
+                                  "flex items-center gap-2 border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] shrink-0",
                                   selected
                                     ? "border-accent/80 text-text"
                                     : "border-frame2/70 text-muted hover:border-accent/60"
@@ -313,65 +277,55 @@ export function AuthGate() {
                   {expeditionProjects.length ? (
                     <div className="mt-4 border-t border-frame2/70 pt-4">
                       <div className="text-[11px] font-semibold uppercase tracking-[0.16em]">
-                        Expedition Status
+                        Expedition Control
                       </div>
-                      <div className="hud-label">
-                        Mark completed and set next expedition
+                      <div className="hud-label">Select active expedition</div>
+                      <div
+                        className="mt-3 flex flex-wrap items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted"
+                        data-testid="expedition-config"
+                      >
+                        <span>
+                          {expeditionNext
+                            ? expeditionProjects.find(
+                                (project) => project.slug === expeditionNext
+                              )?.name ?? "UNKNOWN EXPEDITION"
+                            : "NO EXPEDITION"}
+                        </span>
+                        <span>READY</span>
                       </div>
-                      <div className="mt-3 space-y-2">
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setExpeditionNext(null)}
+                          aria-pressed={!expeditionNext}
+                          data-testid="expedition-option-none"
+                          className={cn(
+                            "h-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
+                            !expeditionNext
+                              ? "border-accent/80 text-text"
+                              : "border-frame2 text-muted hover:border-accent/60"
+                          )}
+                        >
+                          No Expedition
+                        </button>
                         {expeditionProjects.map((project) => {
-                          const isDone = expeditionDone.includes(project.slug);
                           const isNext = expeditionNext === project.slug;
                           return (
-                            <div
+                            <button
                               key={project.slug}
-                              className="flex flex-wrap items-center justify-between gap-3 border border-frame2/70 bg-panel2/40 px-3 py-2"
+                              type="button"
+                              onClick={() => toggleExpeditionNext(project.slug)}
+                              aria-pressed={isNext}
+                              data-testid={`expedition-option-${project.slug}`}
+                              className={cn(
+                                "h-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
+                                isNext
+                                  ? "border-accent/80 text-text"
+                                  : "border-frame2 text-muted hover:border-accent/60"
+                              )}
                             >
-                              <div className="text-[11px] font-semibold uppercase tracking-[0.12em]">
-                                {project.name}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <label
-                                  className={cn(
-                                    "flex items-center gap-2 border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]",
-                                    isDone
-                                      ? "border-accent/80 text-text"
-                                      : "border-frame2/70 text-muted hover:border-accent/60"
-                                  )}
-                                  data-testid={`onboarding-expedition-done-${project.slug}`}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    className="sr-only"
-                                    checked={isDone}
-                                    onChange={() =>
-                                      toggleExpeditionDone(project.slug)
-                                    }
-                                  />
-                                  DONE
-                                </label>
-                                <label
-                                  className={cn(
-                                    "flex items-center gap-2 border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]",
-                                    isNext
-                                      ? "border-accent/80 text-text"
-                                      : "border-frame2/70 text-muted hover:border-accent/60"
-                                  )}
-                                  data-testid={`onboarding-expedition-next-${project.slug}`}
-                                >
-                                  <input
-                                    type="radio"
-                                    name="expedition-next"
-                                    className="sr-only"
-                                    checked={isNext}
-                                    onChange={() =>
-                                      toggleExpeditionNext(project.slug)
-                                    }
-                                  />
-                                  NEXT
-                                </label>
-                              </div>
-                            </div>
+                              {project.name}
+                            </button>
                           );
                         })}
                       </div>
@@ -401,13 +355,11 @@ export function AuthGate() {
               <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-warn">
                 {error}
               </div>
-            ) : (
+            ) : mode === "code" ? (
               <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-muted">
-                {mode === "register"
-                  ? "Token stored in local storage"
-                  : "Code valid for 5 minutes"}
+                Code valid for 5 minutes
               </div>
-            )}
+            ) : null}
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Button
@@ -416,7 +368,7 @@ export function AuthGate() {
               className="px-5"
               disabled={submitting}
             >
-              Link Uplink
+              Sync Uplink
             </Button>
             <span className="hud-label">SCANNING CACHE...</span>
           </div>

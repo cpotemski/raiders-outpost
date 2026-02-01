@@ -75,7 +75,7 @@ export function CommunityOverview({
                   disabled={removingId === member.id}
                   onClick={() => onRequestRemove(member)}
                 >
-                  Unlink
+                  Sever Uplink
                 </Button>
               </div>
             </div>
@@ -94,7 +94,7 @@ export function CommunityOverview({
               className="font-mono text-[11px]"
             />
             <div className="text-[10px] uppercase tracking-[0.16em] text-muted">
-              Share the uplink to sync more operators.
+              Share the uplink to sync more raiders.
             </div>
           </div>
         </div>

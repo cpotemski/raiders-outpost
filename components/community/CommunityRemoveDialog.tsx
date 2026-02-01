@@ -32,7 +32,7 @@ export function CommunityRemoveDialog({
             <div>
               <p className="hud-label">Confirm Removal</p>
               <h3 className="text-base font-semibold uppercase tracking-[0.12em]">
-                Unlink Operator
+                Sever Uplink
               </h3>
             </div>
             <div className="flex items-center gap-2">
@@ -48,7 +48,7 @@ export function CommunityRemoveDialog({
           </div>
           <div className="border-t border-frame2 bg-panel/80 px-4 py-4">
             <div className="text-[11px] uppercase tracking-[0.12em] text-muted">
-              Remove operator from crew?
+              Remove raider from crew?
             </div>
             <div className="mt-2 text-sm font-semibold uppercase tracking-[0.14em] text-text">
               {member.name}
@@ -78,7 +78,7 @@ export function CommunityRemoveDialog({
                 }}
                 disabled={isRemoving}
               >
-                {isRemoving ? "Unlinking" : "Confirm"}
+                {isRemoving ? "Severing" : "Confirm"}
               </Button>
             </div>
           </div>
