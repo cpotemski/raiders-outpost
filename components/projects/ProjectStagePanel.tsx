@@ -58,7 +58,6 @@ export function ProjectStagePanel({
     >
       <div className="arc-panel-header">
         <div>
-          <p className="hud-label">{labels.stageLabel}</p>
           <h3 className="text-sm font-semibold uppercase tracking-[0.12em]">
             {stage.name}
           </h3>

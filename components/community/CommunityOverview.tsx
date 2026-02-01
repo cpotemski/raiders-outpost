@@ -31,25 +31,22 @@ export function CommunityOverview({
   const labels = useLabels();
   return (
     <>
-      <div className="mt-6">
-        <div className="hud-label">{labels.needsOverview}</div>
-        <CommunityNeedsPanel
-          members={
-            needsPayload?.members ??
-            community.members.map((member) => ({
-              id: member.id,
-              name: member.name,
-              joinedAt: member.joinedAt,
-            }))
-          }
-          items={needsPayload?.items ?? []}
-          loading={needsLoading}
-        />
-      </div>
+      <CommunityNeedsPanel
+        members={
+          needsPayload?.members ??
+          community.members.map((member) => ({
+            id: member.id,
+            name: member.name,
+            joinedAt: member.joinedAt,
+          }))
+        }
+        items={needsPayload?.items ?? []}
+        loading={needsLoading}
+      />
 
       <div className="mt-6">
         <div className="hud-label">{labels.membersLabel}</div>
-        <div className="mt-3 space-y-2">
+        <div className="mt-3 space-y-2" data-testid="community-members">
           {community.members.map((member) => (
             <div
               key={member.id}
@@ -62,9 +59,6 @@ export function CommunityOverview({
                 <div className="leading-tight">
                   <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-text">
                     {member.name}
-                  </div>
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-muted">
-                    {labels.synced}
                   </div>
                 </div>
               </div>
@@ -109,7 +103,7 @@ export function CommunityOverview({
           className="mt-3 text-[10px] uppercase tracking-[0.16em] text-muted"
           data-testid="community-member-count"
         >
-          {labels.membersLabel} ({community.members.length})
+          {community.members.length}
         </div>
       </div>
     </>

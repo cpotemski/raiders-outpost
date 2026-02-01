@@ -77,13 +77,9 @@ export default function StartPage() {
       <div className="arc-panel arc-corners overflow-hidden">
         <div className="arc-panel-header">
           <div>
-            <p className="hud-label">{labels.projectHub}</p>
-            <h2 className="text-sm font-semibold uppercase tracking-[0.12em]">
+            <p className="hud-label text-sm font-semibold tracking-[0.14em]">
               {labels.projectSelection}
-            </h2>
-          </div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
-            {loading ? labels.scanning : labels.synced}
+            </p>
           </div>
         </div>
         <div className="border-t border-frame2 bg-panel/70 px-4 py-4 sm:px-6">
@@ -95,8 +91,10 @@ export default function StartPage() {
             <div className="flex flex-col gap-5">
               <div>
                 <div className="flex items-center justify-between pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-                  <span>{labels.activeQueue}</span>
-                  <span>{labels.pending}</span>
+                  <span>{labels.activeProject}</span>
+                  <span aria-label={`${labels.activeProject}: ${pendingProjects.length}`}>
+                    {pendingProjects.length}
+                  </span>
                 </div>
                 <div
                   className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
@@ -118,9 +116,9 @@ export default function StartPage() {
                           key={project.slug}
                           href={`/projects/${project.slug}`}
                           data-testid={`project-card-${project.slug}`}
-                          className="arc-panel arc-corners group relative flex flex-col gap-3 overflow-hidden border-frame2/70 px-4 py-4 transition hover:border-accent/60"
+                          className="arc-panel arc-corners group relative flex flex-col justify-center gap-3 overflow-hidden border-frame2/70 px-4 py-4 transition hover:border-accent/60"
                         >
-                          <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center justify-between gap-3">
                             <div className="min-w-0 flex-1">
                               <h3 className="text-xs font-semibold uppercase tracking-[0.12em] break-words sm:text-sm">
                                 {project.name}
@@ -161,10 +159,6 @@ export default function StartPage() {
                               </svg>
                             </div>
                           </div>
-                          <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-muted">
-                            <span>{labels.openProject}</span>
-                            <span>ARC// READY</span>
-                          </div>
                         </Link>
                       )
                     )
@@ -177,8 +171,10 @@ export default function StartPage() {
               </div>
               <div>
                 <div className="flex items-center justify-between pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-                  <span>{labels.completed}</span>
                   <span>{labels.archived}</span>
+                  <span aria-label={`${labels.archived}: ${completedProjects.length}`}>
+                    {completedProjects.length}
+                  </span>
                 </div>
                 <div
                   className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
@@ -200,9 +196,9 @@ export default function StartPage() {
                           key={project.slug}
                           href={`/projects/${project.slug}`}
                           data-testid={`project-card-${project.slug}`}
-                          className="arc-panel arc-corners group relative flex flex-col gap-3 overflow-hidden border-frame2/70 px-4 py-4 transition hover:border-accent/60"
+                          className="arc-panel arc-corners group relative flex flex-col justify-center gap-3 overflow-hidden border-frame2/70 px-4 py-4 transition hover:border-accent/60"
                         >
-                          <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center justify-between gap-3">
                             <div className="min-w-0 flex-1">
                               <h3 className="text-xs font-semibold uppercase tracking-[0.12em] break-words sm:text-sm">
                                 {project.name}
@@ -242,10 +238,6 @@ export default function StartPage() {
                                 />
                               </svg>
                             </div>
-                          </div>
-                          <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-muted">
-                            <span>{labels.openProject}</span>
-                            <span>ARC// READY</span>
                           </div>
                         </Link>
                       )

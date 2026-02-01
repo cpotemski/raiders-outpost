@@ -1081,11 +1081,13 @@ test("community creation and invite link join", async ({ page, browser }) => {
   await page.getByRole("button", { name: "Create Community" }).click();
   await expect(page.getByText("Echo Node")).toBeVisible();
   await expect(
-    page.getByRole("main").getByText("Vanguard", { exact: true })
+    page
+      .getByTestId("community-members")
+      .getByText("Vanguard", { exact: true })
   ).toBeVisible();
   await expect(page.getByTestId("community-invite-tile")).toBeVisible();
   await expect(page.getByTestId("community-member-count")).toContainText(
-    "Members (1)"
+    "1 Synced"
   );
   await page.getByRole("main").screenshot({
     path: "test-results/community-roster.png",
@@ -1101,11 +1103,15 @@ test("community creation and invite link join", async ({ page, browser }) => {
   await invitePage.getByLabel("Raider Name").fill("Nomad");
   await invitePage.getByRole("button", { name: "Sync Uplink" }).click();
   await expect(
-    invitePage.getByRole("main").getByText("Nomad", { exact: true })
+    invitePage
+      .getByTestId("community-members")
+      .getByText("Nomad", { exact: true })
   ).toBeVisible();
   await expect(invitePage.getByText("Echo Node")).toBeVisible();
   await expect(
-    invitePage.getByRole("main").getByText("Vanguard", { exact: true })
+    invitePage
+      .getByTestId("community-members")
+      .getByText("Vanguard", { exact: true })
   ).toBeVisible();
   await context.close();
 });
@@ -1131,7 +1137,9 @@ test("community members can remove raiders", async ({ page, browser }) => {
 
   await page.reload();
   await expect(
-    page.getByRole("main").getByText("Nomad", { exact: true })
+    page
+      .getByTestId("community-members")
+      .getByText("Nomad", { exact: true })
   ).toBeVisible();
 
   const removeRequest = page.waitForResponse((response) => {

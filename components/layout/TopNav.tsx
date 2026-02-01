@@ -28,9 +28,6 @@ export function TopNav() {
             <span className="text-xs font-semibold uppercase tracking-[0.2em] text-text sm:text-sm">
               ARC // Raiders Outpost
             </span>
-            <span className="hud-label text-[10px] sm:text-xs">
-              {labels.navConsole}
-            </span>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">

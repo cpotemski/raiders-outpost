@@ -122,7 +122,7 @@ export function CommunityNeedsPanel({
     >
       <div className="bg-panel/80 px-4 py-4">
         <div>
-          <div className="hud-label">{labels.includeRaiders}</div>
+          <div className="hud-label">{labels.raiders}</div>
           <div className="mt-2 flex flex-wrap gap-2">
             {members.map((member) => {
               const active = selectedMembers.has(member.id);

@@ -77,7 +77,6 @@ export function CommunityRoster() {
             {community?.name ?? labels.rosterTitle}
           </h2>
         </div>
-        <span className="hud-label">ARC//</span>
       </div>
       <div className="border-t border-frame2 px-4 py-5">
         {body}

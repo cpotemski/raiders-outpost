@@ -209,7 +209,6 @@ export default function RaiderPage() {
               data-testid="expedition-config"
             >
               <span>{activeExpeditionLabel}</span>
-              <span>{loadingExpedition ? labels.scanning : labels.synced}</span>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
               <button
