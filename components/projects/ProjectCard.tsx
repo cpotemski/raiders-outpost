@@ -30,7 +30,7 @@ export function ProjectCard({
           </span>
           <ProgressRing
             radius={8}
-            stroke={2}
+            strokeWidth={2}
             size={24}
             progress={progressRatio}
             data-project-progress={progressPercent}

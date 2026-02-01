@@ -4,7 +4,7 @@ const clamp = (value: number) => Math.min(1, Math.max(0, value));
 
 type ProgressRingProps = SVGProps<SVGSVGElement> & {
   radius: number;
-  stroke: number;
+  strokeWidth: number;
   progress: number;
   size?: number;
   trackColor?: string;
@@ -13,14 +13,14 @@ type ProgressRingProps = SVGProps<SVGSVGElement> & {
 
 export function ProgressRing({
   radius,
-  stroke,
+  strokeWidth,
   progress,
   size,
   trackColor = "rgba(160, 180, 190, 0.35)",
   progressColor = "rgba(72, 199, 214, 0.75)",
   ...props
 }: ProgressRingProps) {
-  const resolvedSize = size ?? radius * 2 + stroke * 2;
+  const resolvedSize = size ?? radius * 2 + strokeWidth * 2;
   const center = resolvedSize / 2;
   const circumference = 2 * Math.PI * radius;
   const dash = clamp(progress) * circumference;
@@ -37,7 +37,7 @@ export function ProgressRing({
         r={radius}
         fill="none"
         stroke={trackColor}
-        strokeWidth={stroke}
+        strokeWidth={strokeWidth}
       />
       <circle
         cx={center}
@@ -45,7 +45,7 @@ export function ProgressRing({
         r={radius}
         fill="none"
         stroke={progressColor}
-        strokeWidth={stroke}
+        strokeWidth={strokeWidth}
         strokeLinecap="square"
         strokeDasharray={`${dash} ${circumference}`}
         transform={`rotate(-90 ${center} ${center})`}

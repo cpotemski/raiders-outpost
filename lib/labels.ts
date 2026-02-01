@@ -90,7 +90,7 @@ const en = {
   idLabel: "ID",
 } as const;
 
-type Labels = typeof en;
+type Labels = Record<keyof typeof en, string>;
 
 const de: Labels = {
   navProjects: "Projekte",

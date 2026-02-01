@@ -154,7 +154,7 @@ export function ProjectItemTile({
       {memberCount ? (
         <ProgressRing
           radius={6}
-          stroke={2}
+          strokeWidth={2}
           progress={progressRatio}
           data-community-progress={progressPercent}
           className="absolute right-2 top-2 z-20 h-4 w-4"

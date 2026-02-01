@@ -56,7 +56,7 @@ export function ProjectStagePanel({
           </span>
           <ProgressRing
             radius={6}
-            stroke={2}
+            strokeWidth={2}
             progress={progressRatio}
             data-stage-progress={progressPercent}
             className="h-4 w-4"
