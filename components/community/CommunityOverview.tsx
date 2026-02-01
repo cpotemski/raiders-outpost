@@ -99,12 +99,6 @@ export function CommunityOverview({
             {removeError}
           </div>
         ) : null}
-        <div
-          className="mt-3 text-[10px] uppercase tracking-[0.16em] text-muted"
-          data-testid="community-member-count"
-        >
-          {community.members.length}
-        </div>
       </div>
     </>
   );
