@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import type { CommunityNeedsItem, CommunityNeedsMember } from "@/types/community";
 import { cn } from "@/lib/cn";
 import { CommunityNeedTile } from "@/components/community/CommunityNeedTile";
@@ -21,6 +22,11 @@ export function CommunityNeedsPanel({
     () => new Set()
   );
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setSelectedMembers(new Set(members.map((member) => member.id)));
@@ -88,6 +94,15 @@ export function CommunityNeedsPanel({
     });
   }, [items, selectedMembers]);
 
+  const activeItem = useMemo(() => {
+    if (!activeItemId) return null;
+    for (const group of groupedItems) {
+      const match = group.items.find((entry) => entry.itemId === activeItemId);
+      if (match) return match;
+    }
+    return null;
+  }, [activeItemId, groupedItems]);
+
   useEffect(() => {
     if (!activeItemId) return;
     const itemIds = new Set(
@@ -100,7 +115,7 @@ export function CommunityNeedsPanel({
 
   return (
     <div
-      className="arc-panel arc-corners overflow-hidden"
+      className="arc-panel arc-corners relative overflow-hidden"
       data-testid="community-needs-panel"
     >
       <div className="bg-panel/80 px-4 py-4">
@@ -195,6 +210,50 @@ export function CommunityNeedsPanel({
           )}
         </div>
       </div>
+      {mounted && activeItem
+        ? createPortal(
+            <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+              <button
+                type="button"
+                aria-label="Close overlay"
+                onClick={() => setActiveItemId(null)}
+                className="absolute inset-0 bg-panel/80"
+                data-testid="community-need-backdrop"
+              />
+              <div
+                className="relative arc-panel arc-corners w-full max-w-md border border-frame2 bg-panel/95 px-4 py-3 text-[11px] uppercase tracking-[0.12em] text-text/90 shadow-arcHover"
+                data-testid="community-need-overlay"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="text-[12px] font-semibold text-text">
+                    {activeItem.displayName}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveItemId(null)}
+                    className="border border-frame2 px-2 py-1 text-[9px] uppercase tracking-[0.16em] text-muted hover:border-accent/60 hover:text-text"
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="mt-3 space-y-1">
+                  {activeItem.memberNeeds.map((member) => (
+                    <div
+                      key={member.memberId}
+                      className="flex items-center justify-between"
+                      data-member-id={member.memberId}
+                      data-needed={member.needed}
+                    >
+                      <span className="text-muted">{member.memberName}</span>
+                      <span className="text-accent">{member.needed}x</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 }

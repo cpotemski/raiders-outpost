@@ -74,30 +74,6 @@ export function CommunityNeedTile({
       <span className="line-clamp-2 absolute bottom-2 left-2 right-2 z-20 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.12em] text-text/90">
         {label}
       </span>
-      {active ? (
-        <div
-          className="pointer-events-none absolute inset-2 z-30 border border-frame2 bg-panel/95 px-2 py-2 text-[9px] uppercase tracking-[0.12em] text-text/90"
-          data-testid="community-need-overlay"
-        >
-          <div className="flex items-center justify-between text-[9px] text-muted">
-            <span>Operators</span>
-            <span>{item.totalNeeded}x</span>
-          </div>
-          <div className="mt-2 space-y-1">
-            {item.memberNeeds.map((member) => (
-              <div
-                key={member.memberId}
-                className="flex items-center justify-between"
-                data-member-id={member.memberId}
-                data-needed={member.needed}
-              >
-                <span className="text-text/90">{member.memberName}</span>
-                <span className="text-accent">{member.needed}x</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
       <span className="sr-only">
         {label} needs {item.totalNeeded}
       </span>
