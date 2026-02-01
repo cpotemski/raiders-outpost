@@ -16,12 +16,12 @@ export function CommunityNeedTile({
   active,
   onToggle,
 }: CommunityNeedTileProps) {
-  const label = getItemLabel(item.displayName, item.itemId, false);
-  const { itemBackground } = getItemTileBackground({
+  const { itemBackground, isBlueprint } = getItemTileBackground({
     itemId: item.itemId,
     itemType: item.itemType,
     rarity: item.rarity,
   });
+  const label = getItemLabel(item.displayName, item.itemId, isBlueprint);
   const imageFile =
     item.imageFile ??
     (item.itemId.includes(".") ? item.itemId : `${item.itemId}.png`);

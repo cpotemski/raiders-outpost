@@ -20,7 +20,7 @@ export function TopNav() {
   };
 
   return (
-    <div className="arc-panel arc-panel-topless arc-corners w-full px-4 py-[0.6rem] sm:px-6 [--arc-corner-offset:6px]">
+    <div className="arc-panel arc-panel-topless arc-corners relative w-full px-4 py-[0.6rem] sm:px-6 [--arc-corner-offset:6px]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
@@ -48,7 +48,7 @@ export function TopNav() {
             </Link>
           ))}
           <div
-            className="flex border border-frame2"
+            className="absolute right-3 top-3 z-10 flex rounded-[6px] border border-frame2 overflow-hidden sm:static sm:z-auto"
             data-testid="language-switch"
           >
             {(["de", "en"] as const).map((option, index) => {

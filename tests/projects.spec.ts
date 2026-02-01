@@ -818,6 +818,12 @@ test("community needs overview aggregates and filters by member", async ({
   await panel.screenshot({
     path: "test-results/community-needs-panel.png",
   });
+  const blueprintTiles = panel.locator('[data-item-id*="_blueprint"]');
+  if ((await blueprintTiles.count()) > 0) {
+    await expect(blueprintTiles.first()).not.toContainText(
+      /Blueprint|Bauplan/i
+    );
+  }
   const firstRow = panel.locator("[data-item-id]").first();
   await expect(firstRow).toBeVisible();
   const itemId = await firstRow.getAttribute("data-item-id");

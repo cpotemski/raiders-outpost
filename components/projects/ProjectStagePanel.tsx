@@ -113,7 +113,7 @@ export function ProjectStagePanel({
       {isExpanded ? (
         <div className="border-t border-frame2 bg-panel/80 px-3 py-4 sm:px-4">
           {stage.items.length ? (
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 lg:gap-1.5 xl:grid-cols-9 2xl:grid-cols-10">
               {stage.items.map((item) => (
                 <ProjectItemTile
                   key={item.itemId}
