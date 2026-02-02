@@ -3,6 +3,12 @@ import path from "node:path";
 import { unstable_cache } from "next/cache";
 import { loadArcItems } from "@/lib/arc-items";
 import type { AppLocale } from "@/lib/locale";
+import {
+  getOverridePath,
+  listOverrideDir,
+  mergeWithOverride,
+  readJsonFileIfExists,
+} from "@/lib/arc-overrides";
 
 export type ArcProjectItem = {
   itemId: string;
@@ -178,8 +184,13 @@ const mapProject = (
 const readArcProjects = (locale: AppLocale) =>
   unstable_cache(
     async (): Promise<ArcProjectPayload> => {
-    const raw = await fs.readFile(DATA_PATH, "utf-8");
-    const source = JSON.parse(raw) as ArcProjectSource[];
+    const [baseProjects, overrideProjects] = await Promise.all([
+      readJsonFileIfExists<ArcProjectSource[]>(DATA_PATH),
+      readJsonFileIfExists<ArcProjectSource[]>(getOverridePath("projects.json")),
+    ]);
+    const source =
+      mergeWithOverride(baseProjects ?? undefined, overrideProjects ?? undefined) ??
+      [];
     const items = await loadArcItems(locale);
     const itemNameMap = new Map<string, string>();
     for (const item of items.items) {
@@ -189,18 +200,25 @@ const readArcProjects = (locale: AppLocale) =>
       }
     }
 
-    const hideoutFiles = await fs.readdir(HIDEOUT_DIR).catch(() => []);
-    const hideoutEntries = await Promise.all(
-      hideoutFiles
-        .filter((file) => file.endsWith(".json"))
-        .map(async (file) => {
-          const rawHideout = await fs.readFile(
-            path.join(HIDEOUT_DIR, file),
-            "utf-8"
-          );
-          return JSON.parse(rawHideout) as ArcHideoutSource;
+    const [baseHideoutFiles, overrideHideoutFiles] = await Promise.all([
+      fs.readdir(HIDEOUT_DIR).catch(() => [] as string[]),
+      listOverrideDir("hideout"),
+    ]);
+    const hideoutFiles = new Set<string>([
+      ...baseHideoutFiles.filter((file) => file.endsWith(".json")),
+      ...overrideHideoutFiles.filter((file) => file.endsWith(".json")),
+    ]);
+    const hideoutEntries = (
+      await Promise.all(
+        [...hideoutFiles].sort().map(async (file) => {
+          const basePath = path.join(HIDEOUT_DIR, file);
+          const overridePath = getOverridePath("hideout", file);
+          const base = await readJsonFileIfExists<ArcHideoutSource>(basePath);
+          const overlay = await readJsonFileIfExists<ArcHideoutSource>(overridePath);
+          return mergeWithOverride(base ?? undefined, overlay ?? undefined);
         })
-    );
+      )
+    ).filter((entry): entry is ArcHideoutSource => Boolean(entry));
 
     const projects = source
       .filter((project) => !project.disabled)

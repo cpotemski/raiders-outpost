@@ -2,6 +2,12 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { unstable_cache } from "next/cache";
 import type { AppLocale } from "@/lib/locale";
+import {
+  getOverridePath,
+  listOverrideDir,
+  mergeWithOverride,
+  readJsonFileIfExists,
+} from "@/lib/arc-overrides";
 
 export type ArcItem = {
   id?: string;
@@ -16,6 +22,8 @@ export type ArcItemPayload = {
   count: number;
   items: ArcItem[];
 };
+
+type ArcItemWithMeta = ArcItem & { id: string; updatedAt: string | undefined };
 
 const DATA_DIR = path.join(
   process.cwd(),
@@ -56,48 +64,68 @@ const parseUpdatedAt = (value?: string) => {
 const readArcItems = (locale: AppLocale) =>
   unstable_cache(
     async (): Promise<ArcItemPayload> => {
-    const [itemFiles, imageFiles] = await Promise.all([
-      fs.readdir(DATA_DIR),
+    const [
+      baseItemFiles,
+      overrideItemFiles,
+      imageFiles,
+      overrideImageFiles,
+    ] = await Promise.all([
+      fs.readdir(DATA_DIR).catch(() => [] as string[]),
+      listOverrideDir("items"),
       fs.readdir(IMAGE_DIR).catch(() => [] as string[]),
+      listOverrideDir("images", "items"),
     ]);
-    const imageSet = new Set(imageFiles);
+
+    const jsonItems = new Set<string>([
+      ...baseItemFiles.filter((file) => file.endsWith(".json")),
+      ...overrideItemFiles.filter((file) => file.endsWith(".json")),
+    ]);
+
+    const imageSet = new Set([...imageFiles, ...overrideImageFiles]);
 
     const items = await Promise.all(
-      itemFiles
-        .filter((file) => file.endsWith(".json"))
-        .map(async (file) => {
-          const raw = await fs.readFile(path.join(DATA_DIR, file), "utf-8");
-          const item = JSON.parse(raw) as ArcItemSource;
-          const id = item.id ?? file.replace(/\.json$/, "");
-          const candidateImage =
-            item.imageFilename && item.imageFilename.includes("/")
-              ? path.basename(item.imageFilename)
-              : item.imageFilename;
-          const imageFile = candidateImage && imageSet.has(candidateImage)
+      [...jsonItems].sort().map(async (file) => {
+        const basePath = path.join(DATA_DIR, file);
+        const overridePath = getOverridePath("items", file);
+        const base = await readJsonFileIfExists<ArcItemSource>(basePath);
+        const overlay = await readJsonFileIfExists<ArcItemSource>(overridePath);
+        const item = mergeWithOverride(base ?? undefined, overlay ?? undefined);
+        if (!item) return null;
+        const id = item.id ?? file.replace(/\\.json$/, "");
+        const candidateImage =
+          item.imageFilename && item.imageFilename.includes("/")
+            ? path.basename(item.imageFilename)
+            : item.imageFilename;
+        const imageFile =
+          candidateImage && imageSet.has(candidateImage)
             ? candidateImage
             : imageSet.has(`${id}.png`)
               ? `${id}.png`
               : null;
-          return {
-            id,
-            name: resolveName(item.name, locale, id),
-            rarity: item.rarity ?? "Unknown",
-            itemType: item.type ?? "Unknown",
-            imageFile,
-            updatedAt: item.updatedAt,
-          };
-        })
+        return {
+          id,
+          name: resolveName(item.name, locale, id),
+          rarity: item.rarity ?? "Unknown",
+          itemType: item.type ?? "Unknown",
+          imageFile,
+          updatedAt: item.updatedAt,
+        };
+      })
     );
 
-    const latestUpdated = items
+    const filteredItems = items.filter(
+      (item): item is ArcItemWithMeta => Boolean(item)
+    );
+
+    const latestUpdated = filteredItems
       .map((item) => parseUpdatedAt(item.updatedAt))
       .filter((date): date is Date => Boolean(date))
       .sort((a, b) => b.getTime() - a.getTime())[0];
 
     return {
       scrapedAt: (latestUpdated ?? new Date()).toISOString(),
-      count: items.length,
-      items: items
+      count: filteredItems.length,
+      items: filteredItems
         .map(({ updatedAt, ...rest }) => rest)
         .sort((a, b) => a.name.localeCompare(b.name)),
     };

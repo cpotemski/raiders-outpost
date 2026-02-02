@@ -2,10 +2,24 @@
 const nextConfig = {
   reactStrictMode: true,
   outputFileTracingIncludes: {
-    "/api/arc-items": ["./node_modules/arcraiders-data/items/**"],
-    "/api/arc-items/image": ["./node_modules/arcraiders-data/images/items/**"],
-    "/api/blueprints": ["./node_modules/arcraiders-data/items/**"],
-    "/api/projects": ["./node_modules/arcraiders-data/projects.json"],
+    "/api/arc-items": [
+      "./node_modules/arcraiders-data/items/**",
+      "./data/arc-overrides/items/**",
+    ],
+    "/api/arc-items/image": [
+      "./node_modules/arcraiders-data/images/items/**",
+      "./data/arc-overrides/images/items/**",
+    ],
+    "/api/blueprints": [
+      "./node_modules/arcraiders-data/items/**",
+      "./data/arc-overrides/items/**",
+    ],
+    "/api/projects": [
+      "./node_modules/arcraiders-data/projects.json",
+      "./node_modules/arcraiders-data/hideout/**",
+      "./data/arc-overrides/projects.json",
+      "./data/arc-overrides/hideout/**",
+    ],
   },
 };
 

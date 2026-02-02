@@ -1,0 +1,15 @@
+{
+  "id": "looting_mk3_safekeeper_blueprint",
+  "name": {
+    "en": "Looting Mk. 3 (Safekeeper) Blueprint"
+  },
+  "description": {
+    "en": "Lets you craft the Looting Mk. 3 (Safekeeper) Augment."
+  },
+  "type": "Blueprint",
+  "rarity": "Legendary",
+  "value": 5000,
+  "weightKg": 0,
+  "imageFilename": "looting_mk3_safekeeper_blueprint.webp",
+  "updatedAt": "02/02/2026"
+}
