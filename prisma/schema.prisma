@@ -83,3 +83,10 @@ model AuthCode {
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
+
+model AdminSettings {
+  id                   String   @id @default("global")
+  disabledProjectSlugs String[] @default([])
+  disabledItemIds      String[] @default([])
+  updatedAt            DateTime @updatedAt
+}

@@ -1,15 +1,20 @@
 import { loadArcProjects } from "@/lib/arc-projects";
 import { isExpeditionProjectSlug } from "@/lib/expeditions";
 import { normalizeLocale } from "@/lib/locale";
+import { applyAdminProjectFilters, getAdminSettings } from "@/lib/server/admin-settings";
 import { getTokenFromRequest } from "@/lib/server/requests";
 import { getUserExpeditionByToken, updateUserExpedition } from "@/lib/server/users";
 
 export const runtime = "nodejs";
 
 const getExpeditionSlugs = async (locale: string) => {
-  const payload = await loadArcProjects(normalizeLocale(locale));
+  const [payload, settings] = await Promise.all([
+    loadArcProjects(normalizeLocale(locale)),
+    getAdminSettings(),
+  ]);
+  const filtered = applyAdminProjectFilters(payload, settings);
   return new Set(
-    payload.projects
+    filtered.projects
       .filter((project) => isExpeditionProjectSlug(project.slug))
       .map((project) => project.slug)
   );

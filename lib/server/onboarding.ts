@@ -3,6 +3,7 @@ import { loadArcProjects } from "@/lib/arc-projects";
 import { ensureProjects } from "@/lib/server/projects";
 import { normalizeLocale, type AppLocale } from "@/lib/locale";
 import { isExpeditionProjectSlug } from "@/lib/expeditions";
+import { getAdminSettings } from "@/lib/server/admin-settings";
 
 type OnboardingBaselineEntry = {
   projectSlug: string;
@@ -48,6 +49,9 @@ export const applyOnboardingBaseline = async ({
 
   const projectsPayload = await loadArcProjects(normalizedLocale);
   const projectRecords = await ensureProjects(projectsPayload);
+  const settings = await getAdminSettings();
+  const disabledProjects = new Set(settings.disabledProjectSlugs);
+  const disabledItems = new Set(settings.disabledItemIds);
   const projectBySlug = new Map(
     projectRecords.map((project) => [project.slug, project])
   );
@@ -55,11 +59,13 @@ export const applyOnboardingBaseline = async ({
   const itemsToUpdate = new Map<string, number>();
 
   for (const [slug, stages] of selectedStagesByProject.entries()) {
+    if (disabledProjects.has(slug)) continue;
     const project = projectBySlug.get(slug);
     if (!project) continue;
     for (const stage of project.stages) {
       if (!stages.has(stage.sortOrder)) continue;
       for (const item of stage.items) {
+        if (disabledItems.has(item.itemName)) continue;
         if (item.quantityRequired <= 0) continue;
         itemsToUpdate.set(item.id, item.quantityRequired);
       }
@@ -69,7 +75,9 @@ export const applyOnboardingBaseline = async ({
   const validExpeditionNext =
     expeditionNext && isExpeditionProjectSlug(expeditionNext)
       ? projectBySlug.has(expeditionNext)
-        ? expeditionNext
+        ? disabledProjects.has(expeditionNext)
+          ? null
+          : expeditionNext
         : null
       : null;
 

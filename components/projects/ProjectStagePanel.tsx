@@ -49,7 +49,7 @@ export function ProjectStagePanel({
         </div>
         <div className="flex items-center gap-2">
           <span
-            className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted"
+            className="inline-flex min-w-[48px] justify-end text-[10px] font-semibold uppercase tracking-[0.12em] text-muted"
             data-stage-count={`${completedCount}/${totalCount}`}
           >
             {completedCount} / {totalCount}

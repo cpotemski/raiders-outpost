@@ -96,7 +96,7 @@ export function ProjectItemTile({
       </div>
       <span
         className={cn(
-          "absolute left-2 top-2 z-20 text-[10px] font-semibold uppercase tracking-[0.12em]",
+          "absolute left-2 top-2 z-20 inline-flex min-w-[48px] text-[10px] font-semibold uppercase tracking-[0.12em]",
           isComplete ? "text-accent" : "text-text"
         )}
         aria-label={`${item.quantityOwned} ${labels.of} ${item.quantityRequired}`}

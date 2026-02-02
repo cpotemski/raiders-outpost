@@ -5,6 +5,7 @@ import { loadArcItems } from "@/lib/arc-items";
 import { getCommunityForUser } from "@/lib/server/community";
 import type { AppLocale } from "@/lib/locale";
 import { isExpeditionProjectSlug } from "@/lib/expeditions";
+import { applyAdminProjectFilters, getAdminSettings } from "@/lib/server/admin-settings";
 
 type ProjectWithStages = Prisma.ProjectGetPayload<{
   include: { stages: { include: { items: true } } };
@@ -155,6 +156,8 @@ export const getProjectProgress = async (
   locale: AppLocale
 ) => {
   const projectsPayload = await loadArcProjects(locale);
+  const settings = await getAdminSettings();
+  const filteredPayload = applyAdminProjectFilters(projectsPayload, settings);
   const [arcItems, projectRecords] = await Promise.all([
     loadArcItems(locale),
     ensureProjects(projectsPayload),
@@ -175,10 +178,9 @@ export const getProjectProgress = async (
     ])
   );
 
-  const projectItemIds: string[] = [];
   const projectItemIdByStage = new Map<string, Map<string, string>>();
   const expeditionSlugs = new Set(
-    projectsPayload.projects
+    filteredPayload.projects
       .filter((project) => isExpeditionProjectSlug(project.slug))
       .map((project) => project.slug)
   );
@@ -190,12 +192,28 @@ export const getProjectProgress = async (
     for (const stage of project.stages) {
       for (const item of stage.items) {
         stageMap.set(`${stage.sortOrder}::${item.itemName}`, item.id);
-        projectItemIds.push(item.id);
-        projectSlugByItemId.set(item.id, project.slug);
-        isExpeditionByItemId.set(item.id, expeditionSlugs.has(project.slug));
       }
     }
     projectItemIdByStage.set(project.slug, stageMap);
+  }
+
+  const projectItemIds: string[] = [];
+  for (const project of filteredPayload.projects) {
+    const stageMap = projectItemIdByStage.get(project.slug) ?? new Map();
+    for (const stage of project.stages) {
+      for (const item of stage.items) {
+        const projectItemId = stageMap.get(
+          `${stage.sortOrder}::${item.itemId}`
+        );
+        if (!projectItemId) continue;
+        projectItemIds.push(projectItemId);
+        projectSlugByItemId.set(projectItemId, project.slug);
+        isExpeditionByItemId.set(
+          projectItemId,
+          expeditionSlugs.has(project.slug)
+        );
+      }
+    }
   }
 
   const progress = await prisma.userProjectItem.findMany({
@@ -237,12 +255,17 @@ export const getProjectProgress = async (
       ])
     );
 
-    const requiredByItemId = new Map(
-      projectRecords
-        .flatMap((project) => project.stages)
-        .flatMap((stage) => stage.items)
-        .map((item) => [item.id, item.quantityRequired])
-    );
+    const requiredByItemId = new Map<string, number>();
+    const allowedItemIds = new Set(projectItemIds);
+    for (const project of projectRecords) {
+      for (const stage of project.stages) {
+        for (const item of stage.items) {
+          if (allowedItemIds.has(item.id)) {
+            requiredByItemId.set(item.id, item.quantityRequired);
+          }
+        }
+      }
+    }
 
     const communityProgress = await prisma.userProjectItem.findMany({
       where: {
@@ -279,7 +302,7 @@ export const getProjectProgress = async (
     );
   }
 
-  const projects = projectsPayload.projects.map((project) => {
+  const projects = filteredPayload.projects.map((project) => {
     const stageIdMap = projectItemIdByStage.get(project.slug) ?? new Map();
 
     return {
@@ -346,6 +369,8 @@ export const getCommunityNeeds = async (
   }
 
   const projectsPayload = await loadArcProjects(locale);
+  const settings = await getAdminSettings();
+  const filteredPayload = applyAdminProjectFilters(projectsPayload, settings);
   const [projectRecords, arcItems] = await Promise.all([
     ensureProjects(projectsPayload),
     loadArcItems(locale),
@@ -362,7 +387,7 @@ export const getCommunityNeeds = async (
     ])
   );
   const expeditionSlugs = new Set(
-    projectsPayload.projects
+    filteredPayload.projects
       .filter((project) => isExpeditionProjectSlug(project.slug))
       .map((project) => project.slug)
   );
@@ -378,7 +403,7 @@ export const getCommunityNeeds = async (
     projectItemIdByStage.set(project.slug, stageMap);
   }
 
-  const projectItems = projectsPayload.projects.flatMap((project) => {
+  const projectItems = filteredPayload.projects.flatMap((project) => {
     const stageMap = projectItemIdByStage.get(project.slug) ?? new Map();
     const isExpedition = expeditionSlugs.has(project.slug);
     return project.stages.flatMap((stage) =>

@@ -2,12 +2,10 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
-import { TopNav } from "@/components/layout/TopNav";
 import { cn } from "@/lib/cn";
-import { AuthGate } from "@/components/auth/AuthGate";
-import { IdentitySync } from "@/components/auth/IdentitySync";
 import { ProjectProvider } from "@/components/projects/ProjectContext";
 import { LocaleProvider } from "@/components/locale/LocaleProvider";
+import { RouteChrome } from "@/components/layout/RouteChrome";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -93,9 +91,7 @@ export default function RootLayout({
       >
         <LocaleProvider>
           <ProjectProvider>
-            <IdentitySync />
-            <AuthGate />
-            <TopNav />
+            <RouteChrome />
             <div className="mx-auto flex min-h-screen max-w-[1320px] flex-col px-4 pb-8 pt-6 sm:px-6 lg:px-8">
               <main className="flex-1">{children}</main>
             </div>
