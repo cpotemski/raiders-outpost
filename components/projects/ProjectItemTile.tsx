@@ -61,6 +61,9 @@ export function ProjectItemTile({
     itemType: item.itemType,
     rarity: item.rarity,
   });
+  const controlInteractionClasses =
+    "transition-colors duration-150 focus-visible:text-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent/60 focus-visible:ring-offset-panel2 focus-visible:ring-offset-2";
+
   const mediaFallback = useMemo(
     () => (
       <div className="flex h-12 w-12 items-center justify-center text-[9px] uppercase tracking-[0.16em] text-muted">
@@ -122,7 +125,8 @@ export function ProjectItemTile({
         onPointerCancel={minusHandlers.onPointerCancel}
         className={cn(
           "absolute inset-y-0 left-0 z-20 flex w-1/2 select-none items-center justify-start px-2 text-lg font-semibold uppercase tracking-[0.2em] touch-manipulation [-webkit-touch-callout:none]",
-          canDecrement ? "text-muted/70 hover:text-text" : "text-muted/30"
+          controlInteractionClasses,
+          canDecrement ? "text-accent/80 hover:text-accent" : "text-muted/30"
         )}
       >
         -
@@ -146,7 +150,8 @@ export function ProjectItemTile({
         onPointerCancel={plusHandlers.onPointerCancel}
         className={cn(
           "absolute inset-y-0 right-0 z-20 flex w-1/2 select-none items-center justify-end px-2 text-lg font-semibold uppercase tracking-[0.2em] touch-manipulation [-webkit-touch-callout:none]",
-          canIncrement ? "text-muted/70 hover:text-text" : "text-muted/30"
+          controlInteractionClasses,
+          canIncrement ? "text-accent/80 hover:text-accent" : "text-muted/30"
         )}
       >
         +
