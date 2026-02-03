@@ -7,6 +7,7 @@ import {
   getItemTileBackground,
 } from "@/components/projects/itemTileUtils";
 import { useLabels } from "@/components/locale/useLabels";
+import { ItemTileLabel } from "@/components/items/ItemTileLabel";
 import { ItemTileMedia } from "@/components/items/ItemTileMedia";
 
 type CommunityNeedTileProps = {
@@ -69,9 +70,7 @@ export function CommunityNeedTile({
           </div>
         }
       />
-      <span className="line-clamp-2 absolute bottom-2 left-2 right-2 z-20 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.12em] text-text/90">
-        {label}
-      </span>
+      <ItemTileLabel label={label} />
       <span className="sr-only">
         {label} {labels.needsVerb} {item.totalNeeded}
       </span>

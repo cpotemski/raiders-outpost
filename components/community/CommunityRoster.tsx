@@ -134,7 +134,7 @@ export function CommunityRoster() {
       <div className="arc-panel-header flex-col items-start gap-2 sm:flex-row sm:items-center">
         <div>
           <p className="hud-label">
-            {community ? "Community:" : labels.communityLabel}
+            {labels.communityLabel}
           </p>
           {community ? (
             <div className="flex flex-wrap items-center gap-3">
@@ -168,7 +168,7 @@ export function CommunityRoster() {
               ) : (
                 <>
                   <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
-                    Community: {community.name}
+                    {community.name}
                   </h2>
                   <button
                     type="button"

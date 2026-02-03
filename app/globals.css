@@ -80,7 +80,7 @@ body {
 
 /* Panel Header Bar */
 .arc-panel-header {
-  @apply flex items-center justify-between px-4 py-3 border-b;
+  @apply flex justify-between px-4 py-3 border-b;
   border-color: var(--frame2);
   background: rgba(0,0,0,.18);
 }

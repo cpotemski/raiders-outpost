@@ -7,6 +7,7 @@ import {
 } from "@/components/projects/itemTileUtils";
 import { useLabels } from "@/components/locale/useLabels";
 import { useQuantityPress } from "@/hooks/useQuantityPress";
+import { ItemTileLabel } from "@/components/items/ItemTileLabel";
 import { ItemTileMedia } from "@/components/items/ItemTileMedia";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 
@@ -184,9 +185,7 @@ export function ProjectItemTile({
         filterStyle="saturate(1.18) contrast(1.12) brightness(1.06)"
         fallback={mediaFallback}
       />
-      <span className="absolute bottom-2 left-2 right-2 z-20 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.12em] text-text/90 whitespace-normal break-words break-all">
-        {label}
-      </span>
+      <ItemTileLabel label={label} />
       <span className="sr-only">
         {label} {item.quantityOwned} {labels.of} {item.quantityRequired}
       </span>
