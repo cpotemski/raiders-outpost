@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
+import type { PointerEvent } from "react";
 import { cn } from "@/lib/cn";
 import type { ProjectStageProgress } from "@/types/projects";
 import { ProjectItemTile } from "@/components/projects/ProjectItemTile";
@@ -35,6 +36,14 @@ export function ProjectStagePanel({
     [progressItems, stage.items]
   );
   const progressPercent = Math.round(progressRatio * 100);
+  const handleTogglePointerUp = useCallback(
+    (event: PointerEvent<HTMLButtonElement>) => {
+      if (event.pointerType === "touch") {
+        event.currentTarget.blur();
+      }
+    },
+    []
+  );
 
   return (
     <div
@@ -65,6 +74,7 @@ export function ProjectStagePanel({
             <button
               type="button"
               onClick={onToggleExpanded}
+              onPointerUp={handleTogglePointerUp}
               className={cn(
                 "h-7 border px-2 text-[10px] font-semibold uppercase tracking-[0.12em]",
                 isExpanded
