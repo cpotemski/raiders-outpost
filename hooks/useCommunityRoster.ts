@@ -171,6 +171,36 @@ export const useCommunityRoster = () => {
     if (error) setError("");
   };
 
+  const renameCommunity = async (newName: string) => {
+    if (!identity || !community) {
+      return { success: false, error: "Not linked" };
+    }
+
+    try {
+      const res = await fetch("/api/community/name", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-arc-token": identity.token,
+        },
+        body: JSON.stringify({ name: newName }),
+      });
+      const payload = await res.json().catch(() => null);
+      if (!res.ok) {
+        return {
+          success: false,
+          error: payload?.error ?? "Rename failed",
+        };
+      }
+      if (payload?.community) {
+        setCommunity(payload.community);
+      }
+      return { success: true, error: "" };
+    } catch {
+      return { success: false, error: "Rename failed" };
+    }
+  };
+
   const resetRemoveError = () => setRemoveError("");
 
   return {
@@ -190,5 +220,6 @@ export const useCommunityRoster = () => {
     onCreate,
     onRemove,
     resetRemoveError,
+    renameCommunity,
   };
 };

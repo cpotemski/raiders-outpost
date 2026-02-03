@@ -90,6 +90,27 @@ export const getCommunityForUser = async (
   };
 };
 
+export const renameCommunity = async (
+  userId: string,
+  name: string
+): Promise<string | null> => {
+  const membership = await prisma.communityMember.findUnique({
+    where: { userId },
+    select: { communityId: true },
+  });
+
+  if (!membership) {
+    return null;
+  }
+
+  await prisma.community.update({
+    where: { id: membership.communityId },
+    data: { name },
+  });
+
+  return membership.communityId;
+};
+
 export const findCommunityByInviteCode = async (inviteCode: string) => {
   return prisma.community.findUnique({
     where: { inviteCode },
