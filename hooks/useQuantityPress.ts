@@ -86,6 +86,11 @@ export const useQuantityPress = ({
     [enabled, max, min, onChange]
   );
 
+  const holdStartDelay = 280;
+  const holdIntervalDelay = 180;
+  const pressDelayMs = 110;
+  const moveThreshold = 8;
+
   const startHold = useCallback(
     (delta: number, initialDelta = delta) => {
       if (!enabled) return;
@@ -96,14 +101,11 @@ export const useQuantityPress = ({
       holdTimeout.current = window.setTimeout(() => {
         holdInterval.current = window.setInterval(() => {
           applyDelta(delta < 0 ? -repeatStep : repeatStep);
-        }, 240);
-      }, 360);
+        }, holdIntervalDelay);
+      }, holdStartDelay);
     },
     [applyDelta, clearHold, enabled, max, min, repeatStep]
   );
-
-  const pressDelayMs = 140;
-  const moveThreshold = 8;
 
   const minusHandlers = useMemo<PressHandlers>(() => {
     const pressRef = minusPress;
