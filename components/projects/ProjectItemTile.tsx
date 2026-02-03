@@ -184,7 +184,7 @@ export function ProjectItemTile({
         filterStyle="saturate(1.18) contrast(1.12) brightness(1.06)"
         fallback={mediaFallback}
       />
-      <span className="line-clamp-2 absolute bottom-2 left-2 right-2 z-20 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.12em] text-text/90">
+      <span className="absolute bottom-2 left-2 right-2 z-20 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.12em] text-text/90 whitespace-normal break-words break-all">
         {label}
       </span>
       <span className="sr-only">
