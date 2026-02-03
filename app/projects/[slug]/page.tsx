@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ProjectDashboard } from "@/components/projects/ProjectDashboard";
 import { useProjectContext } from "@/components/projects/ProjectContext";
 import { cn } from "@/lib/cn";
@@ -12,8 +12,43 @@ export default function ProjectDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { projects, loading } = useProjectContext();
   const labels = useLabels();
-  const [query, setQuery] = useState("");
-  const [neededOnly, setNeededOnly] = useState(false);
+  const storageScope = slug ?? "global";
+  const queryStorageKey = `project-filter-${storageScope}-query`;
+  const neededOnlyStorageKey = `project-filter-${storageScope}-needed`;
+
+  const getStoredQuery = () => {
+    if (typeof window === "undefined") return "";
+    return window.localStorage.getItem(queryStorageKey) ?? "";
+  };
+
+  const getStoredNeededOnly = () => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(neededOnlyStorageKey) === "true";
+  };
+
+  const [query, setQuery] = useState(getStoredQuery);
+  const [neededOnly, setNeededOnly] = useState(getStoredNeededOnly);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setQuery(window.localStorage.getItem(queryStorageKey) ?? "");
+    setNeededOnly(
+      window.localStorage.getItem(neededOnlyStorageKey) === "true"
+    );
+  }, [queryStorageKey, neededOnlyStorageKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(queryStorageKey, query);
+  }, [query, queryStorageKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(
+      neededOnlyStorageKey,
+      neededOnly ? "true" : "false"
+    );
+  }, [neededOnly, neededOnlyStorageKey]);
 
   const project = useMemo(() => {
     return projects.find((entry) => entry.slug === slug) ?? null;
