@@ -17,6 +17,7 @@ type ProjectStagePanelProps = {
   onToggleExpanded: () => void;
   stripBlueprintLabel?: boolean;
   progressItems?: ProjectStageProgress["items"];
+  showCompletionEffect?: boolean;
 };
 
 export function ProjectStagePanel({
@@ -29,6 +30,7 @@ export function ProjectStagePanel({
   onToggleExpanded,
   stripBlueprintLabel,
   progressItems,
+  showCompletionEffect = false,
 }: ProjectStagePanelProps) {
   const labels = useLabels();
   const { completedCount, totalCount, isCompleted, progressRatio } = useMemo(
@@ -47,8 +49,14 @@ export function ProjectStagePanel({
 
   return (
     <div
-      className="arc-panel arc-corners overflow-hidden"
+      className={cn(
+        "arc-panel arc-corners overflow-hidden",
+        showCompletionEffect
+          ? "border-accent/70 bg-panel/80 shadow-[0_0_24px_rgba(72,199,214,0.25)]"
+          : ""
+      )}
       data-stage-key={stage.stageKey}
+      data-stage-highlight={showCompletionEffect ? "true" : undefined}
     >
       <div className="arc-panel-header">
         <div>
@@ -84,6 +92,11 @@ export function ProjectStagePanel({
             >
               {isExpanded ? labels.hide : labels.show}
             </button>
+          ) : null}
+          {showCompletionEffect ? (
+            <span className="rounded-full border border-accent/60 bg-accent/10 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-accent animate-pulse">
+              {labels.stageComplete}
+            </span>
           ) : null}
         </div>
       </div>
