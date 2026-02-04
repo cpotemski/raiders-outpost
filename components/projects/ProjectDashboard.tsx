@@ -37,6 +37,7 @@ export function ProjectDashboard({
   const completionStatusRef = useRef<Record<string, boolean>>({});
   const initialCompletionCaptured = useRef(false);
   const activeProjectIdRef = useRef(activeProject?.id ?? null);
+  const COMPLETION_DISPLAY_MS = 5000;
 
   const filteredStages = useMemo(() => {
     if (!activeProject) return [];
@@ -72,6 +73,21 @@ export function ProjectDashboard({
     }, {} as Record<string, boolean>);
   }, [activeProject]);
 
+  const justCompletedStages = useMemo(() => {
+    if (!initialCompletionCaptured.current) {
+      return new Set<string>();
+    }
+    const prevStatus = completionStatusRef.current;
+    const newlyCompleted = new Set<string>();
+    Object.entries(stageCompletionStatus).forEach(([stageKey, isCompleted]) => {
+      const wasCompleted = prevStatus[stageKey];
+      if (!wasCompleted && isCompleted) {
+        newlyCompleted.add(stageKey);
+      }
+    });
+    return newlyCompleted;
+  }, [stageCompletionStatus]);
+
   const activeProjectId = activeProject?.id ?? null;
 
   useEffect(() => {
@@ -98,17 +114,20 @@ export function ProjectDashboard({
       return;
     }
 
-    Object.entries(stageCompletionStatus).forEach(([stageKey, isCompleted]) => {
-      const wasCompleted = completionStatusRef.current[stageKey];
-      if (!wasCompleted && isCompleted) {
-        const existingTimer = completionTimers.current.get(stageKey);
-        if (existingTimer) {
-          window.clearTimeout(existingTimer);
-        }
-        setRecentlyCompleted((prev) => {
-          if (prev.has(stageKey)) return prev;
-          const next = new Set(prev);
-          next.add(stageKey);
+    if (!justCompletedStages.size) {
+      completionStatusRef.current = stageCompletionStatus;
+      return;
+    }
+
+    justCompletedStages.forEach((stageKey) => {
+      const existingTimer = completionTimers.current.get(stageKey);
+      if (existingTimer) {
+        window.clearTimeout(existingTimer);
+      }
+      setRecentlyCompleted((prev) => {
+        if (prev.has(stageKey)) return prev;
+        const next = new Set(prev);
+        next.add(stageKey);
           const timer = window.setTimeout(() => {
             setRecentlyCompleted((current) => {
               const nextSet = new Set(current);
@@ -116,15 +135,22 @@ export function ProjectDashboard({
               return nextSet;
             });
             completionTimers.current.delete(stageKey);
-          }, 750);
-          completionTimers.current.set(stageKey, timer);
-          return next;
-        });
-      }
+            setExpandedCompleted((prev) => {
+              if (!prev.has(stageKey)) {
+                return prev;
+              }
+              const nextExpanded = new Set(prev);
+              nextExpanded.delete(stageKey);
+              return nextExpanded;
+            });
+          }, COMPLETION_DISPLAY_MS);
+        completionTimers.current.set(stageKey, timer);
+        return next;
+      });
     });
 
     completionStatusRef.current = stageCompletionStatus;
-  }, [activeProject, stageCompletionStatus]);
+  }, [activeProject, stageCompletionStatus, justCompletedStages]);
 
   useEffect(
     () => () => {
@@ -165,11 +191,13 @@ export function ProjectDashboard({
                   item.quantityOwned >= item.quantityRequired
               )
             : true;
-          const justCompleted = recentlyCompleted.has(stage.stageKey);
+          const justCompletedNow = justCompletedStages.has(stage.stageKey);
+          const shouldShowCompletionEffect =
+            justCompletedNow || recentlyCompleted.has(stage.stageKey);
           const isExpanded =
             !isCompleted ||
             expandedCompleted.has(stage.stageKey) ||
-            justCompleted;
+            shouldShowCompletionEffect;
           return (
             <ProjectStagePanel
               key={stage.stageKey}
@@ -179,7 +207,7 @@ export function ProjectDashboard({
               communityCountsByItemId={communityCountsByItemId}
               onAdjust={updateItemQuantity}
               isExpanded={isExpanded}
-              showCompletionEffect={justCompleted}
+              showCompletionEffect={shouldShowCompletionEffect}
               onToggleExpanded={() => {
                 setExpandedCompleted((prev) => {
                   const next = new Set(prev);
