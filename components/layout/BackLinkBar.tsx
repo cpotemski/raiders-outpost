@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useLabels } from "@/components/locale/useLabels";
+import { BackButton } from "@/components/layout/BackButton";
 
 const getBackHref = (pathname: string) => {
   if (pathname.startsWith("/projects/")) return "/projects";
@@ -15,20 +14,13 @@ export function BackLinkBar() {
   const pathname = usePathname() ?? "/";
   const labels = useLabels();
 
-  if (pathname === "/") return null;
+  if (pathname === "/" || pathname.startsWith("/projects/")) return null;
 
   const backHref = getBackHref(pathname);
 
   return (
-    <div className="mx-auto w-full max-w-[1320px] px-4 pt-2 sm:px-6 lg:px-8">
-      <Link
-        href={backHref}
-        className="inline-flex items-center gap-1 rounded-[6px] border border-frame2/70 bg-panel2/40 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted transition hover:border-accent/70 hover:text-text"
-        data-testid="nav-back"
-      >
-        <ChevronLeft className="h-3.5 w-3.5 text-current" aria-hidden="true" />
-        {labels.back}
-      </Link>
+    <div className="mx-auto w-full max-w-[1320px] px-4 pt-6 sm:px-6 lg:px-8">
+      <BackButton href={backHref} label={labels.back} testId="nav-back" />
     </div>
   );
 }

@@ -30,8 +30,8 @@ export function TopNav() {
               className={cn(
                 "inline-flex items-center gap-2 rounded-[6px] border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.1em] transition",
                 isHome
-                  ? "border-accent bg-accent/10 text-text"
-                  : "border-frame text-muted hover:border-accent/70"
+                  ? "border-accent bg-panel text-text"
+                  : "border-frame bg-panel text-muted hover:border-accent/70 hover:text-text"
               )}
             >
               <Home className="h-3.5 w-3.5 text-current" aria-hidden="true" />
@@ -40,7 +40,7 @@ export function TopNav() {
           ) : null}
         </div>
         <div
-          className="flex rounded-[6px] border border-frame2 overflow-hidden"
+          className="flex rounded-[6px] border border-frame bg-panel overflow-hidden"
           data-testid="language-switch"
         >
           {(["de", "en"] as const).map((option, index) => {
@@ -54,8 +54,8 @@ export function TopNav() {
                 onClick={() => setLocale(option)}
                 className={cn(
                   "h-8 px-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
-                  index > 0 && "border-l border-frame2",
-                  active ? "bg-panel/60 text-text" : "text-muted hover:text-text"
+                  index > 0 && "border-l border-frame",
+                  active ? "bg-panel text-text" : "text-muted hover:text-text"
                 )}
               >
                 {option}

@@ -50,11 +50,7 @@ export function CommunityEmptyState({
               <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-warn">
                 {error}
               </div>
-            ) : (
-              <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-muted">
-                {labels.fieldGearTagline}
-              </div>
-            )}
+            ) : null}
           </div>
           <div className="flex items-center justify-between gap-3">
             <Button

@@ -435,9 +435,6 @@ export function AuthGate() {
                             );
                           })}
                         </div>
-                        <div className="text-[10px] uppercase tracking-[0.16em] text-muted">
-                          {labels.onboardingExpeditionsDone}: {expeditionCompletedCount}
-                        </div>
                       </>
                     ) : (
                       <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
