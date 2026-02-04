@@ -9,12 +9,14 @@ type CommunityNeedsPanelProps = {
   members: CommunityNeedsMember[];
   items: CommunityNeedsItem[];
   loading: boolean;
+  storageKey?: string;
 };
 
 export function CommunityNeedsPanel({
   members,
   items,
   loading,
+  storageKey,
 }: CommunityNeedsPanelProps) {
   const labels = useLabels();
   const {
@@ -31,6 +33,7 @@ export function CommunityNeedsPanel({
     members,
     items,
     unknownLabel: labels.unknownLabel,
+    storageKey,
   });
 
   return (

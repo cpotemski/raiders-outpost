@@ -42,6 +42,7 @@ export function CommunityOverview({
         }
         items={needsPayload?.items ?? []}
         loading={needsLoading}
+        storageKey={`community-${community.id}`}
       />
 
       <div className="mt-6">

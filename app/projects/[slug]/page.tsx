@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ProjectDashboard } from "@/components/projects/ProjectDashboard";
 import { useProjectContext } from "@/components/projects/ProjectContext";
 import { cn } from "@/lib/cn";
 import { useLabels } from "@/components/locale/useLabels";
+import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 
 export default function ProjectDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -16,39 +17,34 @@ export default function ProjectDetailPage() {
   const queryStorageKey = `project-filter-${storageScope}-query`;
   const neededOnlyStorageKey = `project-filter-${storageScope}-needed`;
 
-  const getStoredQuery = () => {
-    if (typeof window === "undefined") return "";
-    return window.localStorage.getItem(queryStorageKey) ?? "";
-  };
-
-  const getStoredNeededOnly = () => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem(neededOnlyStorageKey) === "true";
-  };
-
-  const [query, setQuery] = useState(getStoredQuery);
-  const [neededOnly, setNeededOnly] = useState(getStoredNeededOnly);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setQuery(window.localStorage.getItem(queryStorageKey) ?? "");
-    setNeededOnly(
-      window.localStorage.getItem(neededOnlyStorageKey) === "true"
-    );
-  }, [queryStorageKey, neededOnlyStorageKey]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(queryStorageKey, query);
-  }, [query, queryStorageKey]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(
-      neededOnlyStorageKey,
-      neededOnly ? "true" : "false"
-    );
-  }, [neededOnly, neededOnlyStorageKey]);
+  const [query, setQuery] = useLocalStorageState(queryStorageKey, "", {
+    deserialize: (raw) => {
+      try {
+        const parsed = JSON.parse(raw);
+        return typeof parsed === "string" ? parsed : raw;
+      } catch {
+        return raw;
+      }
+    },
+    serialize: (value) => JSON.stringify(value),
+  });
+  const [neededOnly, setNeededOnly] = useLocalStorageState(
+    neededOnlyStorageKey,
+    false,
+    {
+      deserialize: (raw) => {
+        if (raw === "true" || raw === "false") {
+          return raw === "true";
+        }
+        try {
+          return JSON.parse(raw);
+        } catch {
+          return false;
+        }
+      },
+      serialize: (value) => (value ? "true" : "false"),
+    }
+  );
 
   const project = useMemo(() => {
     return projects.find((entry) => entry.slug === slug) ?? null;
