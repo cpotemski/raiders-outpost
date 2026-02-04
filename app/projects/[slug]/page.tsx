@@ -19,7 +19,7 @@ export default function ProjectDetailPage() {
   const queryStorageKey = `project-filter-${storageScope}-query`;
   const neededOnlyStorageKey = `project-filter-${storageScope}-needed`;
 
-  const [query, setQuery] = useLocalStorageState(queryStorageKey, "", {
+  const [query, setQuery] = useLocalStorageState<string>(queryStorageKey, "", {
     deserialize: (raw) => {
       try {
         const parsed = JSON.parse(raw);
@@ -30,7 +30,7 @@ export default function ProjectDetailPage() {
     },
     serialize: (value) => JSON.stringify(value),
   });
-  const [neededOnly, setNeededOnly] = useLocalStorageState(
+  const [neededOnly, setNeededOnly] = useLocalStorageState<boolean>(
     neededOnlyStorageKey,
     false,
     {

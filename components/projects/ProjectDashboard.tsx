@@ -36,7 +36,7 @@ export function ProjectDashboard({
   const completionTimers = useRef<Map<string, number>>(new Map());
   const completionStatusRef = useRef<Record<string, boolean>>({});
   const initialCompletionCaptured = useRef(false);
-  const activeProjectIdRef = useRef(activeProject?.id ?? null);
+  const activeProjectIdRef = useRef(activeProject?.slug ?? null);
   const COMPLETION_DISPLAY_MS = 5000;
 
   const filteredStages = useMemo(() => {
@@ -88,7 +88,7 @@ export function ProjectDashboard({
     return newlyCompleted;
   }, [stageCompletionStatus]);
 
-  const activeProjectId = activeProject?.id ?? null;
+  const activeProjectId = activeProject?.slug ?? null;
 
   useEffect(() => {
     if (activeProjectIdRef.current !== activeProjectId) {
