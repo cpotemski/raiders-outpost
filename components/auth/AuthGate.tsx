@@ -27,7 +27,8 @@ export function AuthGate() {
   const { identity, ready, saveIdentity } = useLocalIdentity();
   const { locale, ready: localeReady } = useLocale();
   const labels = useLabels();
-  const [mode, setMode] = useState<"register" | "code">("register");
+  const [flow, setFlow] = useState<"entry" | "existing" | "new">("entry");
+  const [newStep, setNewStep] = useState(0);
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [errorKey, setErrorKey] = useState<
@@ -41,10 +42,22 @@ export function AuthGate() {
   const [projectSelections, setProjectSelections] = useState<
     Record<string, boolean>
   >({});
-  const [expeditionNext, setExpeditionNext] = useState<string | null>(null);
+  const [expeditionCompletedCount, setExpeditionCompletedCount] = useState(0);
+  const isNewFlow = flow === "new";
+  const isExistingFlow = flow === "existing";
+
+  const resetFlow = () => {
+    setFlow("entry");
+    setNewStep(0);
+    setErrorKey("");
+    setName("");
+    setCode("");
+    setProjectSelections({});
+    setExpeditionCompletedCount(0);
+  };
 
   useEffect(() => {
-    if (!ready || identity || !localeReady || mode !== "register") return;
+    if (!ready || identity || !localeReady || flow !== "new") return;
     const controller = new AbortController();
     setOnboardingLoading(true);
     fetch(`/api/onboarding/projects?locale=${locale}`, {
@@ -60,29 +73,40 @@ export function AuthGate() {
       .finally(() => setOnboardingLoading(false));
 
     return () => controller.abort();
-  }, [identity, locale, localeReady, mode, ready]);
+  }, [identity, locale, localeReady, flow, ready]);
 
   const expeditionProjects = useMemo(
     () => onboardingProjects.filter((project) => project.isExpedition),
+    [onboardingProjects]
+  );
+  const nonExpeditionProjects = useMemo(
+    () => onboardingProjects.filter((project) => !project.isExpedition),
     [onboardingProjects]
   );
   const toggleProjectSelection = (slug: string) => {
     setProjectSelections((prev) => ({ ...prev, [slug]: !prev[slug] }));
   };
 
-  const toggleExpeditionNext = (slug: string) => {
-    setExpeditionNext((prev) => (prev === slug ? null : slug));
-  };
-
   const buildBaselinePayload = () => {
     const selectionMap = new Map<string, Set<number>>();
 
-    for (const project of onboardingProjects) {
+    for (const project of nonExpeditionProjects) {
       if (!project.stages.length) continue;
       if (!projectSelections[project.slug]) continue;
       const completed = new Set<number>();
       project.stages.forEach((stage) => completed.add(stage.sortOrder));
       selectionMap.set(project.slug, completed);
+    }
+
+    if (expeditionCompletedCount > 0) {
+      expeditionProjects
+        .slice(0, expeditionCompletedCount)
+        .forEach((project) => {
+          if (!project.stages.length) return;
+          const completed = new Set<number>();
+          project.stages.forEach((stage) => completed.add(stage.sortOrder));
+          selectionMap.set(project.slug, completed);
+        });
     }
 
     return Array.from(selectionMap.entries()).map(([slug, stages]) => ({
@@ -95,9 +119,17 @@ export function AuthGate() {
     event.preventDefault();
     if (submitting) return;
     setErrorKey("");
+    if (flow === "new" && newStep < 2) {
+      if (newStep === 0 && !name.trim()) {
+        setErrorKey("nameRequired");
+        return;
+      }
+      setNewStep((prev) => Math.min(2, prev + 1));
+      return;
+    }
     setSubmitting(true);
     try {
-      if (mode === "register") {
+      if (flow === "new") {
         const trimmed = name.trim();
         if (!trimmed) {
           setErrorKey("nameRequired");
@@ -112,7 +144,6 @@ export function AuthGate() {
             create: true,
             locale,
             baseline,
-            expeditionNext,
           }),
         });
         const payload = await res.json().catch(() => null);
@@ -123,7 +154,7 @@ export function AuthGate() {
         const nextName =
           typeof payload.user.name === "string" ? payload.user.name : trimmed;
         saveIdentity(nextName, payload.user.token);
-      } else {
+      } else if (flow === "existing") {
         const trimmedCode = code.trim().toUpperCase();
         if (!trimmedCode) {
           setErrorKey("codeRequired");
@@ -150,7 +181,7 @@ export function AuthGate() {
         saveIdentity(nextName, payload.user.token);
       }
     } catch {
-      setErrorKey(mode === "register" ? "authFailed" : "codeInvalid");
+      setErrorKey(flow === "new" ? "authFailed" : "codeInvalid");
     } finally {
       setSubmitting(false);
     }
@@ -171,70 +202,138 @@ export function AuthGate() {
           <span className="hud-label">{labels.localLabel}</span>
         </div>
         <form className="space-y-4 px-5 py-6" onSubmit={onSubmit}>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em]">
-            <button
-              type="button"
-              onClick={() => {
-                setMode("register");
-                setErrorKey("");
-              }}
-              className={`border-b pb-1 ${
-                mode === "register"
-                  ? "border-accent text-text"
-                  : "border-transparent text-muted hover:text-text"
-              }`}
-            >
-              {labels.authRegister}
-            </button>
-            <span className="text-muted">/</span>
-            <button
-              type="button"
-              onClick={() => {
-                setMode("code");
-                setErrorKey("");
-              }}
-              className={`border-b pb-1 ${
-                mode === "code"
-                  ? "border-accent text-text"
-                  : "border-transparent text-muted hover:text-text"
-              }`}
-            >
-              {labels.authUseCode}
-            </button>
-          </div>
-          <div>
-            {mode === "register" ? (
-              <>
-                <label className="hud-label" htmlFor="operator-name">
-                  {labels.raiderNameLabel}
+          {flow === "entry" ? (
+            <div className="space-y-4" data-testid="onboarding-step-account">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.16em]">
+                  {labels.onboardingAccountPrompt}
+                </div>
+                <div className="hud-label">{labels.onboardingAccountHelp}</div>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Button
+                  type="button"
+                  variant="default"
+                  data-testid="onboarding-select-new"
+                  onClick={() => {
+                    setFlow("new");
+                    setNewStep(0);
+                    setErrorKey("");
+                  }}
+                >
+                  {labels.authRegister}
+                </Button>
+                <Button
+                  type="button"
+                  variant="default"
+                  data-testid="onboarding-select-existing"
+                  onClick={() => {
+                    setFlow("existing");
+                    setErrorKey("");
+                  }}
+                >
+                  {labels.authUseCode}
+                </Button>
+              </div>
+            </div>
+          ) : isExistingFlow ? (
+            <div className="space-y-4" data-testid="onboarding-step-existing">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.16em]">
+                  {labels.authUseCode}
+                </div>
+                <div className="hud-label">{labels.onboardingExistingHelp}</div>
+              </div>
+              <div>
+                <label className="hud-label" htmlFor="auth-code">
+                  {labels.authCodeLabel}
                 </label>
                 <Input
-                  id="operator-name"
-                  value={name}
+                  id="auth-code"
+                  value={code}
                   onChange={(event) => {
-                    setName(event.target.value);
+                    setCode(event.target.value.toUpperCase());
                     if (errorKey) setErrorKey("");
                   }}
-                  placeholder={labels.callsignPlaceholder}
+                  placeholder={labels.authCodePlaceholder}
+                  className="font-mono tracking-[0.2em]"
                   autoFocus
                 />
-                <div className="mt-4 border-t border-frame2/70 pt-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.16em]">
-                        {labels.progressBaseline}
-                      </div>
-                      <div className="hud-label">{labels.selectCompletedProjects}</div>
-                    </div>
+                {errorKey ? (
+                  <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-warn">
+                    {labels[errorKey]}
                   </div>
+                ) : (
+                  <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-muted">
+                    {labels.authCodeValid}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  data-testid="onboarding-back"
+                  onClick={resetFlow}
+                >
+                  {labels.onboardingBack}
+                </Button>
+                <Button
+                  variant="primary"
+                  type="submit"
+                  className="px-5"
+                  disabled={submitting}
+                >
+                  {labels.syncUplink}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4" data-testid="onboarding-step-new">
+              {newStep === 0 ? (
+                <>
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.16em]">
+                      {labels.onboardingNewIntroTitle}
+                    </div>
+                    <div className="hud-label">{labels.onboardingNewIntroBody}</div>
+                  </div>
+                  <div>
+                    <label className="hud-label" htmlFor="operator-name">
+                      {labels.raiderNameLabel}
+                    </label>
+                    <Input
+                      id="operator-name"
+                      value={name}
+                      onChange={(event) => {
+                        setName(event.target.value);
+                        if (errorKey) setErrorKey("");
+                      }}
+                      placeholder={labels.callsignPlaceholder}
+                      autoFocus
+                    />
+                    {errorKey ? (
+                      <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-warn">
+                        {labels[errorKey]}
+                      </div>
+                    ) : null}
+                  </div>
+                </>
+              ) : null}
+              {newStep === 1 ? (
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.16em]">
+                    {labels.onboardingProjectsTitle}
+                  </div>
+                  <div className="hud-label">{labels.onboardingProjectsBody}</div>
                   <div className="mt-3 space-y-3">
                     {onboardingLoading ? (
                       <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
                         {labels.scanningProjectCache}
                       </div>
-                    ) : onboardingProjects.length ? (
+                    ) : nonExpeditionProjects.length ? (
                       <div className="space-y-2">
-                        {onboardingProjects.map((project) => {
+                        {nonExpeditionProjects.map((project) => {
                           const selected = !!projectSelections[project.slug];
                           return (
                             <div
@@ -276,104 +375,129 @@ export function AuthGate() {
                       </div>
                     )}
                   </div>
-                  {expeditionProjects.length ? (
-                    <div className="mt-4 border-t border-frame2/70 pt-4">
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.16em]">
-                        {labels.expeditionControl}
-                      </div>
-                      <div className="hud-label">{labels.selectActiveExpedition}</div>
-                      <div
-                        className="mt-3 flex flex-wrap items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted"
-                        data-testid="expedition-config"
-                      >
-                        <span>
-                          {expeditionNext
-                            ? expeditionProjects.find(
-                                (project) => project.slug === expeditionNext
-                              )?.name ?? labels.unknownExpedition
-                            : labels.noExpedition}
-                        </span>
-                        <span>{labels.expeditionReady}</span>
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setExpeditionNext(null)}
-                          aria-pressed={!expeditionNext}
-                          data-testid="expedition-option-none"
-                          className={cn(
-                            "h-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
-                            !expeditionNext
-                              ? "border-accent/80 text-text"
-                              : "border-frame2 text-muted hover:border-accent/60"
-                          )}
-                        >
-                          {labels.noExpedition}
-                        </button>
-                        {expeditionProjects.map((project) => {
-                          const isNext = expeditionNext === project.slug;
-                          return (
-                            <button
-                              key={project.slug}
-                              type="button"
-                              onClick={() => toggleExpeditionNext(project.slug)}
-                              aria-pressed={isNext}
-                              data-testid={`expedition-option-${project.slug}`}
-                              className={cn(
-                                "h-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
-                                isNext
-                                  ? "border-accent/80 text-text"
-                                  : "border-frame2 text-muted hover:border-accent/60"
-                              )}
-                            >
-                              {project.name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : null}
                 </div>
-              </>
-            ) : (
-              <>
-                <label className="hud-label" htmlFor="auth-code">
-                  {labels.authCodeLabel}
-                </label>
-                <Input
-                  id="auth-code"
-                  value={code}
-                  onChange={(event) => {
-                    setCode(event.target.value.toUpperCase());
-                    if (errorKey) setErrorKey("");
+              ) : null}
+              {newStep === 2 ? (
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.16em]">
+                    {labels.onboardingExpeditionsTitle}
+                  </div>
+                  <div className="hud-label">{labels.onboardingExpeditionsBody}</div>
+                  <div className="mt-3 space-y-3">
+                    {onboardingLoading ? (
+                      <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
+                        {labels.scanningProjectCache}
+                      </div>
+                    ) : expeditionProjects.length ? (
+                      <>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setExpeditionCompletedCount(0)}
+                            aria-pressed={expeditionCompletedCount === 0}
+                            data-testid="expedition-count-0"
+                            className={cn(
+                              "h-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
+                              expeditionCompletedCount === 0
+                                ? "border-accent/80 text-text"
+                                : "border-frame2 text-muted hover:border-accent/60"
+                            )}
+                          >
+                            {labels.onboardingNoExpeditions}
+                          </button>
+                          {expeditionProjects.map((_, index) => {
+                            const count = index + 1;
+                            const selected = expeditionCompletedCount === count;
+                            return (
+                              <button
+                                key={`expedition-count-${count}`}
+                                type="button"
+                                onClick={() =>
+                                  setExpeditionCompletedCount(count)
+                                }
+                                aria-pressed={selected}
+                                data-testid={`expedition-count-${count}`}
+                                className={cn(
+                                  "h-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
+                                  selected
+                                    ? "border-accent/80 text-text"
+                                    : "border-frame2 text-muted hover:border-accent/60"
+                                )}
+                              >
+                                {count}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div className="text-[10px] uppercase tracking-[0.16em] text-muted">
+                          {labels.onboardingExpeditionsDone}: {expeditionCompletedCount}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
+                        {labels.noSignalExpeditionData}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  data-testid="onboarding-back"
+                  onClick={() => {
+                    if (newStep === 0) {
+                      resetFlow();
+                      return;
+                    }
+                    setNewStep((prev) => Math.max(0, prev - 1));
+                    setErrorKey("");
                   }}
-                  placeholder={labels.authCodePlaceholder}
-                  className="font-mono tracking-[0.2em]"
-                  autoFocus
-                />
-              </>
-            )}
-            {errorKey ? (
-              <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-warn">
-                {labels[errorKey]}
+                >
+                  {labels.onboardingBack}
+                </Button>
+                {newStep < 2 ? (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    className="px-5"
+                    data-testid="onboarding-next"
+                    onClick={() => {
+                      if (newStep === 0) {
+                        const trimmed = name.trim();
+                        if (!trimmed) {
+                          setErrorKey("nameRequired");
+                          return;
+                        }
+                      }
+                      setNewStep((prev) => Math.min(2, prev + 1));
+                      setErrorKey("");
+                    }}
+                  >
+                    {labels.onboardingNext}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    className="px-5"
+                    disabled={submitting}
+                  >
+                    {labels.syncUplink}
+                  </Button>
+                )}
               </div>
-            ) : mode === "code" ? (
-              <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-muted">
-                {labels.authCodeValid}
-              </div>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Button
-              variant="primary"
-              type="submit"
-              className="px-5"
-              disabled={submitting}
-            >
-              {labels.syncUplink}
-            </Button>
-            <span className="hud-label">{labels.scanningCacheLabel}</span>
-          </div>
+            </div>
+          )}
+          {flow !== "entry" ? (
+            <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-muted">
+              <span>
+                {isNewFlow ? `${newStep + 1} / 3` : "1 / 1"}
+              </span>
+              <span>{labels.scanningCacheLabel}</span>
+            </div>
+          ) : null}
         </form>
       </div>
     </div>

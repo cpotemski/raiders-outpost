@@ -41,6 +41,23 @@ const en = {
   authNoRegistration: "No registration required",
   authRegister: "Register",
   authUseCode: "Use Code",
+  onboardingAccountPrompt: "Do you already have a linked account?",
+  onboardingAccountHelp: "Choose a path to link your raider.",
+  onboardingExistingHelp:
+    "Generate an auth code on your linked device (Operator menu) and enter it below.",
+  onboardingNewIntroTitle: "Welcome to Raiders Outpost",
+  onboardingNewIntroBody:
+    "Track what you need for Arc Raiders-style projects and optional expeditions.",
+  onboardingProjectsTitle: "Projects",
+  onboardingProjectsBody:
+    "Projects are your core progression. Mark the projects you already completed.",
+  onboardingExpeditionsTitle: "Expeditions (Optional)",
+  onboardingExpeditionsBody:
+    "Expeditions are optional. How many have you already completed?",
+  onboardingNoExpeditions: "No expeditions",
+  onboardingExpeditionsDone: "Expeditions done",
+  onboardingBack: "Back",
+  onboardingNext: "Next",
   raiderNameLabel: "Raider Name",
   callsignPlaceholder: "Enter callsign",
   progressBaseline: "Progress Baseline",
@@ -135,6 +152,23 @@ const de: Labels = {
   authNoRegistration: "Keine Registrierung nötig",
   authRegister: "Registrieren",
   authUseCode: "Code verwenden",
+  onboardingAccountPrompt: "Hast du bereits einen verknuepften Account?",
+  onboardingAccountHelp: "Waehle den Weg zum Verknuepfen deines Raiders.",
+  onboardingExistingHelp:
+    "Erzeuge einen Auth-Code auf deinem verknuepften Geraet (Operator-Menue) und gib ihn unten ein.",
+  onboardingNewIntroTitle: "Willkommen bei Raiders Outpost",
+  onboardingNewIntroBody:
+    "Verfolge, was du fuer Arc-Raiders-Projekte und optionale Expeditionen brauchst.",
+  onboardingProjectsTitle: "Projekte",
+  onboardingProjectsBody:
+    "Projekte sind dein Kernfortschritt. Markiere, was du bereits abgeschlossen hast.",
+  onboardingExpeditionsTitle: "Expeditionen (Optional)",
+  onboardingExpeditionsBody:
+    "Expeditionen sind optional. Wie viele hast du bereits abgeschlossen?",
+  onboardingNoExpeditions: "Keine Expeditionen",
+  onboardingExpeditionsDone: "Expeditionen erledigt",
+  onboardingBack: "Zurueck",
+  onboardingNext: "Weiter",
   raiderNameLabel: "Raider-Name",
   callsignPlaceholder: "Rufzeichen eingeben",
   progressBaseline: "Fortschritts-Basis",

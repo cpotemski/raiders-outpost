@@ -41,7 +41,7 @@ test("auth code links an existing account", async ({ page, browser }) => {
   const secondPage = await context.newPage();
   await secondPage.goto("/");
   await expect(secondPage.getByText("ARC// AUTH LINK")).toBeVisible();
-  await secondPage.getByRole("button", { name: "Use Code" }).click();
+  await secondPage.getByTestId("onboarding-select-existing").click();
   await secondPage.getByLabel("Auth Code").fill(code ?? "");
   await secondPage.getByRole("button", { name: "Sync Uplink" }).click();
   await expect(secondPage.getByText("Atlas")).toBeVisible();

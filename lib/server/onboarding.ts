@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import { loadArcProjects } from "@/lib/arc-projects";
 import { ensureProjects } from "@/lib/server/projects";
 import { normalizeLocale, type AppLocale } from "@/lib/locale";
-import { isExpeditionProjectSlug } from "@/lib/expeditions";
 import { getAdminSettings } from "@/lib/server/admin-settings";
 
 type OnboardingBaselineEntry = {
@@ -14,14 +13,12 @@ type ApplyOnboardingBaselineInput = {
   userId: string;
   locale?: AppLocale | string | null;
   baseline?: OnboardingBaselineEntry[] | null;
-  expeditionNext?: string | null;
 };
 
 export const applyOnboardingBaseline = async ({
   userId,
   locale,
   baseline,
-  expeditionNext,
 }: ApplyOnboardingBaselineInput) => {
   const normalizedLocale = normalizeLocale(
     typeof locale === "string" ? locale : locale ?? null
@@ -43,7 +40,7 @@ export const applyOnboardingBaseline = async ({
     }
   }
 
-  if (!selectedStagesByProject.size && !expeditionNext) {
+  if (!selectedStagesByProject.size) {
     return;
   }
 
@@ -72,15 +69,6 @@ export const applyOnboardingBaseline = async ({
     }
   }
 
-  const validExpeditionNext =
-    expeditionNext && isExpeditionProjectSlug(expeditionNext)
-      ? projectBySlug.has(expeditionNext)
-        ? disabledProjects.has(expeditionNext)
-          ? null
-          : expeditionNext
-        : null
-      : null;
-
   await prisma.$transaction(async (tx) => {
     for (const [projectItemId, quantityRequired] of itemsToUpdate.entries()) {
       await tx.userProjectItem.upsert({
@@ -98,13 +86,6 @@ export const applyOnboardingBaseline = async ({
         update: {
           quantityOwned: quantityRequired,
         },
-      });
-    }
-
-    if (validExpeditionNext) {
-      await tx.user.update({
-        where: { id: userId },
-        data: { activeExpeditionSlug: validExpeditionNext },
       });
     }
   });

@@ -15,7 +15,20 @@ export const login = async (page: Page, name = "Vanguard") => {
 
 export const syncIdentity = async (page: Page, name: string) => {
   await expect(page.getByText("ARC// AUTH LINK")).toBeVisible();
+  await page.getByTestId("onboarding-select-new").click();
   await page.getByLabel("Raider Name").fill(name);
+  await page.getByTestId("onboarding-next").click();
+  await expect(
+    page
+      .getByTestId("onboarding-step-new")
+      .getByText("Projects", { exact: true })
+  ).toBeVisible();
+  await page.getByTestId("onboarding-next").click();
+  await expect(
+    page
+      .getByTestId("onboarding-step-new")
+      .getByText("Expeditions (Optional)", { exact: true })
+  ).toBeVisible();
   await page.getByRole("button", { name: "Sync Uplink" }).click();
   await expect(page.getByText(name)).toBeVisible();
 };

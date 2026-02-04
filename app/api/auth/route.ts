@@ -11,8 +11,6 @@ export const POST = async (request: Request) => {
   const create = body?.create === true;
   const locale = body?.locale;
   const baseline = Array.isArray(body?.baseline) ? body.baseline : null;
-  const expeditionNext =
-    typeof body?.expeditionNext === "string" ? body.expeditionNext : null;
 
   if (create) {
     if (!name) {
@@ -24,7 +22,6 @@ export const POST = async (request: Request) => {
       userId: user.id,
       locale,
       baseline,
-      expeditionNext,
     });
     return Response.json({ user });
   }
