@@ -161,7 +161,7 @@ export function ProjectDashboard({
 
   if (loading && !activeProject) {
     return (
-      <div className="border-t border-frame2 px-4 py-5 text-sm uppercase tracking-[0.08em] text-muted">
+      <div className="text-sm uppercase tracking-[0.08em] text-muted">
         {labels.scanningProjectCache}
       </div>
     );
@@ -169,64 +169,60 @@ export function ProjectDashboard({
 
   return activeProject ? (
     <div className="flex flex-col gap-4 pb-24">
-      <div className="arc-panel-header flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
-            {activeProject.name}
-          </h2>
-        </div>
+      <div className="divide-y divide-frame2/70 border border-frame2/70 bg-panel/70">
+        {filteredStages
+          .slice()
+          .sort((a, b) => a.sortOrder - b.sortOrder)
+          .map((stage, index) => {
+            const fullStage = activeProject.stages.find(
+              (entry) => entry.stageKey === stage.stageKey
+            );
+            const progressItems = fullStage?.items ?? stage.items;
+            const isCompleted = progressItems.length
+              ? progressItems.every(
+                  (item) =>
+                    item.quantityRequired > 0 &&
+                    item.quantityOwned >= item.quantityRequired
+                )
+              : true;
+            const justCompletedNow = justCompletedStages.has(stage.stageKey);
+            const shouldShowCompletionEffect =
+              justCompletedNow || recentlyCompleted.has(stage.stageKey);
+            const isExpanded =
+              !isCompleted ||
+              expandedCompleted.has(stage.stageKey) ||
+              shouldShowCompletionEffect;
+            return (
+              <ProjectStagePanel
+                key={stage.stageKey}
+                stage={stage}
+                memberCount={memberCount}
+                expeditionMemberCountsBySlug={expeditionMemberCountsBySlug}
+                communityCountsByItemId={communityCountsByItemId}
+                onAdjust={updateItemQuantity}
+                isExpanded={isExpanded}
+                showCompletionEffect={shouldShowCompletionEffect}
+                onToggleExpanded={() => {
+                  setExpandedCompleted((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(stage.stageKey)) {
+                      next.delete(stage.stageKey);
+                    } else {
+                      next.add(stage.stageKey);
+                    }
+                    return next;
+                  });
+                }}
+                stripBlueprintLabel={activeProject.kind === "blueprints"}
+                progressItems={progressItems}
+                isFirst={index === 0}
+              />
+            );
+          })}
       </div>
-      {filteredStages
-        .slice()
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-        .map((stage) => {
-          const fullStage = activeProject.stages.find(
-            (entry) => entry.stageKey === stage.stageKey
-          );
-          const progressItems = fullStage?.items ?? stage.items;
-          const isCompleted = progressItems.length
-            ? progressItems.every(
-                (item) =>
-                  item.quantityRequired > 0 &&
-                  item.quantityOwned >= item.quantityRequired
-              )
-            : true;
-          const justCompletedNow = justCompletedStages.has(stage.stageKey);
-          const shouldShowCompletionEffect =
-            justCompletedNow || recentlyCompleted.has(stage.stageKey);
-          const isExpanded =
-            !isCompleted ||
-            expandedCompleted.has(stage.stageKey) ||
-            shouldShowCompletionEffect;
-          return (
-            <ProjectStagePanel
-              key={stage.stageKey}
-              stage={stage}
-              memberCount={memberCount}
-              expeditionMemberCountsBySlug={expeditionMemberCountsBySlug}
-              communityCountsByItemId={communityCountsByItemId}
-              onAdjust={updateItemQuantity}
-              isExpanded={isExpanded}
-              showCompletionEffect={shouldShowCompletionEffect}
-              onToggleExpanded={() => {
-                setExpandedCompleted((prev) => {
-                  const next = new Set(prev);
-                  if (next.has(stage.stageKey)) {
-                    next.delete(stage.stageKey);
-                  } else {
-                    next.add(stage.stageKey);
-                  }
-                  return next;
-                });
-              }}
-              stripBlueprintLabel={activeProject.kind === "blueprints"}
-              progressItems={progressItems}
-            />
-          );
-        })}
     </div>
   ) : (
-    <div className="border border-frame2/70 bg-panel2/40 px-4 py-4 text-[11px] uppercase tracking-[0.12em] text-muted">
+    <div className="border border-frame2/70 bg-panel2/40 px-2 py-4 text-[11px] uppercase tracking-[0.12em] text-muted">
       {labels.noSignalProjectData}
     </div>
   );

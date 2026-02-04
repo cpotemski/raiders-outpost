@@ -127,7 +127,7 @@ export function AdminConsole({ password }: AdminConsoleProps) {
             ) : null}
           </div>
         </div>
-        <div className="px-5 py-4 text-xs text-muted">
+        <div className="px-2 py-4 text-xs text-muted">
           Kompakte Admin-Tools für Cleanup und Content-Steuerung. Passwort bleibt
           Pflicht (per Query-Parameter).
         </div>
@@ -165,7 +165,7 @@ export function AdminConsole({ password }: AdminConsoleProps) {
                 </Button>
               </div>
             </div>
-            <div className="px-4 pb-3">
+            <div className="px-2 pb-3">
               <Input
                 placeholder="Filter users..."
                 value={userFilter}
@@ -173,7 +173,7 @@ export function AdminConsole({ password }: AdminConsoleProps) {
                 className="text-xs bg-panel2/40"
               />
             </div>
-            <div className="p-4">
+            <div className="p-2">
               <div className={listWrapperClasses}>
                 <div className="divide-y divide-frame2">
                   {usersLoading ? (
@@ -256,7 +256,7 @@ export function AdminConsole({ password }: AdminConsoleProps) {
                 </Button>
               </div>
             </div>
-            <div className="px-4 pb-3">
+            <div className="px-2 pb-3">
               <Input
                 placeholder="Filter communities..."
                 value={communityFilter}
@@ -264,7 +264,7 @@ export function AdminConsole({ password }: AdminConsoleProps) {
                 className="text-xs bg-panel2/40"
               />
             </div>
-            <div className="p-4">
+            <div className="p-2">
               <div className={listWrapperClasses}>
                 <div className="divide-y divide-frame2">
                   {communitiesLoading ? (
@@ -329,7 +329,7 @@ export function AdminConsole({ password }: AdminConsoleProps) {
                 {settingsLoading ? "Loading…" : `${totalProjects} total`}
               </div>
             </div>
-            <div className="px-4 pb-3">
+            <div className="px-2 pb-3">
               <Input
                 placeholder="Filter projects..."
                 value={projectFilter}
@@ -337,7 +337,7 @@ export function AdminConsole({ password }: AdminConsoleProps) {
                 className="text-xs bg-panel2/40"
               />
             </div>
-            <div className="p-4">
+            <div className="p-2">
               <div className={listWrapperClasses}>
                 <div className="divide-y divide-frame2">
                   {settingsLoading ? (
@@ -392,7 +392,7 @@ export function AdminConsole({ password }: AdminConsoleProps) {
                 {settingsLoading ? "Loading…" : `${totalItems} total`}
               </div>
             </div>
-            <div className="px-4 pb-3">
+            <div className="px-2 pb-3">
               <Input
                 placeholder="Filter items..."
                 value={itemFilter}
@@ -400,7 +400,7 @@ export function AdminConsole({ password }: AdminConsoleProps) {
                 className="text-xs bg-panel2/40"
               />
             </div>
-            <div className="p-4">
+            <div className="p-2">
               <div className={listWrapperClasses}>
                 <div className="divide-y divide-frame2">
                   {settingsLoading ? (

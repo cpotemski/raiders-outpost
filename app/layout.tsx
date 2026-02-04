@@ -92,7 +92,7 @@ export default function RootLayout({
         <LocaleProvider>
           <ProjectProvider>
             <RouteChrome />
-            <div className="mx-auto flex min-h-screen max-w-[1320px] flex-col px-4 pb-8 pt-6 sm:px-6 lg:px-8">
+            <div className="mx-auto flex min-h-screen max-w-[1320px] flex-col px-2 pb-4 pt-2 lg:pt-4 lg:px-4">
               <main className="flex-1">{children}</main>
             </div>
           </ProjectProvider>

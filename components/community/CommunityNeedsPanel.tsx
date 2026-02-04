@@ -42,37 +42,31 @@ export function CommunityNeedsPanel({
       className="arc-panel arc-corners relative overflow-hidden"
       data-testid="community-needs-panel"
     >
-      <div className="bg-panel/80 px-4 py-4">
-        <div>
-          <div className="hud-label flex items-center gap-2">
-            <Filter className="h-3 w-3 text-muted" aria-hidden="true" />
-            {labels.raiders}
-          </div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {members.map((member) => {
-              const active = selectedMembers.has(member.id);
-              return (
-                <button
-                  key={member.id}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => toggleMember(member.id)}
-                  data-member-id={member.id}
-                  className={cn(
-                    "h-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
-                    active
-                      ? "border-accent/80 text-text"
-                      : "border-frame2 text-muted hover:border-accent/60"
-                  )}
-                >
-                  {member.name}
-                </button>
-              );
-            })}
-          </div>
+      <div className="bg-panel/80 px-2 py-4">
+        <div className="mt-2 flex flex-wrap gap-2 items-center">
+          <Filter className="h-4 w-4 text-muted" aria-hidden="true" />
+          {members.map((member) => {
+            const active = selectedMembers.has(member.id);
+            return (
+              <button
+                key={member.id}
+                type="button"
+                aria-pressed={active}
+                onClick={() => toggleMember(member.id)}
+                data-member-id={member.id}
+                className={cn(
+                  "h-6 border px-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
+                  active
+                    ? "border-accent/80 text-text"
+                    : "border-frame2 text-muted hover:border-accent/60"
+                )}
+              >
+                {member.name}
+              </button>
+            );
+          })}
         </div>
-
-        <div className="mt-5 border-t border-frame2 pt-4">
+        <div className="mt-3 border-t border-frame2">
           {loading ? null : groupedItems.length ? (
             <div className="mt-3 space-y-4">
               {groupedItems.map((group) => (
@@ -144,7 +138,7 @@ export function CommunityNeedsPanel({
                 data-testid="community-need-backdrop"
               />
               <div
-                className="relative arc-panel arc-corners w-full max-w-md border border-frame2 bg-panel/95 px-4 py-3 text-[11px] uppercase tracking-[0.12em] text-text/90 shadow-arcHover"
+                className="relative arc-panel arc-corners w-full max-w-md border border-frame2 bg-panel/95 px-2 py-3 text-[11px] uppercase tracking-[0.12em] text-text/90 shadow-arcHover"
                 data-testid="community-need-overlay"
               >
                 <div className="flex items-start justify-between gap-3">

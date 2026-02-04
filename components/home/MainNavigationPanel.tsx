@@ -37,7 +37,7 @@ export function MainNavigationPanel() {
           {labels.mainNavigation}
         </p>
       </div>
-      <div className="border-t border-frame2 bg-panel/70 px-4 py-4 sm:px-6">
+      <div className="border-t border-frame2 bg-panel/70 px-2 py-4">
         <div className="grid gap-3 md:grid-cols-3">
           {navItems.map((item) => (
             <Link

@@ -19,7 +19,7 @@ export function BackLinkBar() {
   const backHref = getBackHref(pathname);
 
   return (
-    <div className="mx-auto w-full max-w-[1320px] px-4 pt-6 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1320px] px-2 pt-2 lg:pt-4 lg:px-4">
       <BackButton href={backHref} label={labels.back} testId="nav-back" />
     </div>
   );

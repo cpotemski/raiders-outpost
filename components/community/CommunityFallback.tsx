@@ -15,7 +15,7 @@ export function CommunityFallback() {
         </div>
         <span className="hud-label">ARC//</span>
       </div>
-      <div className="border-t border-frame2 px-4 py-5 text-sm uppercase tracking-[0.08em] text-muted" />
+      <div className="border-t border-frame2 px-2 py-5 text-sm uppercase tracking-[0.08em] text-muted" />
     </>
   );
 }

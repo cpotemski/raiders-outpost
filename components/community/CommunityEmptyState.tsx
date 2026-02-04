@@ -23,7 +23,7 @@ export function CommunityEmptyState({
 }: CommunityEmptyStateProps) {
   const labels = useLabels();
   return (
-    <div className="border-t border-frame2 px-4 py-5">
+    <div className="border-t border-frame2 px-2 py-5">
       <div className="text-sm font-semibold uppercase tracking-[0.1em] text-text">
         {labels.noSignal}
       </div>

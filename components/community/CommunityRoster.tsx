@@ -9,6 +9,7 @@ import { useCommunityRoster } from "@/hooks/useCommunityRoster";
 import { useCommunityNeeds } from "@/hooks/useCommunityNeeds";
 import { useLabels } from "@/components/locale/useLabels";
 import { useEffect, useState } from "react";
+import { Pencil } from "lucide-react";
 import type { KeyboardEvent } from "react";
 
 export function CommunityRoster() {
@@ -172,10 +173,11 @@ export function CommunityRoster() {
                   </h2>
                   <button
                     type="button"
-                    className="h-8 border border-frame2 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted transition hover:border-accent/60 hover:text-text"
+                    className="flex h-8 w-8 items-center justify-center border border-frame2 text-muted transition hover:border-accent/60 hover:text-text"
                     onClick={handleStartEditing}
+                    aria-label={labels.edit}
                   >
-                    {labels.edit}
+                    <Pencil className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </>
               )}
@@ -192,7 +194,7 @@ export function CommunityRoster() {
           ) : null}
         </div>
       </div>
-      <div className="border-t border-frame2 px-4 py-5">
+      <div className="border-t border-frame2 px-2 py-5">
         {body}
         {confirmMember ? (
           <CommunityRemoveDialog

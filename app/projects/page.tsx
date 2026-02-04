@@ -27,7 +27,7 @@ export default function ProjectsPage() {
             </p>
           </div>
         </div>
-        <div className="border-t border-frame2 bg-panel/70 px-4 py-4 sm:px-6">
+        <div className="border-t border-frame2 bg-panel/70 px-2 py-4">
           {loading && !projects.length ? (
             <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
               {labels.scanningProjectCache}

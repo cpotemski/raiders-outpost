@@ -19,6 +19,7 @@ type ProjectStagePanelProps = {
   stripBlueprintLabel?: boolean;
   progressItems?: ProjectStageProgress["items"];
   showCompletionEffect?: boolean;
+  isFirst?: boolean;
 };
 
 export function ProjectStagePanel({
@@ -32,6 +33,7 @@ export function ProjectStagePanel({
   stripBlueprintLabel,
   progressItems,
   showCompletionEffect = false,
+  isFirst = false,
 }: ProjectStagePanelProps) {
   const labels = useLabels();
   const { completedCount, totalCount, isCompleted, progressRatio } = useMemo(
@@ -51,16 +53,17 @@ export function ProjectStagePanel({
   return (
     <div
       className={cn(
-        "arc-panel arc-corners overflow-hidden relative",
+        "relative px-3 py-4 sm:px-4",
+        isFirst ? "pt-4" : "pt-5",
         showCompletionEffect
-          ? "border-accent/70 bg-panel/80 shadow-[0_0_24px_rgba(72,199,214,0.25)]"
-          : ""
+          ? "bg-panel/85 shadow-[0_0_24px_rgba(72,199,214,0.18)]"
+          : "bg-transparent"
       )}
       data-stage-key={stage.stageKey}
       data-stage-highlight={showCompletionEffect ? "true" : undefined}
     >
       <div className="relative z-0">
-        <div className="arc-panel-header">
+        <div className="flex items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-[0.12em]">
               {stage.name}
@@ -107,7 +110,7 @@ export function ProjectStagePanel({
           <div
             aria-hidden
             className={cn(
-              "pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-b-[inherit] transition-opacity duration-200",
+              "pointer-events-none absolute inset-0 z-20 flex items-center justify-center transition-opacity duration-200",
               showCompletionEffect
                 ? "opacity-100 bg-[rgba(0,0,0,0.45)] backdrop-blur-sm"
                 : "opacity-0 bg-transparent"
@@ -119,7 +122,7 @@ export function ProjectStagePanel({
             </span>
           </div>
           {isExpanded ? (
-            <div className="relative z-10 border-t border-frame2 bg-panel/80 px-3 py-4 sm:px-4">
+            <div className="relative z-10 mt-3 border-t border-frame2/70 pt-4">
               {stage.items.length ? (
                 <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 lg:gap-1.5 xl:grid-cols-9 2xl:grid-cols-10">
                   {stage.items.map((item) => (

@@ -50,7 +50,7 @@ export function CommunityRemoveDialog({
               </button>
             </div>
           </div>
-          <div className="border-t border-frame2 bg-panel/80 px-4 py-4">
+          <div className="border-t border-frame2 bg-panel/80 px-2 py-4">
             <div className="text-[11px] uppercase tracking-[0.12em] text-muted">
               {labels.removeRaiderPrompt}
             </div>

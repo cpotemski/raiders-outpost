@@ -59,7 +59,7 @@ export default function RaiderPage() {
 
   if (!identity) {
     return (
-      <div className="arc-panel arc-corners border border-frame2/70 bg-panel2/40 px-4 py-4 text-[11px] uppercase tracking-[0.12em] text-muted">
+      <div className="arc-panel arc-corners border border-frame2/70 bg-panel2/40 px-2 py-4 text-[11px] uppercase tracking-[0.12em] text-muted">
         {labels.noSignalRaiderNotLinked}
       </div>
     );
@@ -73,7 +73,7 @@ export default function RaiderPage() {
             ARC// USER
           </span>
         </div>
-        <div className="space-y-4 px-4 py-5">
+        <div className="space-y-4 px-2 py-5">
           <div>
             <div className="hud-label">{labels.raiderLabel}</div>
             <div className="text-sm font-semibold uppercase tracking-[0.12em]">

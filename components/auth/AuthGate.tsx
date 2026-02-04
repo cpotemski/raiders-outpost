@@ -207,7 +207,7 @@ export function AuthGate() {
             </div>
           </div>
         </div>
-        <form className="space-y-4 px-5 py-6" onSubmit={onSubmit}>
+        <form className="space-y-4 px-2 py-6" onSubmit={onSubmit}>
           {flow === "entry" ? (
             <div className="space-y-4" data-testid="onboarding-step-account">
               <div>
