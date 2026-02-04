@@ -203,7 +203,7 @@ export function AuthGate() {
         <div className="arc-panel-header">
           <div>
             <div className="text-xs font-semibold uppercase tracking-[0.2em]">
-              ARC// REGISTER
+              ARC // REGISTER
             </div>
           </div>
         </div>

@@ -14,7 +14,7 @@ export const login = async (page: Page, name = "Vanguard") => {
 };
 
 export const syncIdentity = async (page: Page, name: string) => {
-  await expect(page.getByText("ARC// AUTH LINK")).toBeVisible();
+  await expect(page.getByText("ARC // AUTH LINK")).toBeVisible();
   await page.getByTestId("onboarding-select-new").click();
   await page.getByLabel("Raider Name").fill(name);
   await page.getByTestId("onboarding-next").click();

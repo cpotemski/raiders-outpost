@@ -168,12 +168,12 @@ export function CommunityRoster() {
                 </>
               ) : (
                 <>
-                  <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
+                  <h3 className="font-semibold uppercase tracking-[0.08em]">
                     {community.name}
-                  </h2>
+                  </h3>
                   <button
                     type="button"
-                    className="flex h-8 w-8 items-center justify-center border border-frame2 text-muted transition hover:border-accent/60 hover:text-text"
+                    className="flex h-6 w-6 items-center justify-center border border-frame2 text-muted transition hover:border-accent/60 hover:text-text"
                     onClick={handleStartEditing}
                     aria-label={labels.edit}
                   >
@@ -183,9 +183,9 @@ export function CommunityRoster() {
               )}
             </div>
           ) : (
-            <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
+            <h3 className="font-semibold uppercase tracking-[0.08em]">
               {labels.rosterTitle}
-            </h2>
+            </h3>
           )}
           {renameError ? (
             <div className="mt-1 text-[11px] uppercase tracking-[0.08em] text-warn">

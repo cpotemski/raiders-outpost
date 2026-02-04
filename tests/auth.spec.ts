@@ -11,7 +11,7 @@ test("raider can sync and log out", async ({ page }) => {
   await openUserMenu(page);
   await page.getByRole("button", { name: "Log Out" }).click();
 
-  await expect(page.getByText("ARC// AUTH LINK")).toBeVisible();
+  await expect(page.getByText("ARC // AUTH LINK")).toBeVisible();
   const cleared = await getLocalIdentity(page);
   expect(cleared.name).toBeFalsy();
   expect(cleared.token).toBeFalsy();
@@ -40,7 +40,7 @@ test("auth code links an existing account", async ({ page, browser }) => {
   const context = await browser.newContext();
   const secondPage = await context.newPage();
   await secondPage.goto("/");
-  await expect(secondPage.getByText("ARC// AUTH LINK")).toBeVisible();
+  await expect(secondPage.getByText("ARC // AUTH LINK")).toBeVisible();
   await secondPage.getByTestId("onboarding-select-existing").click();
   await secondPage.getByLabel("Auth Code").fill(code ?? "");
   await secondPage.getByRole("button", { name: "Sync Uplink" }).click();

@@ -1,5 +1,5 @@
 import { createPortal } from "react-dom";
-import { ChevronDown, ChevronUp, Filter } from "lucide-react";
+import {ChevronDown, ChevronUp, Cross, Filter, Pencil, X} from "lucide-react";
 import type { CommunityNeedsItem, CommunityNeedsMember } from "@/types/community";
 import { cn } from "@/lib/cn";
 import { CommunityNeedTile } from "@/components/community/CommunityNeedTile";
@@ -39,10 +39,10 @@ export function CommunityNeedsPanel({
 
   return (
     <div
-      className="arc-panel arc-corners relative overflow-hidden"
+      className="arc-panel relative overflow-hidden"
       data-testid="community-needs-panel"
     >
-      <div className="bg-panel/80 px-2 py-4">
+      <div className="bg-panel/80 px-2 py-2">
         <div className="mt-2 flex flex-wrap gap-2 items-center">
           <Filter className="h-4 w-4 text-muted" aria-hidden="true" />
           {members.map((member) => {
@@ -138,7 +138,7 @@ export function CommunityNeedsPanel({
                 data-testid="community-need-backdrop"
               />
               <div
-                className="relative arc-panel arc-corners w-full max-w-md border border-frame2 bg-panel/95 px-2 py-3 text-[11px] uppercase tracking-[0.12em] text-text/90 shadow-arcHover"
+                className="relative arc-panel arc-corners w-full px-4 py-4 max-w-md border border-frame2 bg-panel/95 px-2 py-3 text-[11px] uppercase tracking-[0.12em] text-text/90 shadow-arcHover"
                 data-testid="community-need-overlay"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -148,21 +148,21 @@ export function CommunityNeedsPanel({
                   <button
                     type="button"
                     onClick={() => setActiveItemId(null)}
-                    className="border border-frame2 px-2 py-1 text-[9px] uppercase tracking-[0.16em] text-muted hover:border-accent/60 hover:text-text"
+                    className="border border-frame2 px-1 py-1 text-[6px] uppercase tracking-[0.16em] text-muted hover:border-accent/60 hover:text-text"
                   >
-                    {labels.close}
+                    <X className="h-3 w-3" aria-label={labels.close}/>
                   </button>
                 </div>
                 <div className="mt-3 space-y-1">
                   {activeItem.memberNeeds.map((member) => (
                     <div
                       key={member.memberId}
-                      className="flex items-center justify-between"
+                      className="flex items-center gap-1"
                       data-member-id={member.memberId}
                       data-needed={member.needed}
                     >
-                      <span className="text-muted">{member.memberName}</span>
                       <span className="text-accent">{member.needed}x</span>
+                      <span className="text-muted">{member.memberName}</span>
                     </div>
                   ))}
                 </div>

@@ -17,7 +17,7 @@ export function TopNav() {
   const showHome = ready && Boolean(identity);
 
   return (
-    <div className="arc-panel arc-panel-topless arc-corners relative w-full px-2 py-[0.6rem] [--arc-corner-offset:6px]">
+    <div className="arc-panel arc-panel-topless arc-corners relative w-full px-3 py-3 [--arc-corner-offset:6px]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="text-xs font-semibold uppercase tracking-[0.2em] text-text sm:text-sm">

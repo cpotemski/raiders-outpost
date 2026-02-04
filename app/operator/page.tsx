@@ -70,7 +70,7 @@ export default function RaiderPage() {
       <div className="arc-panel arc-corners overflow-hidden">
         <div className="arc-panel-header">
           <span className="text-xs font-semibold uppercase tracking-[0.18em]">
-            ARC// USER
+            ARC // USER
           </span>
         </div>
         <div className="space-y-4 px-2 py-5">
