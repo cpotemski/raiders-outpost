@@ -115,73 +115,73 @@ export function AuthGate() {
     }));
   };
 
-  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const submitNewFlow = async () => {
     if (submitting) return;
     setErrorKey("");
-    if (flow === "new" && newStep < 2) {
-      if (newStep === 0 && !name.trim()) {
-        setErrorKey("nameRequired");
-        return;
-      }
-      setNewStep((prev) => Math.min(2, prev + 1));
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setErrorKey("nameRequired");
       return;
     }
     setSubmitting(true);
     try {
-      if (flow === "new") {
-        const trimmed = name.trim();
-        if (!trimmed) {
-          setErrorKey("nameRequired");
-          return;
-        }
-        const baseline = buildBaselinePayload();
-        const res = await fetch("/api/auth", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: trimmed,
-            create: true,
-            locale,
-            baseline,
-          }),
-        });
-        const payload = await res.json().catch(() => null);
-        if (!res.ok || !payload?.user?.token) {
-          setErrorKey("authFailed");
-          return;
-        }
-        const nextName =
-          typeof payload.user.name === "string" ? payload.user.name : trimmed;
-        saveIdentity(nextName, payload.user.token);
-      } else if (flow === "existing") {
-        const trimmedCode = code.trim().toUpperCase();
-        if (!trimmedCode) {
-          setErrorKey("codeRequired");
-          return;
-        }
-        const res = await fetch("/api/auth/code/redeem", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code: trimmedCode }),
-        });
-        const payload = await res.json().catch(() => null);
-        if (!res.ok || !payload?.user?.token) {
-          if (res.status === 410) {
-            setErrorKey("codeExpired");
-            return;
-          }
-          setErrorKey("codeInvalid");
-          return;
-        }
-        const nextName =
-          typeof payload.user.name === "string"
-            ? payload.user.name
-            : "Raider";
-        saveIdentity(nextName, payload.user.token);
+      const baseline = buildBaselinePayload();
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: trimmed,
+          create: true,
+          locale,
+          baseline,
+        }),
+      });
+      const payload = await res.json().catch(() => null);
+      if (!res.ok || !payload?.user?.token) {
+        setErrorKey("authFailed");
+        return;
       }
+      const nextName =
+        typeof payload.user.name === "string" ? payload.user.name : trimmed;
+      saveIdentity(nextName, payload.user.token);
     } catch {
-      setErrorKey(flow === "new" ? "authFailed" : "codeInvalid");
+      setErrorKey("authFailed");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (flow !== "existing") return;
+    if (submitting) return;
+    setErrorKey("");
+    setSubmitting(true);
+    try {
+      const trimmedCode = code.trim().toUpperCase();
+      if (!trimmedCode) {
+        setErrorKey("codeRequired");
+        return;
+      }
+      const res = await fetch("/api/auth/code/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: trimmedCode }),
+      });
+      const payload = await res.json().catch(() => null);
+      if (!res.ok || !payload?.user?.token) {
+        if (res.status === 410) {
+          setErrorKey("codeExpired");
+          return;
+        }
+        setErrorKey("codeInvalid");
+        return;
+      }
+      const nextName =
+        typeof payload.user.name === "string" ? payload.user.name : "Raider";
+      saveIdentity(nextName, payload.user.token);
+    } catch {
+      setErrorKey("codeInvalid");
     } finally {
       setSubmitting(false);
     }
@@ -480,9 +480,11 @@ export function AuthGate() {
                 ) : (
                   <Button
                     variant="primary"
-                    type="submit"
+                    type="button"
                     className="px-5"
                     disabled={submitting}
+                    data-testid="onboarding-submit"
+                    onClick={submitNewFlow}
                   >
                     {labels.syncUplink}
                   </Button>

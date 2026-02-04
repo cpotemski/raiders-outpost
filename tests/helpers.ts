@@ -30,7 +30,9 @@ export const syncIdentity = async (page: Page, name: string) => {
       .getByText("Expeditions (Optional)", { exact: true })
   ).toBeVisible();
   await page.getByRole("button", { name: "Sync Uplink" }).click();
-  await expect(page.getByText(name)).toBeVisible();
+  await expect(
+    page.getByTestId("user-menu-trigger").getByText(name, { exact: true })
+  ).toBeVisible();
 };
 
 export const getLocalIdentity = async (page: Page) => {
