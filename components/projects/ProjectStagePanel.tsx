@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
 import type { PointerEvent } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { ProjectStageProgress } from "@/types/projects";
 import { ProjectItemTile } from "@/components/projects/ProjectItemTile";
@@ -84,14 +85,20 @@ export function ProjectStagePanel({
                 type="button"
                 onClick={onToggleExpanded}
                 onPointerUp={handleTogglePointerUp}
+                aria-label={isExpanded ? labels.hide : labels.show}
+                title={isExpanded ? labels.hide : labels.show}
                 className={cn(
-                  "h-7 border px-2 text-[10px] font-semibold uppercase tracking-[0.12em]",
+                  "inline-flex h-7 w-7 items-center justify-center border",
                   isExpanded
                     ? "border-accent/70 text-text"
                     : "border-frame2 text-muted hover:border-accent/60"
                 )}
               >
-                {isExpanded ? labels.hide : labels.show}
+                {isExpanded ? (
+                  <ChevronUp className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                )}
               </button>
             ) : null}
           </div>

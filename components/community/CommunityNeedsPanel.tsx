@@ -1,4 +1,5 @@
 import { createPortal } from "react-dom";
+import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import type { CommunityNeedsItem, CommunityNeedsMember } from "@/types/community";
 import { cn } from "@/lib/cn";
 import { CommunityNeedTile } from "@/components/community/CommunityNeedTile";
@@ -43,7 +44,10 @@ export function CommunityNeedsPanel({
     >
       <div className="bg-panel/80 px-4 py-4">
         <div>
-          <div className="hud-label">{labels.raiders}</div>
+          <div className="hud-label flex items-center gap-2">
+            <Filter className="h-3 w-3 text-muted" aria-hidden="true" />
+            {labels.raiders}
+          </div>
           <div className="mt-2 flex flex-wrap gap-2">
             {members.map((member) => {
               const active = selectedMembers.has(member.id);
@@ -69,11 +73,7 @@ export function CommunityNeedsPanel({
         </div>
 
         <div className="mt-5 border-t border-frame2 pt-4">
-          {loading ? (
-            <div className="mt-3 text-[11px] uppercase tracking-[0.12em] text-muted">
-              {labels.scanningCache}
-            </div>
-          ) : groupedItems.length ? (
+          {loading ? null : groupedItems.length ? (
             <div className="mt-3 space-y-4">
               {groupedItems.map((group) => (
                 <div key={group.type} className="space-y-2">
@@ -83,17 +83,25 @@ export function CommunityNeedsPanel({
                       type="button"
                       onClick={() => toggleGroup(group.type)}
                       className={cn(
-                        "h-6 border px-2 text-[9px] uppercase tracking-[0.16em]",
+                        "inline-flex h-6 w-6 items-center justify-center border",
                         collapsedGroups.has(group.type)
                           ? "border-frame2 text-muted hover:border-accent/60"
                           : "border-accent/70 text-text"
                       )}
                       aria-expanded={!collapsedGroups.has(group.type)}
                       aria-controls={`needs-group-${group.type}`}
+                      aria-label={
+                        collapsedGroups.has(group.type) ? labels.show : labels.hide
+                      }
+                      title={
+                        collapsedGroups.has(group.type) ? labels.show : labels.hide
+                      }
                     >
-                      {collapsedGroups.has(group.type)
-                        ? labels.show
-                        : labels.hide}
+                      {collapsedGroups.has(group.type) ? (
+                        <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+                      ) : (
+                        <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
+                      )}
                     </button>
                   </div>
                   {!collapsedGroups.has(group.type) ? (

@@ -106,3 +106,8 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+body.auth-gate-open [data-nav-home="true"] {
+  pointer-events: none;
+  opacity: 0.4;
+}

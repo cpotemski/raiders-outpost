@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
 import { ProjectDashboard } from "@/components/projects/ProjectDashboard";
@@ -56,12 +55,6 @@ export default function ProjectDetailPage() {
         <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen">
           <div className="arc-panel arc-panel-bottomless arc-corners px-4 py-2 sm:px-6 [--arc-corner-offset:6px]">
             <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-3 px-4 sm:px-6 lg:px-8">
-              <Link
-                href="/"
-                className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted transition hover:text-text"
-              >
-                {labels.backToProjectSelection}
-              </Link>
               <label className="relative">
                 <span className="sr-only">{labels.quicksearch}</span>
                 <input

@@ -65,7 +65,6 @@ export function CommunityEmptyState({
             >
               {labels.createCommunity}
             </Button>
-            <span className="hud-label">{labels.scanningCacheLabel}</span>
           </div>
         </form>
       )}

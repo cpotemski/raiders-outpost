@@ -178,7 +178,7 @@ export function AuthGate() {
         return;
       }
       const nextName =
-        typeof payload.user.name === "string" ? payload.user.name : "Raider";
+        typeof payload.user.name === "string" ? payload.user.name : "User";
       saveIdentity(nextName, payload.user.token);
     } catch {
       setErrorKey("codeInvalid");
@@ -187,19 +187,25 @@ export function AuthGate() {
     }
   };
 
+  useEffect(() => {
+    if (!ready || identity) return;
+    document.body.classList.add("auth-gate-open");
+    return () => {
+      document.body.classList.remove("auth-gate-open");
+    };
+  }, [ready, identity]);
+
   if (!ready || identity) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-8">
-      <div className="arc-panel arc-corners arc-noise w-full max-w-xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-x-0 bottom-0 top-16 z-50 flex items-center justify-center bg-black/40 px-4 py-8 pointer-events-none">
+      <div className="arc-panel arc-corners arc-noise w-full max-w-xl max-h-[90vh] overflow-y-auto pointer-events-auto">
         <div className="arc-panel-header">
           <div>
             <div className="text-xs font-semibold uppercase tracking-[0.2em]">
-              ARC// AUTH LINK
+              ARC// REGISTER
             </div>
-            <div className="hud-label">{labels.authNoRegistration}</div>
           </div>
-          <span className="hud-label">{labels.localLabel}</span>
         </div>
         <form className="space-y-4 px-5 py-6" onSubmit={onSubmit}>
           {flow === "entry" ? (
@@ -497,7 +503,6 @@ export function AuthGate() {
               <span>
                 {isNewFlow ? `${newStep + 1} / 3` : "1 / 1"}
               </span>
-              <span>{labels.scanningCacheLabel}</span>
             </div>
           ) : null}
         </form>

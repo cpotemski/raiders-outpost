@@ -70,9 +70,8 @@ export default function RaiderPage() {
       <div className="arc-panel arc-corners overflow-hidden">
         <div className="arc-panel-header">
           <span className="text-xs font-semibold uppercase tracking-[0.18em]">
-            ARC// RAIDER
+            ARC// USER
           </span>
-          <span className="hud-label">{labels.localLabel}</span>
         </div>
         <div className="space-y-4 px-4 py-5">
           <div>
@@ -99,6 +98,9 @@ export default function RaiderPage() {
               >
                 {copied ? labels.copied : labels.copy}
               </Button>
+            </div>
+            <div className="mt-2 text-[10px] uppercase tracking-[0.12em] text-muted">
+              {labels.authCodeHint}
             </div>
           </div>
           <div>
