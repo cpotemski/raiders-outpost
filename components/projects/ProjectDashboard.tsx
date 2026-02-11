@@ -38,7 +38,7 @@ export function ProjectDashboard({
   const completionStatusRef = useRef<Record<string, boolean>>({});
   const initialCompletionCaptured = useRef(false);
   const activeProjectIdRef = useRef(activeProject?.slug ?? null);
-  const COMPLETION_DISPLAY_MS = 5000;
+  const COMPLETION_DISPLAY_MS = 1200;
 
   const filteredStages = useMemo(() => {
     if (!activeProject) return [];

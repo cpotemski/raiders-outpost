@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -31,6 +31,10 @@ export function ProjectStagePanel({
   isFirst = false,
 }: ProjectStagePanelProps) {
   const labels = useLabels();
+  const [contentMounted, setContentMounted] = useState(isExpanded);
+  const [isCollapsing, setIsCollapsing] = useState(false);
+  const collapseTimerRef = useRef<number | null>(null);
+  const COLLAPSE_DURATION_MS = 320;
   const { completedCount, totalCount, isCompleted, progressRatio } = useMemo(
     () => getProgressStats(progressItems ?? stage.items),
     [progressItems, stage.items]
@@ -40,6 +44,40 @@ export function ProjectStagePanel({
     (event: PointerEvent<HTMLButtonElement>) => {
       if (event.pointerType === "touch") {
         event.currentTarget.blur();
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (collapseTimerRef.current) {
+      window.clearTimeout(collapseTimerRef.current);
+      collapseTimerRef.current = null;
+    }
+
+    if (isExpanded) {
+      setContentMounted(true);
+      setIsCollapsing(false);
+      return;
+    }
+
+    if (!contentMounted) {
+      setIsCollapsing(false);
+      return;
+    }
+
+    setIsCollapsing(true);
+    collapseTimerRef.current = window.setTimeout(() => {
+      setContentMounted(false);
+      setIsCollapsing(false);
+      collapseTimerRef.current = null;
+    }, COLLAPSE_DURATION_MS);
+  }, [contentMounted, isExpanded]);
+
+  useEffect(
+    () => () => {
+      if (collapseTimerRef.current) {
+        window.clearTimeout(collapseTimerRef.current);
       }
     },
     []
@@ -116,24 +154,40 @@ export function ProjectStagePanel({
               {labels.stageComplete}
             </span>
           </div>
-          {isExpanded ? (
-            <div className="relative z-10 mt-3 border-t border-frame2/70 pt-4">
-              {stage.items.length ? (
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 lg:gap-1.5 xl:grid-cols-9 2xl:grid-cols-10">
-                  {stage.items.map((item) => (
-                    <ProjectItemTile
-                      key={item.itemId}
-                      item={item}
-                      onAdjust={onAdjust}
-                      stripBlueprintLabel={stripBlueprintLabel}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState>
-                  {labels.dataNotFoundScanning}
-                </EmptyState>
+          {contentMounted ? (
+            <div
+              className={cn(
+                "relative z-10 overflow-hidden transition-all duration-300 ease-out",
+                isExpanded && !isCollapsing
+                  ? "mt-3 max-h-[2400px] border-t border-frame2/70 pt-4 opacity-100"
+                  : "mt-0 max-h-0 border-t border-transparent pt-0 opacity-0"
               )}
+            >
+              <div
+                className={cn(
+                  "overflow-hidden transition-opacity duration-200",
+                  isExpanded && !isCollapsing
+                    ? "opacity-100"
+                    : "opacity-0"
+                )}
+              >
+                {stage.items.length ? (
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 lg:gap-1.5 xl:grid-cols-9 2xl:grid-cols-10">
+                    {stage.items.map((item) => (
+                      <ProjectItemTile
+                        key={item.itemId}
+                        item={item}
+                        onAdjust={onAdjust}
+                        stripBlueprintLabel={stripBlueprintLabel}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState>
+                    {labels.dataNotFoundScanning}
+                  </EmptyState>
+                )}
+              </div>
             </div>
           ) : null}
         </div>
