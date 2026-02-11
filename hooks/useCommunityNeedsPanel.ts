@@ -11,6 +11,14 @@ type UseCommunityNeedsPanelParams = {
   storageKey?: string;
 };
 
+const areSetValuesEqual = (left: Set<string>, right: Set<string>) => {
+  if (left.size !== right.size) return false;
+  for (const value of left) {
+    if (!right.has(value)) return false;
+  }
+  return true;
+};
+
 export const useCommunityNeedsPanel = ({
   members,
   items,
@@ -110,6 +118,9 @@ export const useCommunityNeedsPanel = ({
         next = validIds;
       } else if (next.size === 0 && validIds.size > 0 && prev.size > 0) {
         next = validIds;
+      }
+      if (areSetValuesEqual(prev, next)) {
+        return prev;
       }
       return next;
     });
