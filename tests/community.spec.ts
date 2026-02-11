@@ -10,11 +10,11 @@ test("community can be joined across multiple communities and members removed", 
 }) => {
   await login(page, "Vanguard");
   await page.getByRole("link", { name: /Community/ }).click();
-  await expect(page.locator("#community-name")).toBeVisible();
+  await expect(page.getByTestId("community-name-input")).toBeVisible();
 
   const alphaCommunityName = uniqueName("Echo");
-  await page.locator("#community-name").fill(alphaCommunityName);
-  await page.locator('form:has(#community-name) button[type="submit"]').click();
+  await page.getByTestId("community-name-input").fill(alphaCommunityName);
+  await page.getByTestId("community-create-submit").click();
   await expect(
     page.getByRole("heading", { name: alphaCommunityName, exact: true })
   ).toBeVisible();
@@ -40,10 +40,8 @@ test("community can be joined across multiple communities and members removed", 
   await login(scoutPage, "Scout");
   await scoutPage.getByRole("link", { name: /Community/ }).click();
   const betaCommunityName = uniqueName("Haven");
-  await scoutPage.locator("#community-name").fill(betaCommunityName);
-  await scoutPage
-    .locator('form:has(#community-name) button[type="submit"]')
-    .click();
+  await scoutPage.getByTestId("community-name-input").fill(betaCommunityName);
+  await scoutPage.getByTestId("community-create-submit").click();
   await expect(
     scoutPage.getByRole("heading", { name: betaCommunityName, exact: true })
   ).toBeVisible();
@@ -57,6 +55,12 @@ test("community can be joined across multiple communities and members removed", 
   await page.goto(betaInviteLink);
   await expect(
     page.getByRole("heading", { name: betaCommunityName, exact: true })
+  ).toBeVisible();
+  const gammaCommunityName = uniqueName("Forge");
+  await page.getByTestId("community-name-input").fill(gammaCommunityName);
+  await page.getByTestId("community-create-submit").click();
+  await expect(
+    page.getByRole("heading", { name: gammaCommunityName, exact: true })
   ).toBeVisible();
 
   const communityFilters = page.getByTestId(/community-filter-/);
