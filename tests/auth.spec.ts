@@ -9,9 +9,9 @@ test("raider can sync and log out", async ({ page }) => {
   expect(identity.token).toBeTruthy();
 
   await openUserMenu(page);
-  await page.getByRole("button", { name: "Log Out" }).click();
+  await page.getByTestId("operator-logout").click();
 
-  await expect(page.getByText("ARC // AUTH LINK")).toBeVisible();
+  await expect(page.getByTestId("onboarding-step-account")).toBeVisible();
   const cleared = await getLocalIdentity(page);
   expect(cleared.name).toBeFalsy();
   expect(cleared.token).toBeFalsy();
@@ -33,17 +33,25 @@ test("auth code links an existing account", async ({ page, browser }) => {
     throw new Error(`Auth code generation failed: ${response.status()}`);
   }
 
-  const codeField = page.getByLabel("Auth code value");
+  const codeField = page.getByTestId("operator-auth-code");
   await expect(codeField).toHaveText(/^[A-Z0-9]{8}$/);
   const code = await codeField.textContent();
 
   const context = await browser.newContext();
   const secondPage = await context.newPage();
   await secondPage.goto("/");
-  await expect(secondPage.getByText("ARC // AUTH LINK")).toBeVisible();
+  await expect(secondPage.getByTestId("onboarding-step-account")).toBeVisible();
   await secondPage.getByTestId("onboarding-select-existing").click();
-  await secondPage.getByLabel("Auth Code").fill(code ?? "");
-  await secondPage.getByRole("button", { name: "Sync Uplink" }).click();
-  await expect(secondPage.getByText("Atlas")).toBeVisible();
+  await secondPage.locator("#auth-code").fill(code ?? "");
+  await secondPage
+    .getByTestId("onboarding-step-existing")
+    .locator('button[type="submit"]')
+    .click();
+  await expect
+    .poll(async () => {
+      const linkedIdentity = await getLocalIdentity(secondPage);
+      return linkedIdentity.name === "Atlas" && Boolean(linkedIdentity.token);
+    })
+    .toBe(true);
   await context.close();
 });

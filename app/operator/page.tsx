@@ -88,6 +88,7 @@ export default function RaiderPage() {
               <div
                 className="flex-1 rounded-[8px] border border-frame bg-panel2 px-3 py-2 font-mono text-[12px] text-text tracking-[0.2em]"
                 aria-label={labels.authCodeValueAria}
+                data-testid="operator-auth-code"
               >
                 {authCode || "--------"}
               </div>
@@ -176,6 +177,7 @@ export default function RaiderPage() {
                 clearIdentity();
               }}
               className="px-3"
+              data-testid="operator-logout"
             >
               {labels.logOut}
             </Button>

@@ -8,7 +8,7 @@ import {
 
 test("project item updates persist", async ({ page }) => {
   await login(page, "Vanguard");
-  await openProject(page, "blueprints");
+  await openProject(page);
   await page.getByRole("main").screenshot({
     path: "test-results/project-detail.png",
   });

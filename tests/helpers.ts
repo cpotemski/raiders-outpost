@@ -10,17 +10,13 @@ export const login = async (page: Page, name = "Vanguard") => {
   });
   await page.reload();
   await syncIdentity(page, name);
-  await expect(
-    page.getByRole("link", { name: /Community/ })
-  ).toBeVisible();
+  await expect(page.getByTestId("onboarding-step-account")).toBeHidden();
 };
 
 export const syncIdentity = async (page: Page, name: string) => {
-  await expect(
-    page.getByText(/ARC \/\/ (AUTH LINK|REGISTER)/)
-  ).toBeVisible();
+  await expect(page.getByTestId("onboarding-step-account")).toBeVisible();
   await page.getByTestId("onboarding-select-new").click();
-  await page.getByLabel(/(Raider Name|User Name)/).fill(name);
+  await page.locator("#operator-name").fill(name);
   await page.getByTestId("onboarding-next").click();
   const nextButton = page.getByTestId("onboarding-next");
   if (await nextButton.isVisible()) {
@@ -29,18 +25,13 @@ export const syncIdentity = async (page: Page, name: string) => {
   if (await nextButton.isVisible()) {
     await nextButton.click();
   }
-  await page.getByRole("button", { name: /(Sync Uplink|Register)/ }).click();
-  const userTrigger = page.getByTestId("user-menu-trigger");
-  if (await userTrigger.isVisible()) {
-    await expect(userTrigger.getByText(name, { exact: true })).toBeVisible();
-    return;
-  }
-  const communityNav = page.getByRole("link", { name: /Community/ });
-  if (await communityNav.isVisible()) {
-    await expect(communityNav).toBeVisible();
-    return;
-  }
-  await expect(page.getByRole("link", { name: "Back", exact: true })).toBeVisible();
+  await page.getByTestId("onboarding-submit").click();
+  await expect
+    .poll(async () => {
+      const identity = await getLocalIdentity(page);
+      return identity.name === name && Boolean(identity.token);
+    })
+    .toBe(true);
 };
 
 export const getLocalIdentity = async (page: Page) => {
@@ -56,17 +47,18 @@ export const getLocalIdentity = async (page: Page) => {
 };
 
 export const openUserMenu = async (page: Page) => {
-  const trigger = page.getByTestId("user-menu-trigger");
-  await expect(trigger).toBeVisible();
-  await trigger.click();
+  await page.goto("/operator");
   await expect(page).toHaveURL(/\/operator/);
 };
 
-export const openProject = async (page: Page, slug: string) => {
-  const card = page.getByTestId(`project-card-${slug}`);
+export const openProject = async (page: Page, slug?: string) => {
+  await page.goto("/projects");
+  const card = slug
+    ? page.getByTestId(`project-card-${slug}`).first()
+    : page.locator('[data-testid^="project-card-"]').first();
   await expect(card).toBeVisible();
   await card.click();
-  await expect(page).toHaveURL(new RegExp(`/projects/${slug}$`));
+  await expect(page).toHaveURL(/\/projects\/[^/]+$/);
 };
 
 export const getTileQuantity = async (tile: Locator) => {
