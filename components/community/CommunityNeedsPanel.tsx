@@ -55,6 +55,7 @@ export function CommunityNeedsPanel({
                 aria-pressed={active}
                 onClick={() => toggleMember(member.id)}
                 data-member-id={member.id}
+                data-testid={`community-member-filter-${member.id}`}
                 className={cn(
                   "h-6 border px-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
                   active

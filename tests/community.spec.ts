@@ -59,13 +59,40 @@ test("community can be joined across multiple communities and members removed", 
     page.getByRole("heading", { name: betaCommunityName, exact: true })
   ).toBeVisible();
 
-  await expect(
-    page.getByTestId(/community-filter-/).first()
-  ).toBeVisible();
+  const communityFilters = page.getByTestId(/community-filter-/);
+  await expect(communityFilters.first()).toBeVisible();
+  const communityFilterCount = await communityFilters.count();
+
+  const memberFilters = page.getByTestId(/community-member-filter-/);
+  await expect(memberFilters.first()).toBeVisible();
+
+  const firstMemberFilter = memberFilters.first();
+  const disabledMemberId = await firstMemberFilter.getAttribute("data-member-id");
+  if (!disabledMemberId) {
+    throw new Error("Missing member filter id.");
+  }
+  const memberFilterToDisable = page.getByTestId(
+    `community-member-filter-${disabledMemberId}`
+  );
+  await memberFilterToDisable.click();
+  await expect(memberFilterToDisable).toHaveAttribute("aria-pressed", "false");
+
+  await page.reload();
+  await expect(communityFilters.first()).toBeVisible();
+  const memberFilterAfterReload = page.getByTestId(
+    `community-member-filter-${disabledMemberId}`
+  );
+  await expect(memberFilterAfterReload).toHaveAttribute("aria-pressed", "false");
   await expect(page.getByTestId("community-needs-panel")).toBeVisible();
   await page
     .getByTestId("community-needs-panel")
     .screenshot({ path: "test-results/community-needs-all.png" });
+
+  const communityFilterToDisable = communityFilters.first();
+  await communityFilterToDisable.click();
+  await expect(communityFilterToDisable).toHaveAttribute("aria-pressed", "false");
+  await page.reload();
+  await expect(communityFilterToDisable).toHaveAttribute("aria-pressed", "false");
 
   const alphaManageCard = page.getByTestId(/community-manage-/).filter({
     has: page.getByRole("heading", { name: alphaCommunityName, exact: true }),

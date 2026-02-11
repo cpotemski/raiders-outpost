@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CommunityNeedsItem, CommunityNeedsMember } from "@/types/community";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 
@@ -33,10 +33,12 @@ export const useCommunityNeedsPanel = ({
 
   const selectedMembersKey = buildStorageKey(STORAGE_SUFFIX_SELECTED);
   const collapsedGroupsKey = buildStorageKey(STORAGE_SUFFIX_COLLAPSED);
+  const hasStoredMemberSelectionRef = useRef(false);
 
   const defaultMemberSet = () => new Set(members.map((member) => member.id));
 
-  const [selectedMembers, setSelectedMembers] = useLocalStorageState<Set<string>>(
+  const [selectedMembers, setSelectedMembers, membersSelectionHydrated] =
+    useLocalStorageState<Set<string>>(
     selectedMembersKey,
     defaultMemberSet,
     {
@@ -55,24 +57,25 @@ export const useCommunityNeedsPanel = ({
     }
   );
 
-  const [collapsedGroups, setCollapsedGroups] = useLocalStorageState<Set<string>>(
-    collapsedGroupsKey,
-    () => new Set<string>(),
-    {
-      serialize: (value) => JSON.stringify(Array.from(value)),
-      deserialize: (raw) => {
-        try {
-          const parsed = JSON.parse(raw);
-          if (!Array.isArray(parsed)) return new Set<string>();
-          return new Set(
-            parsed.filter((entry): entry is string => typeof entry === "string")
-          );
-        } catch {
-          return new Set<string>();
-        }
-      },
-    }
-  );
+  const [collapsedGroups, setCollapsedGroups] =
+    useLocalStorageState<Set<string>>(
+      collapsedGroupsKey,
+      () => new Set<string>(),
+      {
+        serialize: (value) => JSON.stringify(Array.from(value)),
+        deserialize: (raw) => {
+          try {
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) return new Set<string>();
+            return new Set(
+              parsed.filter((entry): entry is string => typeof entry === "string")
+            );
+          } catch {
+            return new Set<string>();
+          }
+        },
+      }
+    );
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -81,22 +84,39 @@ export const useCommunityNeedsPanel = ({
   }, []);
 
   useEffect(() => {
+    if (!selectedMembersKey || typeof window === "undefined") {
+      hasStoredMemberSelectionRef.current = false;
+      return;
+    }
+    hasStoredMemberSelectionRef.current =
+      window.localStorage.getItem(selectedMembersKey) !== null;
+  }, [selectedMembersKey]);
+
+  useEffect(() => {
+    if (!membersSelectionHydrated) return;
     setSelectedMembers((prev) => {
       const validIds = new Set(members.map((member) => member.id));
-      if (prev.size === 0) {
+      if (validIds.size === 0) {
         return prev;
       }
-      const next = new Set(
+      let next = new Set(
         Array.from(prev).filter((id) => validIds.has(id))
       );
-      if (next.size === 0 && validIds.size > 0) {
-        return validIds;
+      if (
+        !hasStoredMemberSelectionRef.current &&
+        next.size === 0 &&
+        validIds.size > 0
+      ) {
+        next = validIds;
+      } else if (next.size === 0 && validIds.size > 0 && prev.size > 0) {
+        next = validIds;
       }
       return next;
     });
-  }, [members, setSelectedMembers]);
+  }, [members, membersSelectionHydrated, setSelectedMembers]);
 
   const toggleMember = (memberId: string) => {
+    hasStoredMemberSelectionRef.current = true;
     setSelectedMembers((prev) => {
       const next = new Set(prev);
       if (next.has(memberId)) {

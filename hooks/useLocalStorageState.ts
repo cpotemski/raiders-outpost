@@ -1,6 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 
 type StorageSerializer<T> = (value: T) => string;
 type StorageDeserializer<T> = (raw: string) => T;
@@ -31,6 +39,7 @@ export const useLocalStorageState = <T,>(
   const serialize = options.serialize ?? defaultSerialize;
   const deserialize = options.deserialize ?? defaultDeserialize;
   const [state, setState] = useState<T>(() => resolveDefault(defaultValue));
+  const [hydrated, setHydrated] = useState(false);
   const hydratedRef = useRef(false);
   const keyRef = useRef<string | undefined>(key);
 
@@ -41,6 +50,7 @@ export const useLocalStorageState = <T,>(
     if (keyRef.current !== key) {
       keyRef.current = key;
       hydratedRef.current = false;
+      setHydrated(false);
     }
     if (hydratedRef.current) return;
     if (typeof window === "undefined") return;
@@ -48,18 +58,33 @@ export const useLocalStorageState = <T,>(
     if (stored === null) {
       setState(resolvedDefault);
       hydratedRef.current = true;
+      setHydrated(true);
       return;
     }
     setState(deserialize(stored));
     hydratedRef.current = true;
+    setHydrated(true);
   }, [deserialize, key, resolvedDefault]);
 
-  useEffect(() => {
-    if (!key) return;
-    if (!hydratedRef.current) return;
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(key, serialize(state));
-  }, [key, serialize, state]);
+  const setValue: Dispatch<SetStateAction<T>> = useCallback(
+    (value) => {
+      setState((previous) => {
+        const next =
+          typeof value === "function"
+            ? (value as (prevState: T) => T)(previous)
+            : value;
+        if (
+          key &&
+          hydratedRef.current &&
+          typeof window !== "undefined"
+        ) {
+          window.localStorage.setItem(key, serialize(next));
+        }
+        return next;
+      });
+    },
+    [key, serialize]
+  );
 
-  return [state, setState] as const;
+  return [state, setValue, hydrated] as const;
 };

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
+import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 import type { Community } from "@/types/community";
 
 type Status = "idle" | "loading" | "saving" | "joining";
@@ -21,17 +22,45 @@ export const useCommunityRoster = () => {
   const router = useRouter();
   const inviteCode = searchParams.get("invite")?.trim() ?? "";
   const [communities, setCommunities] = useState<Community[]>([]);
-  const [selectedCommunityIds, setSelectedCommunityIds] = useState<Set<string>>(
-    () => new Set<string>()
-  );
+  const selectionStorageKey = identity
+    ? `community-selection-${encodeURIComponent(identity.token)}`
+    : undefined;
+  const [selectedCommunityIds, setSelectedCommunityIds, selectionHydrated] =
+    useLocalStorageState<Set<string>>(
+      selectionStorageKey,
+      () => new Set<string>(),
+      {
+        serialize: (value) => JSON.stringify(Array.from(value)),
+        deserialize: (raw) => {
+          try {
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) return new Set<string>();
+            return new Set(
+              parsed.filter((entry): entry is string => typeof entry === "string")
+            );
+          } catch {
+            return new Set<string>();
+          }
+        },
+      }
+    );
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
   const [removeError, setRemoveError] = useState("");
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [origin, setOrigin] = useState("");
-  const hasInitializedSelectionRef = useRef(false);
+  const hasStoredSelectionRef = useRef(false);
   const lastJoinAttemptKeyRef = useRef("");
+
+  useEffect(() => {
+    if (!selectionStorageKey || typeof window === "undefined") {
+      hasStoredSelectionRef.current = false;
+      return;
+    }
+    hasStoredSelectionRef.current =
+      window.localStorage.getItem(selectionStorageKey) !== null;
+  }, [selectionStorageKey]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -43,20 +72,20 @@ export const useCommunityRoster = () => {
     nextCommunities: Community[],
     preferredCommunityId?: string
   ) => {
+    if (!selectionHydrated) return;
     const validIds = communityIdSet(nextCommunities);
     setSelectedCommunityIds((prev) => {
-      if (!hasInitializedSelectionRef.current) {
-        hasInitializedSelectionRef.current = true;
-        const initial = new Set(nextCommunities.map((community) => community.id));
-        if (preferredCommunityId && validIds.has(preferredCommunityId)) {
-          initial.add(preferredCommunityId);
-        }
-        return initial;
+      if (validIds.size === 0) {
+        return prev;
       }
-
-      const next = new Set(
+      let next = new Set(
         Array.from(prev).filter((communityId) => validIds.has(communityId))
       );
+      if (!hasStoredSelectionRef.current && next.size === 0 && validIds.size > 0) {
+        next = new Set(validIds);
+      } else if (next.size === 0 && validIds.size > 0 && prev.size > 0) {
+        next = new Set(validIds);
+      }
       if (preferredCommunityId && validIds.has(preferredCommunityId)) {
         next.add(preferredCommunityId);
       }
@@ -69,9 +98,10 @@ export const useCommunityRoster = () => {
     if (!identity) {
       setCommunities([]);
       setSelectedCommunityIds(new Set());
-      hasInitializedSelectionRef.current = false;
+      hasStoredSelectionRef.current = false;
       return;
     }
+    if (!selectionHydrated) return;
 
     let active = true;
     setStatus("loading");
@@ -100,7 +130,7 @@ export const useCommunityRoster = () => {
     return () => {
       active = false;
     };
-  }, [clearIdentity, identity, ready]);
+  }, [clearIdentity, identity, ready, selectionHydrated]);
 
   useEffect(() => {
     if (!inviteCode || !identity || !ready) return;
@@ -159,6 +189,7 @@ export const useCommunityRoster = () => {
   };
 
   const toggleCommunity = (communityId: string) => {
+    hasStoredSelectionRef.current = true;
     setSelectedCommunityIds((prev) => {
       const next = new Set(prev);
       if (next.has(communityId)) {
