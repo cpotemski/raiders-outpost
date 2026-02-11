@@ -105,54 +105,26 @@ export const useProjectProgress = (
           .find((item) => item.projectItemId === projectItemId);
         const currentOwned = targetItem?.quantityOwned ?? 0;
         const required = targetItem?.quantityRequired ?? 0;
-        const wasComplete = required > 0 && currentOwned >= required;
-        const nextComplete = required > 0 && nextQuantity >= required;
-        const expeditionMismatch =
-          targetItem?.isExpedition &&
-          targetItem.projectSlug &&
-          prev.activeExpeditionSlug !== targetItem.projectSlug;
-
-        const nextCount =
-          prev.memberCount > 0
-            ? (() => {
-                if (expeditionMismatch) {
-                  return undefined;
-                }
-                const currentCount =
-                  prev.communityCountsByItemId[projectItemId] ?? 0;
-                if (!wasComplete && nextComplete) {
-                  return currentCount + 1;
-                }
-                if (wasComplete && !nextComplete) {
-                  return Math.max(0, currentCount - 1);
-                }
-                return currentCount;
-              })()
-            : undefined;
+        const boundedQuantity =
+          required > 0 ? Math.max(0, Math.min(required, nextQuantity)) : 0;
 
         return {
           ...prev,
-          communityCountsByItemId:
-            nextCount !== undefined
-              ? {
-                  ...prev.communityCountsByItemId,
-                  [projectItemId]: nextCount,
-                }
-              : prev.communityCountsByItemId,
           projects: prev.projects.map((project) => ({
             ...project,
             stages: project.stages.map((stage) => ({
               ...stage,
               items: stage.items.map((item) => {
                 if (item.projectItemId !== projectItemId) return item;
-                return { ...item, quantityOwned: nextQuantity };
+                return { ...item, quantityOwned: boundedQuantity };
               }),
             })),
           })),
         };
       });
 
-      pendingUpdates.current.set(projectItemId, nextQuantity);
+      const persistedQuantity = Math.max(0, nextQuantity);
+      pendingUpdates.current.set(projectItemId, persistedQuantity);
       scheduleFlush();
     },
     [identity, scheduleFlush]
@@ -167,9 +139,6 @@ export const useProjectProgress = (
     loading,
     payload,
     projects: allProjects,
-    memberCount: payload?.memberCount ?? 0,
-    expeditionMemberCountsBySlug: payload?.expeditionMemberCountsBySlug ?? {},
-    communityCountsByItemId: payload?.communityCountsByItemId ?? {},
     activeExpeditionSlug: payload?.activeExpeditionSlug ?? null,
     updateItemQuantity,
     refresh,

@@ -13,18 +13,12 @@ import { ProgressRing } from "@/components/ui/ProgressRing";
 
 type ProjectItemTileProps = {
   item: ProjectItemProgress;
-  memberCount: number;
-  expeditionMemberCountsBySlug: Record<string, number>;
-  communityCount: number;
   onAdjust: (projectItemId: string, nextQuantity: number) => void;
   stripBlueprintLabel?: boolean;
 };
 
 export function ProjectItemTile({
   item,
-  memberCount,
-  expeditionMemberCountsBySlug,
-  communityCount,
   onAdjust,
   stripBlueprintLabel,
 }: ProjectItemTileProps) {
@@ -36,13 +30,10 @@ export function ProjectItemTile({
   );
   const isComplete =
     item.quantityRequired > 0 && item.quantityOwned >= item.quantityRequired;
-  const expeditionMemberCount =
-    item.isExpedition && item.projectSlug
-      ? expeditionMemberCountsBySlug[item.projectSlug] ?? 0
-      : memberCount;
-  const progressRatio = expeditionMemberCount
-    ? communityCount / expeditionMemberCount
-    : 0;
+  const progressRatio =
+    item.quantityRequired > 0
+      ? Math.min(1, item.quantityOwned / item.quantityRequired)
+      : 1;
   const progressPercent = Math.round(progressRatio * 100);
   const canAdjust = Boolean(item.projectItemId);
   const canDecrement = canAdjust && item.quantityOwned > 0;
@@ -157,12 +148,12 @@ export function ProjectItemTile({
       >
         +
       </button>
-      {memberCount ? (
+      {item.quantityRequired > 0 ? (
         <ProgressRing
           radius={6}
           strokeWidth={2}
           progress={progressRatio}
-          data-community-progress={progressPercent}
+          data-item-progress={progressPercent}
           className="absolute right-2 top-2 z-20 h-4 w-4"
         />
       ) : (

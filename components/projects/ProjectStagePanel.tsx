@@ -11,9 +11,6 @@ import { EmptyState } from "@/components/ui/EmptyState";
 
 type ProjectStagePanelProps = {
   stage: ProjectStageProgress;
-  memberCount: number;
-  expeditionMemberCountsBySlug: Record<string, number>;
-  communityCountsByItemId: Record<string, number>;
   onAdjust: (projectItemId: string, nextQuantity: number) => void;
   isExpanded: boolean;
   onToggleExpanded: () => void;
@@ -25,9 +22,6 @@ type ProjectStagePanelProps = {
 
 export function ProjectStagePanel({
   stage,
-  memberCount,
-  expeditionMemberCountsBySlug,
-  communityCountsByItemId,
   onAdjust,
   isExpanded,
   onToggleExpanded,
@@ -130,11 +124,6 @@ export function ProjectStagePanel({
                     <ProjectItemTile
                       key={item.itemId}
                       item={item}
-                      memberCount={memberCount}
-                      expeditionMemberCountsBySlug={expeditionMemberCountsBySlug}
-                      communityCount={
-                        communityCountsByItemId[item.projectItemId] ?? 0
-                      }
                       onAdjust={onAdjust}
                       stripBlueprintLabel={stripBlueprintLabel}
                     />

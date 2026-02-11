@@ -22,9 +22,6 @@ export function ProjectDashboard({
   const {
     loading,
     selectedProject,
-    memberCount,
-    expeditionMemberCountsBySlug,
-    communityCountsByItemId,
     updateItemQuantity,
   } = useProjectContext();
   const activeProject = project ?? selectedProject;
@@ -32,6 +29,9 @@ export function ProjectDashboard({
     () => new Set()
   );
   const [recentlyCompleted, setRecentlyCompleted] = useState<Set<string>>(
+    () => new Set()
+  );
+  const [justCompletedStages, setJustCompletedStages] = useState<Set<string>>(
     () => new Set()
   );
   const completionTimers = useRef<Map<string, number>>(new Map());
@@ -74,21 +74,6 @@ export function ProjectDashboard({
     }, {} as Record<string, boolean>);
   }, [activeProject]);
 
-  const justCompletedStages = useMemo(() => {
-    if (!initialCompletionCaptured.current) {
-      return new Set<string>();
-    }
-    const prevStatus = completionStatusRef.current;
-    const newlyCompleted = new Set<string>();
-    Object.entries(stageCompletionStatus).forEach(([stageKey, isCompleted]) => {
-      const wasCompleted = prevStatus[stageKey];
-      if (!wasCompleted && isCompleted) {
-        newlyCompleted.add(stageKey);
-      }
-    });
-    return newlyCompleted;
-  }, [stageCompletionStatus]);
-
   const activeProjectId = activeProject?.slug ?? null;
 
   useEffect(() => {
@@ -97,6 +82,7 @@ export function ProjectDashboard({
       initialCompletionCaptured.current = false;
       activeProjectIdRef.current = activeProjectId;
       setRecentlyCompleted(new Set());
+      setJustCompletedStages(new Set());
       completionTimers.current.forEach((timer) => window.clearTimeout(timer));
       completionTimers.current.clear();
     }
@@ -106,21 +92,33 @@ export function ProjectDashboard({
     if (!activeProject) {
       completionStatusRef.current = {};
       initialCompletionCaptured.current = false;
+      setJustCompletedStages(new Set());
       return;
     }
 
     if (!initialCompletionCaptured.current) {
       completionStatusRef.current = stageCompletionStatus;
       initialCompletionCaptured.current = true;
+      setJustCompletedStages(new Set());
       return;
     }
 
-    if (!justCompletedStages.size) {
+    const prevStatus = completionStatusRef.current;
+    const newlyCompleted = new Set<string>();
+    Object.entries(stageCompletionStatus).forEach(([stageKey, isCompleted]) => {
+      const wasCompleted = prevStatus[stageKey];
+      if (!wasCompleted && isCompleted) {
+        newlyCompleted.add(stageKey);
+      }
+    });
+    setJustCompletedStages(newlyCompleted);
+
+    if (!newlyCompleted.size) {
       completionStatusRef.current = stageCompletionStatus;
       return;
     }
 
-    justCompletedStages.forEach((stageKey) => {
+    newlyCompleted.forEach((stageKey) => {
       const existingTimer = completionTimers.current.get(stageKey);
       if (existingTimer) {
         window.clearTimeout(existingTimer);
@@ -151,7 +149,7 @@ export function ProjectDashboard({
     });
 
     completionStatusRef.current = stageCompletionStatus;
-  }, [activeProject, stageCompletionStatus, justCompletedStages]);
+  }, [activeProject, stageCompletionStatus]);
 
   useEffect(
     () => () => {
@@ -197,9 +195,6 @@ export function ProjectDashboard({
               <ProjectStagePanel
                 key={stage.stageKey}
                 stage={stage}
-                memberCount={memberCount}
-                expeditionMemberCountsBySlug={expeditionMemberCountsBySlug}
-                communityCountsByItemId={communityCountsByItemId}
                 onAdjust={updateItemQuantity}
                 isExpanded={isExpanded}
                 showCompletionEffect={shouldShowCompletionEffect}

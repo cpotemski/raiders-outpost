@@ -13,9 +13,6 @@ type ProjectContextValue = {
   selectedProject: ProjectProgress | null;
   selectedSlug: string | null;
   setSelectedSlug: (slug: string) => void;
-  memberCount: number;
-  expeditionMemberCountsBySlug: Record<string, number>;
-  communityCountsByItemId: Record<string, number>;
   activeExpeditionSlug: string | null;
   updateItemQuantity: (projectItemId: string, nextQuantity: number) => void;
   refreshProjects: () => void;
@@ -28,9 +25,6 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const {
     loading,
     projects,
-    memberCount,
-    expeditionMemberCountsBySlug,
-    communityCountsByItemId,
     activeExpeditionSlug,
     updateItemQuantity,
     refresh,
@@ -74,9 +68,6 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       selectedProject,
       selectedSlug,
       setSelectedSlug,
-      memberCount,
-      expeditionMemberCountsBySlug,
-      communityCountsByItemId,
       activeExpeditionSlug,
       updateItemQuantity,
       refreshProjects: refresh,
@@ -87,9 +78,6 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       visibleProjects,
       selectedProject,
       selectedSlug,
-      memberCount,
-      expeditionMemberCountsBySlug,
-      communityCountsByItemId,
       activeExpeditionSlug,
       updateItemQuantity,
       refresh,
