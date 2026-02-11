@@ -40,12 +40,13 @@ export function CommunityNeedsPanel({
 
   return (
     <div
-      className="arc-panel relative overflow-hidden"
+      className="relative overflow-hidden"
       data-testid="community-needs-panel"
     >
-      <div className="bg-panel/80 px-2 py-2">
-        <div className="mt-2 flex flex-wrap gap-2 items-center">
+      <div className="py-2">
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <Filter className="h-4 w-4 text-muted" aria-hidden="true" />
+          <span className="hud-label">{labels.membersLabel}</span>
           {members.map((member) => {
             const active = selectedMembers.has(member.id);
             return (
@@ -68,11 +69,11 @@ export function CommunityNeedsPanel({
             );
           })}
         </div>
-        <div className="mt-3 border-t border-frame2">
+        <div className="mt-3">
           {loading ? null : groupedItems.length ? (
             <div className="mt-3 space-y-4">
               {groupedItems.map((group) => (
-                <div key={group.type} className="space-y-2">
+                <div key={group.type} className="space-y-2 border-t border-frame2 pt-3">
                   <div className="flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
                     <span>{group.type}</span>
                     <button

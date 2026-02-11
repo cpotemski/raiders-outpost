@@ -112,9 +112,14 @@ export function CommunityRoster() {
     );
   } else {
     body = (
-      <div className="space-y-6">
-        <div className="arc-panel">
-          <div className="bg-panel/80 px-2 py-2">
+      <div className="space-y-4">
+        <div className="arc-panel overflow-hidden">
+          <div className="arc-panel-header">
+            <h3 className="font-semibold uppercase tracking-[0.08em]">
+              {labels.selectCommunities}
+            </h3>
+          </div>
+          <div className="border-t border-frame2 px-2 py-3">
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <Filter className="h-4 w-4 text-muted" aria-hidden="true" />
               <span className="hud-label">{labels.selectCommunities}</span>
@@ -139,16 +144,13 @@ export function CommunityRoster() {
                 );
               })}
             </div>
-
             {selectedCommunities.length ? (
-              <div className="mt-3 border-t border-frame2 pt-3">
-                <CommunityNeedsPanel
-                  members={needsPayload?.members ?? []}
-                  items={needsPayload?.items ?? []}
-                  loading={needsLoading}
-                  storageKey={`community-filter-${selectedCommunityIdList.join("-")}`}
-                />
-              </div>
+              <CommunityNeedsPanel
+                members={needsPayload?.members ?? []}
+                items={needsPayload?.items ?? []}
+                loading={needsLoading}
+                storageKey={`community-filter-${selectedCommunityIdList.join("-")}`}
+              />
             ) : (
               <div className="mt-3 text-[10px] uppercase tracking-[0.16em] text-muted">
                 {labels.noCommunitiesSelected}
@@ -157,144 +159,150 @@ export function CommunityRoster() {
           </div>
         </div>
 
-        <div>
-          <div className="hud-label">{labels.manageCommunities}</div>
-          <div className="mt-3 space-y-3" data-testid="community-management-list">
-            {communities.map((community) => {
-              const isEditing = editingCommunityId === community.id;
-              const inviteUrl = getInviteUrl(community);
-              return (
-                <div
-                  key={community.id}
-                  className="arc-panel overflow-hidden"
-                  data-testid={`community-manage-${community.id}`}
-                >
-                  <div className="arc-panel-header flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-2">
-                      {isEditing ? (
-                        <>
-                          <Input
-                            value={draftCommunityName}
-                            onChange={(event) => setDraftCommunityName(event.target.value)}
-                            aria-label={labels.communityNameLabel}
-                            className="h-8 min-w-[180px] text-[11px] font-semibold uppercase tracking-[0.12em]"
-                            autoFocus
-                          />
-                          <button
-                            type="button"
-                            className="h-8 border border-accent px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent transition hover:border-accent/80"
-                            onClick={() => saveCommunityName(community.id, community.name)}
-                            disabled={renaming}
-                            aria-busy={renaming || undefined}
-                          >
-                            {labels.confirm}
-                          </button>
-                          <button
-                            type="button"
-                            className="h-8 border border-frame2 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted transition hover:border-accent/60 hover:text-text"
-                            onClick={cancelEditCommunity}
-                          >
-                            {labels.cancel}
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <h3 className="font-semibold uppercase tracking-[0.08em]">{community.name}</h3>
-                          <button
-                            type="button"
-                            className="flex h-6 w-6 items-center justify-center border border-frame2 text-muted transition hover:border-accent/60 hover:text-text"
-                            onClick={() => startEditCommunity(community.id, community.name)}
-                            aria-label={labels.edit}
-                          >
-                            <Pencil className="h-4 w-4" aria-hidden="true" />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                    <span className="hud-label">{community.members.length} {labels.raiders}</span>
-                  </div>
-
-                  <div className="border-t border-frame2 bg-panel/80 px-2 py-3">
-                    {isEditing && renameError ? (
-                      <div className="mb-2 text-[11px] uppercase tracking-[0.08em] text-warn">
-                        {renameError}
-                      </div>
-                    ) : null}
-
-                    <div className="space-y-2" data-testid={`community-members-${community.id}`}>
-                      {community.members.map((member) => (
-                        <div
-                          key={member.id}
-                          className="flex flex-col gap-3 rounded-[6px] border border-frame2 bg-panel2/60 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-frame2/80 bg-panel text-[10px] font-semibold uppercase tracking-[0.14em] text-text">
-                              {getInitials(member.name)}
-                            </span>
-                            <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-text">
-                              {member.name}
-                            </div>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="default"
-                            className="px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-warn hover:border-warn/70"
-                            aria-label={`${labels.severUplink} ${member.name}`}
-                            disabled={removingId === member.id}
-                            onClick={() => {
-                              resetRemoveError();
-                              setConfirmTarget({ communityId: community.id, member });
-                            }}
-                          >
-                            {labels.severUplink}
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div
-                      className="mt-3 flex flex-col gap-3 rounded-[6px] border border-frame2 bg-panel2/60 px-3 py-2"
-                      data-testid={`community-invite-tile-${community.id}`}
-                    >
-                      <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-text">
-                        {labels.inviteLinkTitle}
-                      </div>
-                      <Input
-                        readOnly
-                        value={inviteUrl}
-                        aria-label={labels.inviteLinkAria}
-                        className="font-mono text-[11px]"
-                        data-testid={`community-invite-${community.id}`}
-                      />
-                      <div className="text-[10px] uppercase tracking-[0.16em] text-muted">
-                        {labels.inviteHelp}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-            {removeError ? (
-              <div className="text-[11px] uppercase tracking-[0.08em] text-warn">{removeError}</div>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="arc-panel overflow-hidden" data-testid="community-create-panel">
+        <div className="arc-panel overflow-hidden">
           <div className="arc-panel-header">
             <h3 className="font-semibold uppercase tracking-[0.08em]">
-              {labels.createCommunity}
+              {labels.manageCommunities}
             </h3>
           </div>
-          <div className="border-t border-frame2 bg-panel/80 px-2 py-3">
-            <CommunityCreateForm
-              status={status}
-              error={error}
-              name={name}
-              onNameChange={onNameChange}
-              onSubmit={onCreate}
-            />
+          <div className="border-t border-frame2 px-2 py-3">
+            <div className="space-y-3" data-testid="community-management-list">
+              {communities.map((community) => {
+                const isEditing = editingCommunityId === community.id;
+                const inviteUrl = getInviteUrl(community);
+                return (
+                  <div
+                    key={community.id}
+                    className="arc-panel overflow-hidden"
+                    data-testid={`community-manage-${community.id}`}
+                  >
+                    <div className="arc-panel-header flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-center gap-2">
+                        {isEditing ? (
+                          <>
+                            <Input
+                              value={draftCommunityName}
+                              onChange={(event) => setDraftCommunityName(event.target.value)}
+                              aria-label={labels.communityNameLabel}
+                              className="h-8 min-w-[180px] text-[11px] font-semibold uppercase tracking-[0.12em]"
+                              autoFocus
+                            />
+                            <button
+                              type="button"
+                              className="h-8 border border-accent px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent transition hover:border-accent/80"
+                              onClick={() => saveCommunityName(community.id, community.name)}
+                              disabled={renaming}
+                              aria-busy={renaming || undefined}
+                            >
+                              {labels.confirm}
+                            </button>
+                            <button
+                              type="button"
+                              className="h-8 border border-frame2 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted transition hover:border-accent/60 hover:text-text"
+                              onClick={cancelEditCommunity}
+                            >
+                              {labels.cancel}
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <h3 className="font-semibold uppercase tracking-[0.08em]">{community.name}</h3>
+                            <button
+                              type="button"
+                              className="flex h-6 w-6 items-center justify-center border border-frame2 text-muted transition hover:border-accent/60 hover:text-text"
+                              onClick={() => startEditCommunity(community.id, community.name)}
+                              aria-label={labels.edit}
+                            >
+                              <Pencil className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                      <span className="hud-label">{community.members.length} {labels.raiders}</span>
+                    </div>
+
+                    <div className="border-t border-frame2 bg-panel/80 px-2 py-3">
+                      {isEditing && renameError ? (
+                        <div className="mb-2 text-[11px] uppercase tracking-[0.08em] text-warn">
+                          {renameError}
+                        </div>
+                      ) : null}
+
+                      <div className="space-y-2" data-testid={`community-members-${community.id}`}>
+                        {community.members.map((member) => (
+                          <div
+                            key={member.id}
+                            className="flex flex-col gap-3 rounded-[6px] border border-frame2 bg-panel2/60 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-frame2/80 bg-panel text-[10px] font-semibold uppercase tracking-[0.14em] text-text">
+                                {getInitials(member.name)}
+                              </span>
+                              <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-text">
+                                {member.name}
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="default"
+                              className="px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-warn hover:border-warn/70"
+                              aria-label={`${labels.severUplink} ${member.name}`}
+                              disabled={removingId === member.id}
+                              onClick={() => {
+                                resetRemoveError();
+                                setConfirmTarget({ communityId: community.id, member });
+                              }}
+                            >
+                              {labels.severUplink}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div
+                        className="mt-3 flex flex-col gap-3 rounded-[6px] border border-frame2 bg-panel2/60 px-3 py-2"
+                        data-testid={`community-invite-tile-${community.id}`}
+                      >
+                        <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-text">
+                          {labels.inviteLinkTitle}
+                        </div>
+                        <Input
+                          readOnly
+                          value={inviteUrl}
+                          aria-label={labels.inviteLinkAria}
+                          className="font-mono text-[11px]"
+                          data-testid={`community-invite-${community.id}`}
+                        />
+                        <div className="text-[10px] uppercase tracking-[0.16em] text-muted">
+                          {labels.inviteHelp}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {removeError ? (
+              <div className="text-[11px] uppercase tracking-[0.08em] text-warn">{removeError}</div>
+              ) : null}
+
+              <div className="arc-panel overflow-hidden" data-testid="community-create-panel">
+                <div className="arc-panel-header">
+                  <h3 className="font-semibold uppercase tracking-[0.08em]">
+                    {labels.createCommunity}
+                  </h3>
+                </div>
+                <div className="border-t border-frame2 bg-panel/80 px-2 py-3">
+                  <CommunityCreateForm
+                    status={status}
+                    error={error}
+                    name={name}
+                    onNameChange={onNameChange}
+                    onSubmit={onCreate}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -302,25 +310,17 @@ export function CommunityRoster() {
   }
 
   return (
-    <>
-      <div className="arc-panel-header flex-col items-start gap-2 sm:flex-row sm:items-center">
-        <div>
-          <p className="hud-label">{labels.communityLabel}</p>
-          <h3 className="font-semibold uppercase tracking-[0.08em]">{labels.rosterTitle}</h3>
-        </div>
-      </div>
-      <div className="border-t border-frame2 px-2 py-5">
-        {body}
-        {confirmTarget ? (
-          <CommunityRemoveDialog
-            member={confirmTarget.member}
-            removeError={removeError}
-            removingId={removingId}
-            onClose={() => setConfirmTarget(null)}
-            onConfirm={(memberId) => onRemove(confirmTarget.communityId, memberId)}
-          />
-        ) : null}
-      </div>
-    </>
+    <div className="px-2 py-5">
+      {body}
+      {confirmTarget ? (
+        <CommunityRemoveDialog
+          member={confirmTarget.member}
+          removeError={removeError}
+          removingId={removingId}
+          onClose={() => setConfirmTarget(null)}
+          onConfirm={(memberId) => onRemove(confirmTarget.communityId, memberId)}
+        />
+      ) : null}
+    </div>
   );
 }
