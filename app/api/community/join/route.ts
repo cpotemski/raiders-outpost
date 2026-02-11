@@ -1,5 +1,6 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { findCommunityByInviteCode, getCommunityForUser } from "@/lib/server/community";
+import { findCommunityByInviteCode, getCommunitiesForUser } from "@/lib/server/community";
 import { getTokenFromRequest } from "@/lib/server/requests";
 import { getUserIdByToken } from "@/lib/server/users";
 
@@ -24,31 +25,42 @@ export const POST = async (request: Request) => {
     return Response.json({ error: "Unknown token" }, { status: 404 });
   }
 
-  const existingCommunity = await getCommunityForUser(user.id);
-  if (existingCommunity) {
-    if (existingCommunity.inviteCode === code) {
-      return Response.json({ community: existingCommunity });
-    }
-    return Response.json(
-      { error: "Already in another community" },
-      { status: 409 }
-    );
-  }
-
   const community = await findCommunityByInviteCode(code);
 
   if (!community) {
     return Response.json({ error: "Unknown invite" }, { status: 404 });
   }
 
-  await prisma.communityMember.create({
-    data: {
-      communityId: community.id,
-      userId: user.id,
-    },
-  });
+  try {
+    await prisma.communityMember.upsert({
+      where: {
+        communityId_userId: {
+          communityId: community.id,
+          userId: user.id,
+        },
+      },
+      update: {},
+      create: {
+        communityId: community.id,
+        userId: user.id,
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return Response.json(
+        {
+          error:
+            "Community migration pending on server. Apply DB migration before enabling multi-community join.",
+        },
+        { status: 409 }
+      );
+    }
+    throw error;
+  }
 
-  const joinedCommunity = await getCommunityForUser(user.id);
-
-  return Response.json({ community: joinedCommunity });
+  const communities = await getCommunitiesForUser(user.id);
+  return Response.json({ communities, communityId: community.id });
 };

@@ -1,4 +1,4 @@
-import { createCommunityWithOwner, getCommunityForUser } from "@/lib/server/community";
+import { createCommunityWithOwner, getCommunitiesForUser } from "@/lib/server/community";
 import { getTokenFromRequest } from "@/lib/server/requests";
 import { getUserIdByToken } from "@/lib/server/users";
 
@@ -16,9 +16,8 @@ export const GET = async (request: Request) => {
     return Response.json({ error: "Unknown token" }, { status: 404 });
   }
 
-  const community = await getCommunityForUser(user.id);
-
-  return Response.json({ community });
+  const communities = await getCommunitiesForUser(user.id);
+  return Response.json({ communities });
 };
 
 export const POST = async (request: Request) => {
@@ -40,13 +39,7 @@ export const POST = async (request: Request) => {
     return Response.json({ error: "Unknown token" }, { status: 404 });
   }
 
-  const existingCommunity = await getCommunityForUser(user.id);
-  if (existingCommunity) {
-    return Response.json({ community: existingCommunity });
-  }
-
-  await createCommunityWithOwner(name, user.id);
-  const community = await getCommunityForUser(user.id);
-
-  return Response.json({ community });
+  const communityId = await createCommunityWithOwner(name, user.id);
+  const communities = await getCommunitiesForUser(user.id);
+  return Response.json({ communities, communityId });
 };

@@ -20,14 +20,34 @@ const generateInviteCode = () => {
   return `arc-${Math.random().toString(36).slice(2, 10)}`;
 };
 
+const mapCommunity = (community: {
+  id: string;
+  name: string;
+  inviteCode: string;
+  members: Array<{
+    joinedAt: Date;
+    user: { id: string; name: string; activeExpeditionSlug: string | null };
+  }>;
+}): CommunityPayload => ({
+  id: community.id,
+  name: community.name,
+  inviteCode: community.inviteCode,
+  members: community.members.map((member) => ({
+    id: member.user.id,
+    name: member.user.name,
+    joinedAt: member.joinedAt,
+    activeExpeditionSlug: member.user.activeExpeditionSlug ?? null,
+  })),
+});
+
 export const createCommunityWithOwner = async (
   name: string,
   userId: string
-): Promise<void> => {
+): Promise<string> => {
   for (let attempt = 0; attempt < 4; attempt += 1) {
     const inviteCode = generateInviteCode();
     try {
-      await prisma.$transaction(async (tx) => {
+      const createdCommunityId = await prisma.$transaction(async (tx) => {
         const community = await tx.community.create({
           data: { name, inviteCode },
         });
@@ -37,8 +57,9 @@ export const createCommunityWithOwner = async (
             userId,
           },
         });
+        return community.id;
       });
-      return;
+      return createdCommunityId;
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -52,11 +73,12 @@ export const createCommunityWithOwner = async (
   throw new Error("Failed to create community invite code.");
 };
 
-export const getCommunityForUser = async (
+export const getCommunitiesForUser = async (
   userId: string
-): Promise<CommunityPayload | null> => {
-  const membership = await prisma.communityMember.findUnique({
+): Promise<CommunityPayload[]> => {
+  const memberships = await prisma.communityMember.findMany({
     where: { userId },
+    orderBy: { joinedAt: "asc" },
     include: {
       community: {
         include: {
@@ -73,42 +95,60 @@ export const getCommunityForUser = async (
     },
   });
 
-  if (!membership) return null;
+  return memberships.map((membership) => mapCommunity(membership.community));
+};
 
-  const { community } = membership;
+export const getCommunityForUser = async (
+  userId: string,
+  communityId?: string
+): Promise<CommunityPayload | null> => {
+  if (communityId) {
+    const membership = await prisma.communityMember.findFirst({
+      where: { userId, communityId },
+      include: {
+        community: {
+          include: {
+            members: {
+              orderBy: { joinedAt: "asc" },
+              include: {
+                user: {
+                  select: { id: true, name: true, activeExpeditionSlug: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
 
-  return {
-    id: community.id,
-    name: community.name,
-    inviteCode: community.inviteCode,
-    members: community.members.map((member) => ({
-      id: member.user.id,
-      name: member.user.name,
-      joinedAt: member.joinedAt,
-      activeExpeditionSlug: member.user.activeExpeditionSlug ?? null,
-    })),
-  };
+    if (!membership) return null;
+    return mapCommunity(membership.community);
+  }
+
+  const communities = await getCommunitiesForUser(userId);
+  return communities[0] ?? null;
 };
 
 export const renameCommunity = async (
   userId: string,
+  communityId: string,
   name: string
-): Promise<string | null> => {
-  const membership = await prisma.communityMember.findUnique({
-    where: { userId },
-    select: { communityId: true },
+): Promise<boolean> => {
+  const membership = await prisma.communityMember.findFirst({
+    where: { userId, communityId },
+    select: { id: true },
   });
 
   if (!membership) {
-    return null;
+    return false;
   }
 
   await prisma.community.update({
-    where: { id: membership.communityId },
+    where: { id: communityId },
     data: { name },
   });
 
-  return membership.communityId;
+  return true;
 };
 
 export const findCommunityByInviteCode = async (inviteCode: string) => {

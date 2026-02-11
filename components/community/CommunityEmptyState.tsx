@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useLabels } from "@/components/locale/useLabels";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 type CommunityEmptyStateProps = {
   inviteCode: string;
@@ -23,7 +24,7 @@ export function CommunityEmptyState({
 }: CommunityEmptyStateProps) {
   const labels = useLabels();
   return (
-    <div className="border-t border-frame2 px-2 py-5">
+    <div>
       <div className="text-sm font-semibold uppercase tracking-[0.1em] text-text">
         {labels.noSignal}
       </div>
@@ -31,9 +32,9 @@ export function CommunityEmptyState({
         {labels.establishUplink}
       </div>
       {inviteCode ? (
-        <div className="mt-4 text-[11px] uppercase tracking-[0.08em] text-warn">
+        <EmptyState className="mt-4 border-warn/40 text-warn">
           {status === "joining" ? labels.joiningUplink : error || ""}
-        </div>
+        </EmptyState>
       ) : (
         <form className="mt-4 space-y-4" onSubmit={onSubmit}>
           <div>

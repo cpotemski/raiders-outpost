@@ -1,10 +1,11 @@
 import { createPortal } from "react-dom";
-import {ChevronDown, ChevronUp, Cross, Filter, Pencil, X} from "lucide-react";
+import { ChevronDown, ChevronUp, Filter, X } from "lucide-react";
 import type { CommunityNeedsItem, CommunityNeedsMember } from "@/types/community";
 import { cn } from "@/lib/cn";
 import { CommunityNeedTile } from "@/components/community/CommunityNeedTile";
 import { useLabels } from "@/components/locale/useLabels";
 import { useCommunityNeedsPanel } from "@/hooks/useCommunityNeedsPanel";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 type CommunityNeedsPanelProps = {
   members: CommunityNeedsMember[];
@@ -121,9 +122,9 @@ export function CommunityNeedsPanel({
               ))}
             </div>
           ) : (
-            <div className="mt-3 border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
+            <EmptyState className="mt-3">
               {labels.noSignalDataNotFound}
-            </div>
+            </EmptyState>
           )}
         </div>
       </div>
@@ -138,7 +139,7 @@ export function CommunityNeedsPanel({
                 data-testid="community-need-backdrop"
               />
               <div
-                className="relative arc-panel arc-corners w-full px-4 py-4 max-w-md border border-frame2 bg-panel/95 px-2 py-3 text-[11px] uppercase tracking-[0.12em] text-text/90 shadow-arcHover"
+                className="relative arc-panel arc-corners w-full max-w-md border border-frame2 bg-panel/95 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-text/90 shadow-arcHover"
                 data-testid="community-need-overlay"
               >
                 <div className="flex items-start justify-between gap-3">

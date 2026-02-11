@@ -1,5 +1,6 @@
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import type { ProjectCardData } from "@/components/projects/projectCards";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 type ProjectCardSectionProps = {
   title: string;
@@ -31,9 +32,9 @@ export function ProjectCardSection({
             <ProjectCard key={card.project.slug} {...card} />
           ))
         ) : (
-          <div className="col-span-full border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
+          <EmptyState className="col-span-full">
             {emptyLabel}
-          </div>
+          </EmptyState>
         )}
       </div>
     </div>

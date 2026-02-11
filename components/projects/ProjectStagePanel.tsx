@@ -7,6 +7,7 @@ import { ProjectItemTile } from "@/components/projects/ProjectItemTile";
 import { useLabels } from "@/components/locale/useLabels";
 import { getProgressStats } from "@/lib/progress";
 import { ProgressRing } from "@/components/ui/ProgressRing";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 type ProjectStagePanelProps = {
   stage: ProjectStageProgress;
@@ -140,9 +141,9 @@ export function ProjectStagePanel({
                   ))}
                 </div>
               ) : (
-                <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
+                <EmptyState>
                   {labels.dataNotFoundScanning}
-                </div>
+                </EmptyState>
               )}
             </div>
           ) : null}

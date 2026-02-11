@@ -5,11 +5,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ProjectDashboard } from "@/components/projects/ProjectDashboard";
 import { useProjectContext } from "@/components/projects/ProjectContext";
 import { ListChecks, Search } from "lucide-react";
-import { cn } from "@/lib/cn";
 import { useLabels } from "@/components/locale/useLabels";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 import { BackButton } from "@/components/layout/BackButton";
 import { Panel } from "@/components/ui/Panel";
+import { IconButton } from "@/components/ui/IconButton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function ProjectDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -75,36 +76,26 @@ export default function ProjectDetailPage() {
           data-testid="project-control-bar"
         >
           <BackButton href="/projects" label={labels.back} testId="nav-back" />
-          <button
+          <IconButton
             type="button"
             aria-pressed={neededOnly}
             aria-label={labels.filterNeededOnly}
             onClick={() => setNeededOnly((prev) => !prev)}
-            className={cn(
-              "inline-flex h-8 w-8 items-center justify-center rounded-[6px] border text-text transition",
-              neededOnly
-                ? "border-accent/70 text-text"
-                : "border-frame2/70 bg-panel2/40 text-muted hover:border-accent/70 hover:text-text"
-            )}
+            active={neededOnly}
           >
             <ListChecks className="h-4 w-4" aria-hidden="true" />
             <span className="sr-only">{labels.neededOnly}</span>
-          </button>
-          <button
+          </IconButton>
+          <IconButton
             type="button"
             aria-pressed={searchOpen}
             aria-label={labels.quicksearch}
             onClick={() => setSearchOpen((prev) => !prev)}
-            className={cn(
-              "inline-flex h-8 w-8 items-center justify-center rounded-[6px] border text-text transition",
-              searchOpen
-                ? "border-accent/70 text-text"
-                : "border-frame2/70 bg-panel2/40 text-muted hover:border-accent/70 hover:text-text"
-            )}
+            active={searchOpen}
           >
             <Search className="h-4 w-4" aria-hidden="true" />
             <span className="sr-only">{labels.quicksearch}</span>
-          </button>
+          </IconButton>
         </div>
       </div>
       <div className="border-t border-frame2 px-2 py-5">
@@ -133,9 +124,9 @@ export default function ProjectDetailPage() {
             neededOnly={neededOnly}
           />
         ) : (
-          <div className="border border-frame2/70 bg-panel2/40 px-2 py-4 text-[11px] uppercase tracking-[0.12em] text-muted">
+          <EmptyState className="px-2">
             {labels.noSignalProjectData}
-          </div>
+          </EmptyState>
         )}
       </div>
     </Panel>

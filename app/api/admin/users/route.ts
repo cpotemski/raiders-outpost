@@ -15,7 +15,8 @@ export const GET = async (request: Request) => {
       id: true,
       name: true,
       createdAt: true,
-      communityMembership: {
+      communityMemberships: {
+        take: 1,
         select: {
           community: { select: { id: true, name: true } },
         },
@@ -28,7 +29,7 @@ export const GET = async (request: Request) => {
       id: user.id,
       name: user.name,
       createdAt: user.createdAt.toISOString(),
-      community: user.communityMembership?.community ?? null,
+      community: user.communityMemberships[0]?.community ?? null,
     })),
   });
 };

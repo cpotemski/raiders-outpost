@@ -10,6 +10,8 @@ import { useLabels } from "@/components/locale/useLabels";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { useAuthCode } from "@/hooks/useAuthCode";
 import { useExpeditionSelection } from "@/hooks/useExpeditionSelection";
+import { Panel } from "@/components/ui/Panel";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function RaiderPage() {
   const { identity, ready, clearIdentity } = useLocalIdentity();
@@ -59,15 +61,15 @@ export default function RaiderPage() {
 
   if (!identity) {
     return (
-      <div className="arc-panel arc-corners border border-frame2/70 bg-panel2/40 px-2 py-4 text-[11px] uppercase tracking-[0.12em] text-muted">
+      <EmptyState className="px-2">
         {labels.noSignalRaiderNotLinked}
-      </div>
+      </EmptyState>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="arc-panel arc-corners overflow-hidden">
+      <Panel className="overflow-hidden">
         <div className="arc-panel-header">
           <span className="text-xs font-semibold uppercase tracking-[0.18em]">
             ARC // USER
@@ -128,7 +130,7 @@ export default function RaiderPage() {
                 {labels.noExpedition}
               </button>
               {projectsLoading && !expeditionProjects.length ? (
-                <div className="flex h-8 items-center border border-frame2/70 bg-panel2/40 px-3 text-[10px] uppercase tracking-[0.16em] text-muted">
+                <div className="hud-empty-state flex h-8 items-center px-3 py-0 text-[10px] tracking-[0.16em]">
                   {labels.scanningExpeditionIndex}
                 </div>
               ) : expeditionProjects.length ? (
@@ -154,7 +156,7 @@ export default function RaiderPage() {
                   );
                 })
               ) : (
-                <div className="flex h-8 items-center border border-frame2/70 bg-panel2/40 px-3 text-[10px] uppercase tracking-[0.16em] text-muted">
+                <div className="hud-empty-state flex h-8 items-center px-3 py-0 text-[10px] tracking-[0.16em]">
                   {labels.noSignalExpeditionData}
                 </div>
               )}
@@ -179,7 +181,7 @@ export default function RaiderPage() {
             </Button>
           </div>
         </div>
-      </div>
+      </Panel>
     </div>
   );
 }

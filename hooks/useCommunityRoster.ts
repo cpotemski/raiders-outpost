@@ -1,27 +1,37 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
-import type { Community, CommunityMember } from "@/types/community";
+import type { Community } from "@/types/community";
 
 type Status = "idle" | "loading" | "saving" | "joining";
+
+type CommunityResponse = {
+  communities?: Community[];
+  communityId?: string;
+};
+
+const communityIdSet = (communities: Community[]) =>
+  new Set(communities.map((community) => community.id));
 
 export const useCommunityRoster = () => {
   const { identity, ready, clearIdentity } = useLocalIdentity();
   const searchParams = useSearchParams();
   const router = useRouter();
   const inviteCode = searchParams.get("invite")?.trim() ?? "";
-  const [community, setCommunity] = useState<Community | null>(null);
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const [selectedCommunityIds, setSelectedCommunityIds] = useState<Set<string>>(
+    () => new Set<string>()
+  );
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
   const [removeError, setRemoveError] = useState("");
   const [removingId, setRemovingId] = useState<string | null>(null);
-  const [confirmMember, setConfirmMember] = useState<CommunityMember | null>(
-    null
-  );
-  const [origin, setOrigin] = useState("");
   const [name, setName] = useState("");
+  const [origin, setOrigin] = useState("");
+  const hasInitializedSelectionRef = useRef(false);
+  const lastJoinAttemptKeyRef = useRef("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -29,10 +39,37 @@ export const useCommunityRoster = () => {
     }
   }, []);
 
+  const syncSelection = (
+    nextCommunities: Community[],
+    preferredCommunityId?: string
+  ) => {
+    const validIds = communityIdSet(nextCommunities);
+    setSelectedCommunityIds((prev) => {
+      if (!hasInitializedSelectionRef.current) {
+        hasInitializedSelectionRef.current = true;
+        const initial = new Set(nextCommunities.map((community) => community.id));
+        if (preferredCommunityId && validIds.has(preferredCommunityId)) {
+          initial.add(preferredCommunityId);
+        }
+        return initial;
+      }
+
+      const next = new Set(
+        Array.from(prev).filter((communityId) => validIds.has(communityId))
+      );
+      if (preferredCommunityId && validIds.has(preferredCommunityId)) {
+        next.add(preferredCommunityId);
+      }
+      return next;
+    });
+  };
+
   useEffect(() => {
-    if (!ready || inviteCode) return;
+    if (!ready) return;
     if (!identity) {
-      setCommunity(null);
+      setCommunities([]);
+      setSelectedCommunityIds(new Set());
+      hasInitializedSelectionRef.current = false;
       return;
     }
 
@@ -48,9 +85,11 @@ export const useCommunityRoster = () => {
         }
         return res.ok ? res.json() : null;
       })
-      .then((payload) => {
+      .then((payload: CommunityResponse | null) => {
         if (!active) return;
-        setCommunity(payload?.community ?? null);
+        const nextCommunities = payload?.communities ?? [];
+        setCommunities(nextCommunities);
+        syncSelection(nextCommunities);
         setStatus("idle");
       })
       .catch(() => {
@@ -61,12 +100,19 @@ export const useCommunityRoster = () => {
     return () => {
       active = false;
     };
-  }, [clearIdentity, identity, inviteCode, ready]);
+  }, [clearIdentity, identity, ready]);
 
   useEffect(() => {
-    if (!inviteCode || !identity || community || !ready) return;
+    if (!inviteCode || !identity || !ready) return;
+
+    const joinKey = `${identity.token}::${inviteCode}`;
+    if (lastJoinAttemptKeyRef.current === joinKey) return;
+    lastJoinAttemptKeyRef.current = joinKey;
+
     let active = true;
     setStatus("joining");
+    setError("");
+
     fetch("/api/community/join", {
       method: "POST",
       headers: {
@@ -76,19 +122,24 @@ export const useCommunityRoster = () => {
       body: JSON.stringify({ code: inviteCode }),
     })
       .then((res) => res.json().then((payload) => ({ res, payload })))
-      .then(({ res, payload }) => {
+      .then(({ res, payload }: { res: Response; payload: CommunityResponse & { error?: string } }) => {
         if (!active) return;
         if (!res.ok) {
-          setError("Invite link invalid");
+          lastJoinAttemptKeyRef.current = "";
+          setError(payload?.error ?? "Invite link invalid");
           setStatus("idle");
           return;
         }
-        setCommunity(payload?.community ?? null);
+
+        const nextCommunities = payload?.communities ?? [];
+        setCommunities(nextCommunities);
+        syncSelection(nextCommunities, payload?.communityId);
         setStatus("idle");
         router.replace("/community");
       })
       .catch(() => {
         if (!active) return;
+        lastJoinAttemptKeyRef.current = "";
         setError("Invite link invalid");
         setStatus("idle");
       });
@@ -96,12 +147,28 @@ export const useCommunityRoster = () => {
     return () => {
       active = false;
     };
-  }, [community, identity, inviteCode, ready, router]);
+  }, [identity, inviteCode, ready, router]);
 
-  const inviteUrl = useMemo(() => {
-    if (!community || !origin) return "";
+  const selectedCommunities = useMemo(() => {
+    return communities.filter((community) => selectedCommunityIds.has(community.id));
+  }, [communities, selectedCommunityIds]);
+
+  const getInviteUrl = (community: Community) => {
+    if (!origin) return "";
     return `${origin}/community?invite=${community.inviteCode}`;
-  }, [community, origin]);
+  };
+
+  const toggleCommunity = (communityId: string) => {
+    setSelectedCommunityIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(communityId)) {
+        next.delete(communityId);
+      } else {
+        next.add(communityId);
+      }
+      return next;
+    });
+  };
 
   const onCreate = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -122,13 +189,17 @@ export const useCommunityRoster = () => {
         },
         body: JSON.stringify({ name: trimmed }),
       });
-      const payload = await res.json().catch(() => null);
+      const payload = (await res.json().catch(() => null)) as
+        | (CommunityResponse & { error?: string })
+        | null;
       if (!res.ok) {
-        setError("Creation failed");
+        setError(payload?.error ?? "Creation failed");
         setStatus("idle");
         return;
       }
-      setCommunity(payload?.community ?? null);
+      const nextCommunities = payload?.communities ?? [];
+      setCommunities(nextCommunities);
+      syncSelection(nextCommunities, payload?.communityId);
       setName("");
       setStatus("idle");
     } catch {
@@ -137,8 +208,8 @@ export const useCommunityRoster = () => {
     }
   };
 
-  const onRemove = async (memberId: string) => {
-    if (!identity || !community || removingId) return false;
+  const onRemove = async (communityId: string, memberId: string) => {
+    if (!identity || removingId) return false;
     setRemoveError("");
     setRemovingId(memberId);
     try {
@@ -148,15 +219,20 @@ export const useCommunityRoster = () => {
           "Content-Type": "application/json",
           "x-arc-token": identity.token,
         },
-        body: JSON.stringify({ memberId }),
+        body: JSON.stringify({ memberId, communityId }),
       });
-      const payload = await res.json().catch(() => null);
+      const payload = (await res.json().catch(() => null)) as
+        | (CommunityResponse & { error?: string })
+        | null;
       if (!res.ok) {
         setRemoveError(payload?.error ?? "Removal failed");
         setRemovingId(null);
         return false;
       }
-      setCommunity(payload?.community ?? null);
+
+      const nextCommunities = payload?.communities ?? [];
+      setCommunities(nextCommunities);
+      syncSelection(nextCommunities);
       setRemovingId(null);
       return true;
     } catch {
@@ -171,8 +247,8 @@ export const useCommunityRoster = () => {
     if (error) setError("");
   };
 
-  const renameCommunity = async (newName: string) => {
-    if (!identity || !community) {
+  const renameCommunity = async (communityId: string, newName: string) => {
+    if (!identity) {
       return { success: false, error: "Not linked" };
     }
 
@@ -183,18 +259,20 @@ export const useCommunityRoster = () => {
           "Content-Type": "application/json",
           "x-arc-token": identity.token,
         },
-        body: JSON.stringify({ name: newName }),
+        body: JSON.stringify({ name: newName, communityId }),
       });
-      const payload = await res.json().catch(() => null);
+      const payload = (await res.json().catch(() => null)) as
+        | (CommunityResponse & { error?: string })
+        | null;
       if (!res.ok) {
         return {
           success: false,
           error: payload?.error ?? "Rename failed",
         };
       }
-      if (payload?.community) {
-        setCommunity(payload.community);
-      }
+      const nextCommunities = payload?.communities ?? [];
+      setCommunities(nextCommunities);
+      syncSelection(nextCommunities);
       return { success: true, error: "" };
     } catch {
       return { success: false, error: "Rename failed" };
@@ -207,15 +285,16 @@ export const useCommunityRoster = () => {
     ready,
     identityName: identity?.name ?? null,
     inviteCode,
-    community,
+    communities,
+    selectedCommunityIds,
+    selectedCommunities,
     status,
     error,
     removeError,
     removingId,
-    confirmMember,
-    inviteUrl,
     name,
-    setConfirmMember,
+    toggleCommunity,
+    getInviteUrl,
     onNameChange,
     onCreate,
     onRemove,

@@ -18,7 +18,14 @@ export const GET = async (request: Request) => {
 
   const url = new URL(request.url);
   const locale = normalizeLocale(url.searchParams.get("locale"));
-  const payload = await getCommunityNeeds(user.id, locale);
+  const communityIdsParam = url.searchParams.get("communityIds");
+  const communityIds = communityIdsParam
+    ? communityIdsParam
+        .split(",")
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    : [];
+  const payload = await getCommunityNeeds(user.id, locale, { communityIds });
 
   return Response.json(payload);
 };

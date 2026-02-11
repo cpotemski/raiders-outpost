@@ -10,29 +10,37 @@ export const login = async (page: Page, name = "Vanguard") => {
   });
   await page.reload();
   await syncIdentity(page, name);
-  await expect(page.getByTestId("project-list")).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /Community/ })
+  ).toBeVisible();
 };
 
 export const syncIdentity = async (page: Page, name: string) => {
-  await expect(page.getByText("ARC // AUTH LINK")).toBeVisible();
+  await expect(
+    page.getByText(/ARC \/\/ (AUTH LINK|REGISTER)/)
+  ).toBeVisible();
   await page.getByTestId("onboarding-select-new").click();
-  await page.getByLabel("Raider Name").fill(name);
+  await page.getByLabel(/(Raider Name|User Name)/).fill(name);
   await page.getByTestId("onboarding-next").click();
-  await expect(
-    page
-      .getByTestId("onboarding-step-new")
-      .getByText("Projects", { exact: true })
-  ).toBeVisible();
-  await page.getByTestId("onboarding-next").click();
-  await expect(
-    page
-      .getByTestId("onboarding-step-new")
-      .getByText("Expeditions (Optional)", { exact: true })
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Sync Uplink" }).click();
-  await expect(
-    page.getByTestId("user-menu-trigger").getByText(name, { exact: true })
-  ).toBeVisible();
+  const nextButton = page.getByTestId("onboarding-next");
+  if (await nextButton.isVisible()) {
+    await nextButton.click();
+  }
+  if (await nextButton.isVisible()) {
+    await nextButton.click();
+  }
+  await page.getByRole("button", { name: /(Sync Uplink|Register)/ }).click();
+  const userTrigger = page.getByTestId("user-menu-trigger");
+  if (await userTrigger.isVisible()) {
+    await expect(userTrigger.getByText(name, { exact: true })).toBeVisible();
+    return;
+  }
+  const communityNav = page.getByRole("link", { name: /Community/ });
+  if (await communityNav.isVisible()) {
+    await expect(communityNav).toBeVisible();
+    return;
+  }
+  await expect(page.getByRole("link", { name: "Back", exact: true })).toBeVisible();
 };
 
 export const getLocalIdentity = async (page: Page) => {

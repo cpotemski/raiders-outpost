@@ -8,6 +8,8 @@ import {
   getProjectCards,
   splitProjectCards,
 } from "@/components/projects/projectCards";
+import { Panel } from "@/components/ui/Panel";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function ProjectsPage() {
   const { projects, loading } = useProjectContext();
@@ -19,7 +21,7 @@ export default function ProjectsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="arc-panel arc-corners overflow-hidden">
+      <Panel className="overflow-hidden">
         <div className="arc-panel-header">
           <div>
             <p className="hud-label text-sm font-semibold tracking-[0.14em]">
@@ -29,9 +31,9 @@ export default function ProjectsPage() {
         </div>
         <div className="border-t border-frame2 bg-panel/70 px-2 py-4">
           {loading && !projects.length ? (
-            <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
+            <EmptyState>
               {labels.scanningProjectCache}
-            </div>
+            </EmptyState>
           ) : (
             <div className="flex flex-col gap-5">
               <ProjectCardSection
@@ -51,7 +53,7 @@ export default function ProjectsPage() {
             </div>
           )}
         </div>
-      </div>
+      </Panel>
     </div>
   );
 }

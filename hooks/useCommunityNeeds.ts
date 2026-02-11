@@ -5,14 +5,17 @@ import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
 import { useLocale } from "@/components/locale/LocaleProvider";
 import type { CommunityNeedsPayload } from "@/types/community";
 
-export const useCommunityNeeds = (enabled: boolean) => {
+export const useCommunityNeeds = (
+  enabled: boolean,
+  communityIds: string[]
+) => {
   const { identity, ready, clearIdentity } = useLocalIdentity();
   const { locale, ready: localeReady } = useLocale();
   const [payload, setPayload] = useState<CommunityNeedsPayload | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || !communityIds.length) {
       setPayload(null);
       return;
     }
@@ -20,11 +23,18 @@ export const useCommunityNeeds = (enabled: boolean) => {
     const controller = new AbortController();
     setLoading(true);
 
-    fetch(`/api/community/needs?locale=${locale}`, {
+    const idsParam = communityIds.join(",");
+
+    fetch(
+      `/api/community/needs?locale=${locale}&communityIds=${encodeURIComponent(
+        idsParam
+      )}`,
+      {
       method: "GET",
       headers: { "x-arc-token": identity.token },
       signal: controller.signal,
-    })
+      }
+    )
       .then((res) => {
         if (res.status === 401 || res.status === 404) {
           clearIdentity();
@@ -40,7 +50,7 @@ export const useCommunityNeeds = (enabled: boolean) => {
       .finally(() => setLoading(false));
 
     return () => controller.abort();
-  }, [clearIdentity, enabled, identity, locale, localeReady, ready]);
+  }, [clearIdentity, communityIds, enabled, identity, locale, localeReady, ready]);
 
   return { payload, loading };
 };

@@ -1,4 +1,4 @@
-import { getCommunityForUser, renameCommunity } from "@/lib/server/community";
+import { getCommunitiesForUser, renameCommunity } from "@/lib/server/community";
 import { getTokenFromRequest } from "@/lib/server/requests";
 import { getUserIdByToken } from "@/lib/server/users";
 
@@ -18,21 +18,22 @@ export const PATCH = async (request: Request) => {
 
   const body = await request.json().catch(() => null);
   const name = typeof body?.name === "string" ? body.name.trim() : "";
+  const communityId =
+    typeof body?.communityId === "string" ? body.communityId.trim() : "";
 
-  if (!name) {
+  if (!name || !communityId) {
     return Response.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const communityId = await renameCommunity(user.id, name);
+  const renamed = await renameCommunity(user.id, communityId, name);
 
-  if (!communityId) {
+  if (!renamed) {
     return Response.json(
       { error: "Not part of a community" },
       { status: 403 }
     );
   }
 
-  const community = await getCommunityForUser(user.id);
-
-  return Response.json({ community });
+  const communities = await getCommunitiesForUser(user.id);
+  return Response.json({ communities });
 };

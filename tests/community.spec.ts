@@ -4,47 +4,84 @@ import { login, syncIdentity } from "./helpers";
 const uniqueName = (prefix: string) =>
   `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
-test("community can be created, joined via invite, and members removed", async ({
+test("community can be joined across multiple communities and members removed", async ({
   page,
   browser,
 }) => {
   await login(page, "Vanguard");
-  await page.getByRole("link", { name: "Community", exact: true }).click();
-  await expect(page.getByText("Roster")).toBeVisible();
+  await page.getByRole("link", { name: /Community/ }).click();
+  await expect(page.getByLabel("Community Name")).toBeVisible();
 
-  const communityName = uniqueName("Echo");
-  await page.getByLabel("Community Name").fill(communityName);
+  const alphaCommunityName = uniqueName("Echo");
+  await page.getByLabel("Community Name").fill(alphaCommunityName);
   await page.getByRole("button", { name: "Create Community" }).click();
-  await expect(page.getByText(communityName)).toBeVisible();
-
-  const inviteLink = await page.getByLabel("Invite link").inputValue();
-  expect(inviteLink).toContain("/community?invite=");
-
-  const context = await browser.newContext();
-  const invitePage = await context.newPage();
-  await invitePage.goto(inviteLink);
-  await syncIdentity(invitePage, "Nomad");
-  await expect(invitePage.getByText(communityName)).toBeVisible();
-  await context.close();
-
-  await page.reload();
   await expect(
-    page
-      .getByTestId("community-members")
+    page.getByRole("heading", { name: alphaCommunityName, exact: true })
+  ).toBeVisible();
+
+  const alphaInviteLink = await page
+    .getByTestId(/community-invite-tile-/)
+    .first()
+    .getByLabel("Invite link")
+    .inputValue();
+  expect(alphaInviteLink).toContain("/community?invite=");
+
+  const nomadContext = await browser.newContext();
+  const nomadPage = await nomadContext.newPage();
+  await nomadPage.goto(alphaInviteLink);
+  await syncIdentity(nomadPage, "Nomad");
+  await expect(
+    nomadPage.getByRole("heading", { name: alphaCommunityName, exact: true })
+  ).toBeVisible();
+  await nomadContext.close();
+
+  const scoutContext = await browser.newContext();
+  const scoutPage = await scoutContext.newPage();
+  await login(scoutPage, "Scout");
+  await scoutPage.getByRole("link", { name: /Community/ }).click();
+  const betaCommunityName = uniqueName("Haven");
+  await scoutPage.getByLabel("Community Name").fill(betaCommunityName);
+  await scoutPage.getByRole("button", { name: "Create Community" }).click();
+  await expect(
+    scoutPage.getByRole("heading", { name: betaCommunityName, exact: true })
+  ).toBeVisible();
+  const betaInviteLink = await scoutPage
+    .getByTestId(/community-invite-tile-/)
+    .first()
+    .getByLabel("Invite link")
+    .inputValue();
+  await scoutContext.close();
+
+  await page.goto(betaInviteLink);
+  await expect(
+    page.getByRole("heading", { name: betaCommunityName, exact: true })
+  ).toBeVisible();
+
+  await expect(page.getByText("Select communities")).toBeVisible();
+  await expect(
+    page.getByTestId(/community-filter-/).first()
+  ).toBeVisible();
+  await expect(page.getByTestId("community-needs-panel")).toBeVisible();
+  await page
+    .getByTestId("community-needs-panel")
+    .screenshot({ path: "test-results/community-needs-all.png" });
+
+  const alphaManageCard = page.getByTestId(/community-manage-/).filter({
+    has: page.getByRole("heading", { name: alphaCommunityName, exact: true }),
+  });
+  await expect(
+    alphaManageCard
       .getByText("Nomad", { exact: true })
   ).toBeVisible();
 
-  const memberRow = page
-    .getByTestId("community-members")
-    .locator("div", { hasText: "Nomad" })
-    .first();
-  await memberRow.getByRole("button", { name: "Sever Uplink" }).click();
+  await alphaManageCard
+    .getByRole("button", { name: /Remove User Nomad|Sever Uplink Nomad/ })
+    .click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.getByRole("button", { name: "Confirm", exact: true }).click();
 
   await expect(
-    page
-      .getByTestId("community-members")
+    alphaManageCard
       .getByText("Nomad", { exact: true })
   ).toBeHidden();
 });

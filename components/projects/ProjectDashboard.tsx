@@ -5,6 +5,7 @@ import { useProjectContext } from "@/components/projects/ProjectContext";
 import { ProjectStagePanel } from "@/components/projects/ProjectStagePanel";
 import type { ProjectProgress } from "@/types/projects";
 import { useLabels } from "@/components/locale/useLabels";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 type ProjectDashboardProps = {
   query: string;
@@ -222,8 +223,8 @@ export function ProjectDashboard({
       </div>
     </div>
   ) : (
-    <div className="border border-frame2/70 bg-panel2/40 px-2 py-4 text-[11px] uppercase tracking-[0.12em] text-muted">
+    <EmptyState className="px-2">
       {labels.noSignalProjectData}
-    </div>
+    </EmptyState>
   );
 }

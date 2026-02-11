@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import { loadArcProjects } from "@/lib/arc-projects";
 import { loadArcItems } from "@/lib/arc-items";
-import { getCommunityForUser } from "@/lib/server/community";
+import { getCommunitiesForUser, getCommunityForUser } from "@/lib/server/community";
 import type { AppLocale } from "@/lib/locale";
 import { isExpeditionProjectSlug } from "@/lib/expeditions";
 import { applyAdminProjectFilters, getAdminSettings } from "@/lib/server/admin-settings";
@@ -361,10 +361,19 @@ type CommunityNeedsItem = {
 
 export const getCommunityNeeds = async (
   userId: string,
-  locale: AppLocale
+  locale: AppLocale,
+  options?: { communityIds?: string[] | null }
 ) => {
-  const community = await getCommunityForUser(userId);
-  if (!community) {
+  const allCommunities = await getCommunitiesForUser(userId);
+  const requestedCommunityIds = options?.communityIds ?? null;
+
+  const sourceCommunities = Array.isArray(requestedCommunityIds)
+    ? allCommunities.filter((community) =>
+        requestedCommunityIds.includes(community.id)
+      )
+    : allCommunities;
+
+  if (!sourceCommunities.length) {
     return { members: [], items: [] };
   }
 
@@ -446,7 +455,26 @@ export const getCommunityNeeds = async (
     );
   });
 
-  const memberIds = community.members.map((member) => member.id);
+  const memberById = new Map<
+    string,
+    {
+      id: string;
+      name: string;
+      joinedAt: Date;
+      activeExpeditionSlug: string | null;
+    }
+  >();
+
+  for (const community of sourceCommunities) {
+    for (const member of community.members) {
+      if (!memberById.has(member.id)) {
+        memberById.set(member.id, member);
+      }
+    }
+  }
+
+  const members = Array.from(memberById.values());
+  const memberIds = members.map((member) => member.id);
   const projectItemIds = projectItems.map((item) => item.projectItemId);
 
   const progress = await prisma.userProjectItem.findMany({
@@ -480,7 +508,7 @@ export const getCommunityNeeds = async (
     }
   >();
 
-  for (const member of community.members) {
+  for (const member of members) {
     const activeExpedition = expeditionSlugs.has(
       member.activeExpeditionSlug ?? ""
     )
@@ -514,7 +542,7 @@ export const getCommunityNeeds = async (
 
   const items: CommunityNeedsItem[] = Array.from(itemTotals.entries()).map(
     ([itemId, data]) => {
-      const memberNeeds = community.members
+      const memberNeeds = members
         .map((member) => ({
           memberId: member.id,
           memberName: member.name,
@@ -538,7 +566,7 @@ export const getCommunityNeeds = async (
   );
 
   return {
-    members: community.members.map((member) => ({
+    members: members.map((member) => ({
       id: member.id,
       name: member.name,
       joinedAt: member.joinedAt.toISOString(),
