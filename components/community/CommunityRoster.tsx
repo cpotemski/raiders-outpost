@@ -113,23 +113,6 @@ export function CommunityRoster() {
   } else {
     body = (
       <div className="space-y-6">
-        <div className="arc-panel overflow-hidden" data-testid="community-create-panel">
-          <div className="arc-panel-header">
-            <h3 className="font-semibold uppercase tracking-[0.08em]">
-              {labels.createCommunity}
-            </h3>
-          </div>
-          <div className="border-t border-frame2 bg-panel/80 px-2 py-3">
-            <CommunityCreateForm
-              status={status}
-              error={error}
-              name={name}
-              onNameChange={onNameChange}
-              onSubmit={onCreate}
-            />
-          </div>
-        </div>
-
         <div className="arc-panel">
           <div className="bg-panel/80 px-2 py-2">
             <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -295,6 +278,23 @@ export function CommunityRoster() {
             {removeError ? (
               <div className="text-[11px] uppercase tracking-[0.08em] text-warn">{removeError}</div>
             ) : null}
+          </div>
+        </div>
+
+        <div className="arc-panel overflow-hidden" data-testid="community-create-panel">
+          <div className="arc-panel-header">
+            <h3 className="font-semibold uppercase tracking-[0.08em]">
+              {labels.createCommunity}
+            </h3>
+          </div>
+          <div className="border-t border-frame2 bg-panel/80 px-2 py-3">
+            <CommunityCreateForm
+              status={status}
+              error={error}
+              name={name}
+              onNameChange={onNameChange}
+              onSubmit={onCreate}
+            />
           </div>
         </div>
       </div>
