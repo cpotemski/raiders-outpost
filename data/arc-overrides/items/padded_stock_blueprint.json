@@ -1,4 +1,7 @@
 {
   "id": "padded_stock_blueprint",
-  "imageFilename": "padded_stock_blueprint.webp"
+  "imageFilename": "padded_stock_blueprint.webp",
+  "name": {
+    "de": "Gepolsterter Kolben"
+  }
 }
