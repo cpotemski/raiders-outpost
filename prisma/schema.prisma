@@ -11,6 +11,8 @@ model User {
   name      String
   token     String   @unique
   activeExpeditionSlug String?
+  expeditionResetDismissedCycle String?
+  expeditionResetCompletedCycle String?
   projectItems UserProjectItem[]
   communityMemberships CommunityMember[]
   authCodes AuthCode[]
@@ -32,6 +34,8 @@ model ProjectStage {
   name      String
   sortOrder Int
   items     ProjectItem[]
+
+  @@unique([projectId, sortOrder])
 }
 
 model ProjectItem {

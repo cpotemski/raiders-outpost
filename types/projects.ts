@@ -33,4 +33,13 @@ export type ProjectProgressPayload = {
   expeditionMemberCountsBySlug: Record<string, number>;
   communityCountsByItemId: Record<string, number>;
   activeExpeditionSlug: string | null;
+  expeditionReset: {
+    cycleId: string;
+    noticeStartIso: string;
+    noticeEndIso: string;
+    noticeActive: boolean;
+    dismissed: boolean;
+    completed: boolean;
+    showNotice: boolean;
+  };
 };

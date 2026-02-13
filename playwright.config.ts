@@ -11,7 +11,8 @@ export default defineConfig({
     headless: true,
   },
   webServer: {
-    command: "npm run dev -- --hostname 127.0.0.1 --port 3000",
+    command:
+      "EXPEDITION_RESET_NOW=2026-03-02T12:00:00.000Z npm run dev -- --hostname 127.0.0.1 --port 3000",
     url: "http://localhost:3000",
     reuseExistingServer: true,
     timeout: 120_000,

@@ -5,20 +5,28 @@ import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
 import { useProjectContext } from "@/components/projects/ProjectContext";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
-import { isExpeditionProjectSlug } from "@/lib/expeditions";
+import {
+  isExpeditionProjectSlug,
+  orderExpeditionProjects,
+} from "@/lib/expeditions";
 import { useLabels } from "@/components/locale/useLabels";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { useAuthCode } from "@/hooks/useAuthCode";
 import { useExpeditionSelection } from "@/hooks/useExpeditionSelection";
 import { Panel } from "@/components/ui/Panel";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ExpeditionResetDialog } from "@/components/expeditions/ExpeditionResetDialog";
+import { useExpeditionReset } from "@/hooks/useExpeditionReset";
+import { useLocale } from "@/components/locale/LocaleProvider";
 
 export default function RaiderPage() {
   const { identity, ready, clearIdentity } = useLocalIdentity();
   const { allProjects, loading: projectsLoading, refreshProjects } =
     useProjectContext();
+  const { locale } = useLocale();
   const labels = useLabels();
   const [copied, setCopied] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const { authCode } = useAuthCode(identity?.token ?? null);
   const {
     activeExpeditionSlug,
@@ -40,13 +48,24 @@ export default function RaiderPage() {
   };
 
   const expeditionProjects = useMemo(
-    () =>
-      allProjects
-        .filter((project) => isExpeditionProjectSlug(project.slug))
-        .slice()
-        .sort((a, b) => a.name.localeCompare(b.name)),
+    () => {
+      const filtered = allProjects.filter((project) =>
+        isExpeditionProjectSlug(project.slug)
+      );
+      return orderExpeditionProjects(filtered);
+    },
     [allProjects]
   );
+  const {
+    saving: savingReset,
+    errorKey: resetErrorKey,
+    resetProgress,
+  } = useExpeditionReset({
+    token: identity?.token ?? null,
+    locale,
+    onInvalid: clearIdentity,
+    onUpdated: refreshProjects,
+  });
 
   const activeExpeditionLabel = useMemo(() => {
     if (!activeExpeditionSlug) return labels.noExpedition;
@@ -168,22 +187,52 @@ export default function RaiderPage() {
               </div>
             ) : null}
           </div>
-          <div className="flex items-center justify-between">
-            <span className="hud-label">{labels.expeditionReady}</span>
-            <Button
-              type="button"
-              variant="default"
-              onClick={() => {
-                clearIdentity();
-              }}
-              className="px-3"
-              data-testid="operator-logout"
-            >
-              {labels.logOut}
-            </Button>
+          <div className="border-t border-frame2 pt-4">
+            <div className="hud-label">{labels.expeditionResetLabel}</div>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="default"
+                className="px-3"
+                data-testid="operator-expedition-reset-open"
+                onClick={() => setResetDialogOpen(true)}
+              >
+                {labels.expeditionResetCta}
+              </Button>
+            </div>
+          </div>
+          <div className="border-t border-frame2 pt-4">
+            <div className="flex items-center justify-between">
+              <span className="hud-label">{labels.expeditionReady}</span>
+              <Button
+                type="button"
+                variant="default"
+                onClick={() => {
+                  clearIdentity();
+                }}
+                className="px-3"
+                data-testid="operator-logout"
+              >
+                {labels.logOut}
+              </Button>
+            </div>
           </div>
         </div>
       </Panel>
+      {resetDialogOpen ? (
+        <ExpeditionResetDialog
+          onClose={() => setResetDialogOpen(false)}
+          onConfirmReset={async (startNextExpedition) => {
+            const success = await resetProgress(startNextExpedition);
+            if (success) {
+              setResetDialogOpen(false);
+            }
+            return success;
+          }}
+          loading={savingReset}
+          error={resetErrorKey ? labels[resetErrorKey] : ""}
+        />
+      ) : null}
     </div>
   );
 }

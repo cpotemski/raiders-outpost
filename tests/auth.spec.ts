@@ -55,3 +55,62 @@ test("auth code links an existing account", async ({ page, browser }) => {
     .toBe(true);
   await context.close();
 });
+
+test("new onboarding stores active expedition and completed phases", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.evaluate(() => {
+    localStorage.clear();
+  });
+  await page.reload();
+
+  await expect(page.getByTestId("onboarding-step-account")).toBeVisible();
+  await page.getByTestId("onboarding-select-new").click();
+  await page.locator("#operator-name").fill("PhaseRunner");
+  await page.getByTestId("onboarding-next").click();
+  await page.getByTestId("onboarding-next").click();
+
+  const expeditionButton = page
+    .locator('[data-testid^="onboarding-expedition-active-expedition_project"]')
+    .first();
+  await expect(expeditionButton).toBeVisible();
+  const expeditionTestId = await expeditionButton.getAttribute("data-testid");
+  const expeditionSlug = expeditionTestId?.replace(
+    "onboarding-expedition-active-",
+    ""
+  );
+  if (!expeditionSlug) {
+    throw new Error("Could not resolve selected expedition slug.");
+  }
+  await expeditionButton.click();
+  await page.getByTestId("onboarding-expedition-phase-1").click();
+
+  const authRequestPromise = page.waitForRequest((request) => {
+    return request.url().includes("/api/auth") && request.method() === "POST";
+  });
+
+  await page.getByTestId("onboarding-submit").click();
+  const authRequest = await authRequestPromise;
+  const authPayload = authRequest.postDataJSON() as {
+    activeExpeditionSlug?: string | null;
+    baseline?: { projectSlug: string; completedStageSortOrders: number[] }[];
+  };
+
+  expect(authPayload.activeExpeditionSlug).toBe(expeditionSlug);
+  const expeditionBaseline = authPayload.baseline?.find(
+    (entry) => entry.projectSlug === expeditionSlug
+  );
+  expect(expeditionBaseline?.completedStageSortOrders.length).toBe(1);
+
+  await expect
+    .poll(async () => {
+      const identity = await getLocalIdentity(page);
+      return identity.name === "PhaseRunner" && Boolean(identity.token);
+    })
+    .toBe(true);
+
+  await openUserMenu(page);
+  const activeOption = page.getByTestId(`expedition-option-${expeditionSlug}`);
+  await expect(activeOption).toHaveAttribute("aria-pressed", "true");
+});

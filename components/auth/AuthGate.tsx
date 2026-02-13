@@ -7,6 +7,7 @@ import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
 import { useLocale } from "@/components/locale/LocaleProvider";
 import { cn } from "@/lib/cn";
 import { useLabels } from "@/components/locale/useLabels";
+import { orderExpeditionProjects } from "@/lib/expeditions";
 
 type OnboardingStage = {
   stageKey: string;
@@ -42,7 +43,11 @@ export function AuthGate() {
   const [projectSelections, setProjectSelections] = useState<
     Record<string, boolean>
   >({});
-  const [expeditionCompletedCount, setExpeditionCompletedCount] = useState(0);
+  const [selectedExpeditionSlug, setSelectedExpeditionSlug] = useState<
+    string | null
+  >(null);
+  const [selectedExpeditionCompletedPhases, setSelectedExpeditionCompletedPhases] =
+    useState(0);
   const isNewFlow = flow === "new";
   const isExistingFlow = flow === "existing";
 
@@ -53,7 +58,8 @@ export function AuthGate() {
     setName("");
     setCode("");
     setProjectSelections({});
-    setExpeditionCompletedCount(0);
+    setSelectedExpeditionSlug(null);
+    setSelectedExpeditionCompletedPhases(0);
   };
 
   useEffect(() => {
@@ -76,15 +82,32 @@ export function AuthGate() {
   }, [identity, locale, localeReady, flow, ready]);
 
   const expeditionProjects = useMemo(
-    () => onboardingProjects.filter((project) => project.isExpedition),
+    () =>
+      orderExpeditionProjects(
+        onboardingProjects.filter((project) => project.isExpedition)
+      ),
     [onboardingProjects]
   );
+  const selectedExpedition = useMemo(
+    () =>
+      selectedExpeditionSlug
+        ? expeditionProjects.find((project) => project.slug === selectedExpeditionSlug) ??
+          null
+        : null,
+    [expeditionProjects, selectedExpeditionSlug]
+  );
+  const selectedExpeditionPhaseMax = selectedExpedition?.stages.length ?? 0;
   const nonExpeditionProjects = useMemo(
     () => onboardingProjects.filter((project) => !project.isExpedition),
     [onboardingProjects]
   );
   const toggleProjectSelection = (slug: string) => {
     setProjectSelections((prev) => ({ ...prev, [slug]: !prev[slug] }));
+  };
+
+  const selectExpedition = (slug: string | null) => {
+    setSelectedExpeditionSlug(slug);
+    setSelectedExpeditionCompletedPhases(0);
   };
 
   const buildBaselinePayload = () => {
@@ -98,15 +121,17 @@ export function AuthGate() {
       selectionMap.set(project.slug, completed);
     }
 
-    if (expeditionCompletedCount > 0) {
-      expeditionProjects
-        .slice(0, expeditionCompletedCount)
-        .forEach((project) => {
-          if (!project.stages.length) return;
-          const completed = new Set<number>();
-          project.stages.forEach((stage) => completed.add(stage.sortOrder));
-          selectionMap.set(project.slug, completed);
-        });
+    if (selectedExpedition && selectedExpeditionCompletedPhases > 0) {
+      const completed = new Set<number>();
+      selectedExpedition.stages
+        .slice()
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .slice(0, selectedExpeditionCompletedPhases)
+        .forEach((stage) => completed.add(stage.sortOrder));
+
+      if (completed.size) {
+        selectionMap.set(selectedExpedition.slug, completed);
+      }
     }
 
     return Array.from(selectionMap.entries()).map(([slug, stages]) => ({
@@ -134,6 +159,7 @@ export function AuthGate() {
           create: true,
           locale,
           baseline,
+          activeExpeditionSlug: selectedExpeditionSlug,
         }),
       });
       const payload = await res.json().catch(() => null);
@@ -396,33 +422,31 @@ export function AuthGate() {
                       </div>
                     ) : expeditionProjects.length ? (
                       <>
+                        <div className="hud-label">{labels.selectActiveExpedition}</div>
                         <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
-                            onClick={() => setExpeditionCompletedCount(0)}
-                            aria-pressed={expeditionCompletedCount === 0}
-                            data-testid="expedition-count-0"
+                            onClick={() => selectExpedition(null)}
+                            aria-pressed={selectedExpeditionSlug === null}
+                            data-testid="onboarding-expedition-active-none"
                             className={cn(
                               "h-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
-                              expeditionCompletedCount === 0
+                              selectedExpeditionSlug === null
                                 ? "border-accent/80 text-text"
                                 : "border-frame2 text-muted hover:border-accent/60"
                             )}
                           >
                             {labels.onboardingNoExpeditions}
                           </button>
-                          {expeditionProjects.map((_, index) => {
-                            const count = index + 1;
-                            const selected = expeditionCompletedCount === count;
+                          {expeditionProjects.map((project) => {
+                            const selected = selectedExpeditionSlug === project.slug;
                             return (
                               <button
-                                key={`expedition-count-${count}`}
+                                key={project.slug}
                                 type="button"
-                                onClick={() =>
-                                  setExpeditionCompletedCount(count)
-                                }
+                                onClick={() => selectExpedition(project.slug)}
                                 aria-pressed={selected}
-                                data-testid={`expedition-count-${count}`}
+                                data-testid={`onboarding-expedition-active-${project.slug}`}
                                 className={cn(
                                   "h-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
                                   selected
@@ -430,11 +454,46 @@ export function AuthGate() {
                                     : "border-frame2 text-muted hover:border-accent/60"
                                 )}
                               >
-                                {count}
+                                {project.name}
                               </button>
                             );
                           })}
                         </div>
+                        {selectedExpedition ? (
+                          <>
+                            <div className="hud-label">
+                              {labels.onboardingPhasesCompletedLabel}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {Array.from(
+                                { length: selectedExpeditionPhaseMax + 1 },
+                                (_, index) => index
+                              ).map((phaseCount) => {
+                                const selected =
+                                  selectedExpeditionCompletedPhases === phaseCount;
+                                return (
+                                  <button
+                                    key={`expedition-phase-count-${phaseCount}`}
+                                    type="button"
+                                    onClick={() =>
+                                      setSelectedExpeditionCompletedPhases(phaseCount)
+                                    }
+                                    aria-pressed={selected}
+                                    data-testid={`onboarding-expedition-phase-${phaseCount}`}
+                                    className={cn(
+                                      "h-8 min-w-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
+                                      selected
+                                        ? "border-accent/80 text-text"
+                                        : "border-frame2 text-muted hover:border-accent/60"
+                                    )}
+                                  >
+                                    {phaseCount}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </>
+                        ) : null}
                       </>
                     ) : (
                       <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">

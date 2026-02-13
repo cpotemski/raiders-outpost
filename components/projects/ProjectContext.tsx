@@ -14,6 +14,15 @@ type ProjectContextValue = {
   selectedSlug: string | null;
   setSelectedSlug: (slug: string) => void;
   activeExpeditionSlug: string | null;
+  expeditionReset: {
+    cycleId: string;
+    noticeStartIso: string;
+    noticeEndIso: string;
+    noticeActive: boolean;
+    dismissed: boolean;
+    completed: boolean;
+    showNotice: boolean;
+  } | null;
   updateItemQuantity: (projectItemId: string, nextQuantity: number) => void;
   refreshProjects: () => void;
 };
@@ -26,6 +35,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     loading,
     projects,
     activeExpeditionSlug,
+    expeditionReset,
     updateItemQuantity,
     refresh,
   } = useProjectProgress(locale, localeReady);
@@ -69,6 +79,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       selectedSlug,
       setSelectedSlug,
       activeExpeditionSlug,
+      expeditionReset: expeditionReset ?? null,
       updateItemQuantity,
       refreshProjects: refresh,
     }),
@@ -79,6 +90,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       selectedProject,
       selectedSlug,
       activeExpeditionSlug,
+      expeditionReset,
       updateItemQuantity,
       refresh,
     ]

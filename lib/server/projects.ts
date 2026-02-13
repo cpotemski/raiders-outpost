@@ -6,6 +6,12 @@ import { getCommunitiesForUser, getCommunityForUser } from "@/lib/server/communi
 import type { AppLocale } from "@/lib/locale";
 import { isExpeditionProjectSlug } from "@/lib/expeditions";
 import { applyAdminProjectFilters, getAdminSettings } from "@/lib/server/admin-settings";
+import {
+  EXPEDITION_RESET_CYCLE_ID,
+  EXPEDITION_RESET_NOTICE_END_ISO,
+  EXPEDITION_RESET_NOTICE_START_ISO,
+  isExpeditionResetNoticeActive,
+} from "@/lib/expedition-reset";
 
 type ProjectWithStages = Prisma.ProjectGetPayload<{
   include: { stages: { include: { items: true } } };
@@ -39,70 +45,53 @@ const buildPayloadSignature = (
   return entries.sort().join("||");
 };
 
-const buildDbSignature = (projects: ProjectWithStages[]) => {
-  const entries: string[] = [];
-
-  for (const project of projects) {
-    entries.push(`project:${project.slug}:${project.stages.length}`);
-    for (const stage of project.stages) {
-      entries.push(
-        `stage:${project.slug}:${stage.sortOrder}:${stage.items.length}`
-      );
-      if (stage.items.length === 0) {
-        entries.push(`stage-empty:${project.slug}:${stage.sortOrder}`);
-      }
-      for (const item of stage.items) {
-        entries.push(
-          `item:${project.slug}:${stage.sortOrder}:${item.itemName}:${item.quantityRequired}`
-        );
-      }
-    }
-  }
-
-  return entries.sort().join("||");
-};
-
-const seedProjects = async (payload: Awaited<ReturnType<typeof loadArcProjects>>) => {
-
-  for (const projectData of payload.projects) {
-    const project = await prisma.project.create({
-      data: {
-        name: projectData.name,
-        slug: projectData.slug,
-      },
-    });
-
-    if (projectData.stages.length) {
-      await prisma.projectStage.createMany({
-        data: projectData.stages.map((stage) => ({
-          projectId: project.id,
-          name: stage.name,
-          sortOrder: stage.sortOrder,
-        })),
+const syncProjects = async (payload: Awaited<ReturnType<typeof loadArcProjects>>) => {
+  await prisma.$transaction(async (tx) => {
+    for (const projectData of payload.projects) {
+      const project = await tx.project.upsert({
+        where: { slug: projectData.slug },
+        update: { name: projectData.name },
+        create: {
+          name: projectData.name,
+          slug: projectData.slug,
+        },
       });
 
-      const stageRecords = await prisma.projectStage.findMany({
-        where: { projectId: project.id },
-        select: { id: true, sortOrder: true },
-      });
-      const stageIdBySort = new Map(
-        stageRecords.map((stage) => [stage.sortOrder, stage.id])
-      );
-
-      for (const stage of projectData.stages) {
-        const stageId = stageIdBySort.get(stage.sortOrder);
-        if (!stageId || !stage.items.length) continue;
-        await prisma.projectItem.createMany({
-          data: stage.items.map((item) => ({
-            stageId,
-            itemName: item.itemId,
-            quantityRequired: item.quantityRequired,
-          })),
-          skipDuplicates: true,
+      for (const stageData of projectData.stages) {
+        const stage = await tx.projectStage.upsert({
+          where: {
+            projectId_sortOrder: {
+              projectId: project.id,
+              sortOrder: stageData.sortOrder,
+            },
+          },
+          update: { name: stageData.name },
+          create: {
+            projectId: project.id,
+            name: stageData.name,
+            sortOrder: stageData.sortOrder,
+          },
         });
+
+        for (const itemData of stageData.items) {
+          await tx.projectItem.upsert({
+            where: {
+              stageId_itemName: {
+                stageId: stage.id,
+                itemName: itemData.itemId,
+              },
+            },
+            update: { quantityRequired: itemData.quantityRequired },
+            create: {
+              stageId: stage.id,
+              itemName: itemData.itemId,
+              quantityRequired: itemData.quantityRequired,
+            },
+          });
+        }
       }
     }
-  }
+  });
 };
 
 export const ensureProjects = async (
@@ -117,35 +106,14 @@ export const ensureProjects = async (
 
   projectsSeedSignature = payloadSignature;
   projectsSeedPromise = (async () => {
-    const existingProjects = await prisma.project.findMany({
+    await syncProjects(nextPayload);
+    return prisma.project.findMany({
       include: {
         stages: {
           include: { items: true },
         },
       },
     });
-    const needsReseed =
-      existingProjects.length === 0 ||
-      buildDbSignature(existingProjects) !== payloadSignature;
-
-    if (needsReseed) {
-      await prisma.$transaction([
-        prisma.userProjectItem.deleteMany(),
-        prisma.projectItem.deleteMany(),
-        prisma.projectStage.deleteMany(),
-        prisma.project.deleteMany(),
-      ]);
-      await seedProjects(nextPayload);
-      return prisma.project.findMany({
-        include: {
-          stages: {
-            include: { items: true },
-          },
-        },
-      });
-    }
-
-    return existingProjects;
   })();
 
   return projectsSeedPromise;
@@ -164,8 +132,13 @@ export const getProjectProgress = async (
   ]);
   const activeUser = await prisma.user.findUnique({
     where: { id: userId },
-    select: { activeExpeditionSlug: true },
+    select: {
+      activeExpeditionSlug: true,
+      expeditionResetDismissedCycle: true,
+      expeditionResetCompletedCycle: true,
+    },
   });
+  const noticeActive = isExpeditionResetNoticeActive();
 
   const itemMetaById = new Map(
     arcItems.items.map((item) => [
@@ -344,6 +317,25 @@ export const getProjectProgress = async (
     expeditionMemberCountsBySlug,
     communityCountsByItemId,
     activeExpeditionSlug: activeUser?.activeExpeditionSlug ?? null,
+    expeditionReset: {
+      cycleId: EXPEDITION_RESET_CYCLE_ID,
+      noticeStartIso: EXPEDITION_RESET_NOTICE_START_ISO,
+      noticeEndIso: EXPEDITION_RESET_NOTICE_END_ISO,
+      noticeActive,
+      dismissed:
+        activeUser?.expeditionResetDismissedCycle ===
+        EXPEDITION_RESET_CYCLE_ID,
+      completed:
+        activeUser?.expeditionResetCompletedCycle ===
+        EXPEDITION_RESET_CYCLE_ID,
+      showNotice:
+        noticeActive &&
+        Boolean(activeUser?.activeExpeditionSlug) &&
+        activeUser?.expeditionResetDismissedCycle !==
+          EXPEDITION_RESET_CYCLE_ID &&
+        activeUser?.expeditionResetCompletedCycle !==
+          EXPEDITION_RESET_CYCLE_ID,
+    },
   };
 };
 

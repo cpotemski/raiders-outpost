@@ -5,6 +5,7 @@ import { BackLinkBar } from "@/components/layout/BackLinkBar";
 import { TopNav } from "@/components/layout/TopNav";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { IdentitySync } from "@/components/auth/IdentitySync";
+import { ExpeditionResetNotice } from "@/components/expeditions/ExpeditionResetNotice";
 
 export function RouteChrome() {
   const pathname = usePathname();
@@ -19,6 +20,7 @@ export function RouteChrome() {
       <IdentitySync />
       <AuthGate />
       <TopNav />
+      <ExpeditionResetNotice />
       <BackLinkBar />
     </>
   );

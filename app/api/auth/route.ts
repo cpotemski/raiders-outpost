@@ -1,6 +1,15 @@
 import { generateUserToken } from "@/lib/server/auth";
 import { applyOnboardingBaseline } from "@/lib/server/onboarding";
-import { getUserByToken, updateUserName, upsertUserWithToken } from "@/lib/server/users";
+import { loadArcProjects } from "@/lib/arc-projects";
+import { isExpeditionProjectSlug } from "@/lib/expeditions";
+import { normalizeLocale } from "@/lib/locale";
+import { applyAdminProjectFilters, getAdminSettings } from "@/lib/server/admin-settings";
+import {
+  getUserByToken,
+  updateUserExpedition,
+  updateUserName,
+  upsertUserWithToken,
+} from "@/lib/server/users";
 
 export const runtime = "nodejs";
 
@@ -11,13 +20,48 @@ export const POST = async (request: Request) => {
   const create = body?.create === true;
   const locale = body?.locale;
   const baseline = Array.isArray(body?.baseline) ? body.baseline : null;
+  const activeExpeditionSlug =
+    body?.activeExpeditionSlug === null || typeof body?.activeExpeditionSlug === "string"
+      ? body.activeExpeditionSlug
+      : null;
 
   if (create) {
     if (!name) {
       return Response.json({ error: "Invalid payload" }, { status: 400 });
     }
+    let nextActiveExpeditionSlug: string | null = null;
+    if (typeof activeExpeditionSlug === "string" && activeExpeditionSlug) {
+      if (!isExpeditionProjectSlug(activeExpeditionSlug)) {
+        return Response.json({ error: "Invalid payload" }, { status: 400 });
+      }
+      const normalizedLocale = normalizeLocale(
+        typeof locale === "string" ? locale : null
+      );
+      const [payload, settings] = await Promise.all([
+        loadArcProjects(normalizedLocale),
+        getAdminSettings(),
+      ]);
+      const filteredPayload = applyAdminProjectFilters(payload, settings);
+      const validExpeditionSlugs = new Set(
+        filteredPayload.projects
+          .filter((project) => isExpeditionProjectSlug(project.slug))
+          .filter((project) => project.stages.some((stage) => stage.items.length > 0))
+          .map((project) => project.slug)
+      );
+      if (!validExpeditionSlugs.has(activeExpeditionSlug)) {
+        return Response.json({ error: "Invalid payload" }, { status: 400 });
+      }
+      nextActiveExpeditionSlug = activeExpeditionSlug;
+    }
     const nextToken = token || generateUserToken();
-    const user = await upsertUserWithToken(name, nextToken);
+    let user = await upsertUserWithToken(name, nextToken);
+    if (user.activeExpeditionSlug !== nextActiveExpeditionSlug) {
+      await updateUserExpedition(user.token, nextActiveExpeditionSlug);
+      const refreshedUser = await getUserByToken(user.token);
+      if (refreshedUser) {
+        user = refreshedUser;
+      }
+    }
     await applyOnboardingBaseline({
       userId: user.id,
       locale,

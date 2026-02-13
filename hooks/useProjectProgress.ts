@@ -140,6 +140,7 @@ export const useProjectProgress = (
     payload,
     projects: allProjects,
     activeExpeditionSlug: payload?.activeExpeditionSlug ?? null,
+    expeditionReset: payload?.expeditionReset ?? null,
     updateItemQuantity,
     refresh,
   };
