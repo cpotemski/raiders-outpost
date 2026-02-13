@@ -101,14 +101,23 @@ export function CommunityRoster() {
     body = <RosterStatus message={labels.noRaiderLinked} />;
   } else if (!communities.length) {
     body = (
-      <CommunityEmptyState
-        inviteCode={inviteCode}
-        status={status}
-        error={error}
-        name={name}
-        onNameChange={onNameChange}
-        onSubmit={onCreate}
-      />
+      <div className="arc-panel overflow-hidden" data-testid="community-empty-panel">
+        <div className="arc-panel-header">
+          <h3 className="font-semibold uppercase tracking-[0.08em]">
+            {labels.manageCommunities}
+          </h3>
+        </div>
+        <div className="border-t border-frame2 bg-panel/80 px-3 py-4">
+          <CommunityEmptyState
+            inviteCode={inviteCode}
+            status={status}
+            error={error}
+            name={name}
+            onNameChange={onNameChange}
+            onSubmit={onCreate}
+          />
+        </div>
+      </div>
     );
   } else {
     body = (

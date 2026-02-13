@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import type { ProjectCardData } from "@/components/projects/projectCards";
+import { cn } from "@/lib/cn";
 
 export function ProjectCard({
   project,
   completedCount,
   totalCount,
+  isCompleted,
   progressRatio,
   progressPercent,
 }: ProjectCardData) {
@@ -13,11 +15,21 @@ export function ProjectCard({
     <Link
       href={`/projects/${project.slug}`}
       data-testid={`project-card-${project.slug}`}
-      className="arc-panel arc-corners group relative flex flex-col justify-center gap-3 overflow-hidden border-frame2/70 px-4 py-4 transition hover:border-accent/60"
+      className={cn(
+        "arc-panel arc-corners group relative flex flex-col justify-center gap-3 overflow-hidden px-4 py-4 transition",
+        isCompleted
+          ? "border-frame2/50 opacity-70 hover:border-frame2/60"
+          : "border-frame2/70 hover:border-accent/60"
+      )}
     >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.12em] break-words sm:text-sm">
+          <h3
+            className={cn(
+              "text-xs font-semibold uppercase tracking-[0.12em] break-words sm:text-sm",
+              isCompleted && "text-muted"
+            )}
+          >
             {project.name}
           </h3>
         </div>
@@ -34,7 +46,17 @@ export function ProjectCard({
             size={24}
             progress={progressRatio}
             data-project-progress={progressPercent}
-            className="h-6 w-6"
+            className={cn("h-6 w-6", isCompleted && "opacity-80")}
+            trackColor={
+              isCompleted
+                ? "rgba(160, 180, 190, 0.2)"
+                : "rgba(160, 180, 190, 0.35)"
+            }
+            progressColor={
+              isCompleted
+                ? "rgba(160, 180, 190, 0.42)"
+                : "rgba(72, 199, 214, 0.75)"
+            }
           />
         </div>
       </div>
