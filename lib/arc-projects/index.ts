@@ -241,7 +241,7 @@ const readArcProjects = (locale: AppLocale) =>
   );
 
 export const loadArcProjects = async (
-  locale: AppLocale = "en"
+  locale: AppLocale = "de"
 ): Promise<ArcProjectPayload> => {
   return readArcProjects(locale)();
 };

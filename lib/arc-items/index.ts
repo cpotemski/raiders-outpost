@@ -135,7 +135,7 @@ const readArcItems = (locale: AppLocale) =>
   );
 
 export const loadArcItems = async (
-  locale: AppLocale = "en"
+  locale: AppLocale = "de"
 ): Promise<ArcItemPayload> => {
   return readArcItems(locale)();
 };

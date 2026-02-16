@@ -10,7 +10,7 @@ type LoaderOptions = {
 export const fetchArcItems = async (
   options: LoaderOptions = {}
 ): Promise<ArcItemPayload> => {
-  const { baseUrl = "", cache = "no-store", locale = "en" } = options;
+  const { baseUrl = "", cache = "no-store", locale = "de" } = options;
   const res = await fetch(`${baseUrl}/api/arc-items?locale=${locale}`, {
     cache,
   });

@@ -61,7 +61,7 @@ export const PUT = async (request: Request) => {
 
   if (nextSlug) {
     const url = new URL(request.url);
-    const locale = url.searchParams.get("locale") ?? "en";
+    const locale = url.searchParams.get("locale") ?? "de";
     const expeditionSlugs = await getExpeditionSlugs(locale);
     if (!expeditionSlugs.has(nextSlug)) {
       return Response.json({ error: "Unknown expedition" }, { status: 400 });

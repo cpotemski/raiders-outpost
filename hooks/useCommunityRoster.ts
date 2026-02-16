@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
@@ -16,6 +16,19 @@ type CommunityResponse = {
 const communityIdSet = (communities: Community[]) =>
   new Set(communities.map((community) => community.id));
 
+const serializeCommunitySelection = (value: Set<string>) =>
+  JSON.stringify(Array.from(value));
+
+const deserializeCommunitySelection = (raw: string) => {
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return new Set<string>();
+    return new Set(parsed.filter((entry): entry is string => typeof entry === "string"));
+  } catch {
+    return new Set<string>();
+  }
+};
+
 export const useCommunityRoster = () => {
   const { identity, ready, clearIdentity } = useLocalIdentity();
   const searchParams = useSearchParams();
@@ -30,18 +43,8 @@ export const useCommunityRoster = () => {
       selectionStorageKey,
       () => new Set<string>(),
       {
-        serialize: (value) => JSON.stringify(Array.from(value)),
-        deserialize: (raw) => {
-          try {
-            const parsed = JSON.parse(raw);
-            if (!Array.isArray(parsed)) return new Set<string>();
-            return new Set(
-              parsed.filter((entry): entry is string => typeof entry === "string")
-            );
-          } catch {
-            return new Set<string>();
-          }
-        },
+        serialize: serializeCommunitySelection,
+        deserialize: deserializeCommunitySelection,
       }
     );
   const [status, setStatus] = useState<Status>("idle");
@@ -68,30 +71,30 @@ export const useCommunityRoster = () => {
     }
   }, []);
 
-  const syncSelection = (
-    nextCommunities: Community[],
-    preferredCommunityId?: string
-  ) => {
-    if (!selectionHydrated) return;
-    const validIds = communityIdSet(nextCommunities);
-    setSelectedCommunityIds((prev) => {
-      if (validIds.size === 0) {
-        return prev;
-      }
-      let next = new Set(
-        Array.from(prev).filter((communityId) => validIds.has(communityId))
-      );
-      if (!hasStoredSelectionRef.current && next.size === 0 && validIds.size > 0) {
-        next = new Set(validIds);
-      } else if (next.size === 0 && validIds.size > 0 && prev.size > 0) {
-        next = new Set(validIds);
-      }
-      if (preferredCommunityId && validIds.has(preferredCommunityId)) {
-        next.add(preferredCommunityId);
-      }
-      return next;
-    });
-  };
+  const syncSelection = useCallback(
+    (nextCommunities: Community[], preferredCommunityId?: string) => {
+      if (!selectionHydrated) return;
+      const validIds = communityIdSet(nextCommunities);
+      setSelectedCommunityIds((prev) => {
+        if (validIds.size === 0) {
+          return prev;
+        }
+        let next = new Set(
+          Array.from(prev).filter((communityId) => validIds.has(communityId))
+        );
+        if (!hasStoredSelectionRef.current && next.size === 0 && validIds.size > 0) {
+          next = new Set(validIds);
+        } else if (next.size === 0 && validIds.size > 0 && prev.size > 0) {
+          next = new Set(validIds);
+        }
+        if (preferredCommunityId && validIds.has(preferredCommunityId)) {
+          next.add(preferredCommunityId);
+        }
+        return next;
+      });
+    },
+    [selectionHydrated, setSelectedCommunityIds]
+  );
 
   useEffect(() => {
     if (!ready) return;
@@ -130,7 +133,14 @@ export const useCommunityRoster = () => {
     return () => {
       active = false;
     };
-  }, [clearIdentity, identity, ready, selectionHydrated]);
+  }, [
+    clearIdentity,
+    identity,
+    ready,
+    selectionHydrated,
+    setSelectedCommunityIds,
+    syncSelection,
+  ]);
 
   useEffect(() => {
     if (!inviteCode || !identity || !ready) return;
@@ -177,7 +187,7 @@ export const useCommunityRoster = () => {
     return () => {
       active = false;
     };
-  }, [identity, inviteCode, ready, router]);
+  }, [identity, inviteCode, ready, router, syncSelection]);
 
   const selectedCommunities = useMemo(() => {
     return communities.filter((community) => selectedCommunityIds.has(community.id));

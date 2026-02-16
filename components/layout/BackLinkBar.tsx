@@ -17,9 +17,17 @@ export function BackLinkBar() {
   if (pathname === "/" || pathname.startsWith("/projects/")) return null;
 
   const backHref = getBackHref(pathname);
+  const hideOnDesktop =
+    pathname.startsWith("/projects") ||
+    pathname.startsWith("/community") ||
+    pathname.startsWith("/operator");
 
   return (
-    <div className="mx-auto w-full max-w-[1320px] px-2 pt-2 lg:pt-4 lg:px-4">
+    <div
+      className={`mx-auto w-full max-w-[1320px] px-2 pt-2 lg:px-4 lg:pt-4 ${
+        hideOnDesktop ? "md:hidden" : ""
+      }`}
+    >
       <BackButton href={backHref} label={labels.back} testId="nav-back" />
     </div>
   );

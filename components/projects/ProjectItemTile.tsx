@@ -148,7 +148,7 @@ export function ProjectItemTile({
       >
         +
       </button>
-      {item.quantityRequired > 0 ? (
+      {item.quantityRequired > 1 ? (
         <ProgressRing
           radius={6}
           strokeWidth={2}
@@ -156,14 +156,14 @@ export function ProjectItemTile({
           data-item-progress={progressPercent}
           className="absolute right-2 top-2 z-20 h-4 w-4"
         />
-      ) : (
+      ) : item.quantityRequired <= 0 ? (
         <span
           className={cn(
             "absolute right-2 top-2 z-20 h-2 w-2 rounded-full",
             isComplete ? "bg-accent" : "bg-frame"
           )}
         />
-      )}
+      ) : null}
       <ItemTileMedia
         imageFile={item.imageFile}
         wrapperClassName="pointer-events-none absolute inset-6 z-0 flex items-center justify-center sm:inset-7"

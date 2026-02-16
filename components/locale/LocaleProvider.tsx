@@ -23,7 +23,7 @@ type LocaleContextValue = {
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<AppLocale>("en");
+  const [locale, setLocaleState] = useState<AppLocale>("de");
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -62,4 +62,3 @@ export const useLocale = () => {
   }
   return ctx;
 };
-

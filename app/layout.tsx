@@ -81,7 +81,7 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="de">
       <body
         className={cn(
           "min-h-screen bg-arc-grid font-sans text-text",

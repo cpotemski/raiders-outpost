@@ -14,7 +14,7 @@ export function TopNav() {
   const labels = useLabels();
   const { identity, ready } = useLocalIdentity();
   const isHome = pathname === "/";
-  const showHome = ready && Boolean(identity);
+  const showNav = ready && Boolean(identity);
   const desktopNavItems = [
     {
       href: "/projects",
@@ -46,13 +46,13 @@ export function TopNav() {
           <span className="text-xs font-semibold uppercase tracking-[0.2em] text-text sm:text-sm">
             ARC // Raiders Outpost
           </span>
-          {showHome ? (
+          {showNav ? (
             <>
               <Link
                 href="/"
                 data-nav-home="true"
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-[6px] border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.1em] transition",
+                  "inline-flex items-center gap-2 rounded-[6px] border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.1em] transition md:hidden",
                   isHome
                     ? "border-accent bg-panel text-text"
                     : "border-frame bg-panel text-muted hover:border-accent/70 hover:text-text"
