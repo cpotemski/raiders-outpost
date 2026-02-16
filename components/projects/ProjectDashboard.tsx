@@ -84,8 +84,8 @@ export function ProjectDashboard({
   const hasCompletedStages = Object.values(stageCompletionStatus).some(Boolean);
   const shouldAutoCollapseCompleted =
     activeProjectId !== null &&
-    visitedProjectsHydrated &&
-    (visitedProjects.includes(activeProjectId) || hasCompletedStages);
+    (hasCompletedStages ||
+      (visitedProjectsHydrated && visitedProjects.includes(activeProjectId)));
 
   const markProjectAsVisited = useCallback(
     (projectSlug: string | null) => {
