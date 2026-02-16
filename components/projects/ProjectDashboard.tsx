@@ -19,6 +19,7 @@ export function ProjectDashboard({
   neededOnly,
   project,
 }: ProjectDashboardProps) {
+  const VISITED_LAYOUT_STORAGE_KEY = "arc:projects:visited-stage-layout";
   const labels = useLabels();
   const {
     loading,
@@ -31,7 +32,7 @@ export function ProjectDashboard({
       () => ({})
     );
   const [visitedProjects, setVisitedProjects, visitedProjectsHydrated] =
-    useLocalStorageState<string[]>("arc:projects:visited-stage-layout", []);
+    useLocalStorageState<string[]>(VISITED_LAYOUT_STORAGE_KEY, []);
   const [initialLayoutResolved, setInitialLayoutResolved] = useState(false);
   const [recentlyCompleted, setRecentlyCompleted] = useState<Set<string>>(
     () => new Set()
@@ -94,8 +95,18 @@ export function ProjectDashboard({
         }
         return [...prev, projectSlug];
       });
+      if (typeof window !== "undefined") {
+        const stored = window.localStorage.getItem(VISITED_LAYOUT_STORAGE_KEY);
+        const parsed = stored ? (JSON.parse(stored) as string[]) : [];
+        if (!parsed.includes(projectSlug)) {
+          window.localStorage.setItem(
+            VISITED_LAYOUT_STORAGE_KEY,
+            JSON.stringify([...parsed, projectSlug])
+          );
+        }
+      }
     },
-    [setVisitedProjects]
+    [setVisitedProjects, VISITED_LAYOUT_STORAGE_KEY]
   );
 
   useEffect(() => {
@@ -161,6 +172,7 @@ export function ProjectDashboard({
             return nextSet;
           });
           completionTimers.current.delete(stageKey);
+          markProjectAsVisited(activeProjectId);
           setCompletedExpansionOverrides((prev) => {
             if (prev[stageKey] === false) {
               return prev;
@@ -174,7 +186,7 @@ export function ProjectDashboard({
     });
 
     completionStatusRef.current = stageCompletionStatus;
-  }, [activeProject, stageCompletionStatus]);
+  }, [activeProject, stageCompletionStatus, markProjectAsVisited, activeProjectId]);
 
   useEffect(
     () => () => {
@@ -237,6 +249,7 @@ export function ProjectDashboard({
                 showCompletionEffect={shouldShowCompletionEffect}
                 disableCollapseAnimation={disableCollapseAnimation}
                 onToggleExpanded={() => {
+                  markProjectAsVisited(activeProjectId);
                   setCompletedExpansionOverrides((prev) => {
                     const current =
                       prev[stage.stageKey] !== undefined
