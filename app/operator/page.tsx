@@ -95,7 +95,7 @@ export default function RaiderPage() {
   if (!identity) {
     return (
       <EmptyState className="px-2">
-        {labels.noSignalRaiderNotLinked}
+        {labels.notSignedIn}
       </EmptyState>
     );
   }
@@ -147,7 +147,7 @@ export default function RaiderPage() {
                 aria-label={labels.publicProfileLinkAria}
                 data-testid="operator-public-profile-link"
               >
-                {publicUrl || (loadingPublicUrl ? "--------" : labels.noSignalTitle)}
+                {publicUrl || (loadingPublicUrl ? "--------" : labels.notAvailable)}
               </div>
               <Button
                 type="button"
@@ -216,7 +216,7 @@ export default function RaiderPage() {
                 })
               ) : (
                 <div className="hud-empty-state flex h-8 items-center px-3 py-0 text-[10px] tracking-[0.16em]">
-                  {labels.noSignalExpeditionData}
+                  {labels.noExpeditionsFound}
                 </div>
               )}
             </div>

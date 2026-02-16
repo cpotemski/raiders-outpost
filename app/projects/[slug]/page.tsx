@@ -125,7 +125,7 @@ export default function ProjectDetailPage() {
           />
         ) : (
           <EmptyState className="px-2">
-            {labels.noSignalProjectData}
+            {labels.noProjectData}
           </EmptyState>
         )}
       </div>

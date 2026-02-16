@@ -125,7 +125,7 @@ export function CommunityNeedsPanel({
             </div>
           ) : (
             <EmptyState className="mt-3">
-              {labels.noSignalDataNotFound}
+              {labels.dataNotFound}
             </EmptyState>
           )}
         </div>

@@ -29,9 +29,9 @@ export function UserMenu() {
       />
       <span
         className="max-w-[120px] truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-text sm:max-w-[160px]"
-        title={identity?.name ?? labels.noSignalTitle}
+        title={identity?.name ?? labels.notAvailable}
       >
-        {identity?.name ?? labels.noSignalTitle}
+        {identity?.name ?? labels.notAvailable}
       </span>
       <span className="text-[9px] text-muted">{labels.idLabel}</span>
     </Link>

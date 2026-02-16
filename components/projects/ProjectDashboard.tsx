@@ -258,7 +258,7 @@ export function ProjectDashboard({
     </div>
   ) : (
     <EmptyState className="px-2">
-      {labels.noSignalProjectData}
+      {labels.noProjectData}
     </EmptyState>
   );
 }

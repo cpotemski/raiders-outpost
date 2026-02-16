@@ -407,7 +407,7 @@ export function AuthGate() {
                       </div>
                     ) : (
                       <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
-                        {labels.noSignalDataNotFound}
+                        {labels.dataNotFound}
                       </div>
                     )}
                   </div>
@@ -501,7 +501,7 @@ export function AuthGate() {
                       </>
                     ) : (
                       <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
-                        {labels.noSignalExpeditionData}
+                        {labels.noExpeditionsFound}
                       </div>
                     )}
                   </div>

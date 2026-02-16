@@ -65,7 +65,7 @@ export function CommunityNeedTile({
         fallback={
           <div className="absolute inset-4 z-0 flex items-center justify-center">
             <div className="text-[9px] uppercase tracking-[0.18em] text-muted/70">
-              {labels.noSignalTitle}
+              {labels.notAvailable}
             </div>
           </div>
         }

@@ -59,10 +59,10 @@ export function ProjectItemTile({
   const mediaFallback = useMemo(
     () => (
       <div className="flex h-12 w-12 items-center justify-center text-[9px] uppercase tracking-[0.16em] text-muted">
-        {labels.noSignalTitle}
+        {labels.notAvailable}
       </div>
     ),
-    [labels.noSignalTitle]
+    [labels.notAvailable]
   );
 
   return (

@@ -40,14 +40,14 @@ export default function ProjectsPage() {
                 title={labels.activeProject}
                 countLabel={`${labels.activeProject}: ${pendingProjects.length}`}
                 cards={pendingProjects}
-                emptyLabel={labels.noSignalPendingQueue}
+                emptyLabel={labels.noActiveProjects}
                 testId="project-list"
               />
               <ProjectCardSection
                 title={labels.archived}
                 countLabel={`${labels.archived}: ${completedProjects.length}`}
                 cards={completedProjects}
-                emptyLabel={labels.noArchivedSignal}
+                emptyLabel={labels.noProjectsCompleted}
                 testId="project-list-completed"
               />
             </div>

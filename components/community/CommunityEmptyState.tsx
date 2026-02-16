@@ -24,9 +24,6 @@ export function CommunityEmptyState({
   const labels = useLabels();
   return (
     <div>
-      <div className="text-sm font-semibold uppercase tracking-[0.1em] text-text">
-        {labels.noSignal}
-      </div>
       <div className="mt-2 text-[11px] uppercase tracking-[0.08em] text-muted">
         {labels.establishUplink}
       </div>

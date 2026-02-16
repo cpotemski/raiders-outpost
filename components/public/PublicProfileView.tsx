@@ -32,7 +32,7 @@ export function PublicProfileView({ slug }: PublicProfileViewProps) {
                 className="text-sm font-semibold uppercase tracking-[0.12em]"
                 data-testid="public-profile-name"
               >
-                {payload?.name ?? (loading ? labels.scanning : labels.noSignalTitle)}
+                {payload?.name ?? (loading ? labels.scanning : labels.notAvailable)}
               </div>
             </div>
             <CommunityNeedsPanel
