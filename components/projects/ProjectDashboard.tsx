@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useProjectContext } from "@/components/projects/ProjectContext";
 import { ProjectStagePanel } from "@/components/projects/ProjectStagePanel";
 import type { ProjectProgress } from "@/types/projects";
 import { useLabels } from "@/components/locale/useLabels";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 
 type ProjectDashboardProps = {
   query: string;
@@ -25,19 +26,23 @@ export function ProjectDashboard({
     updateItemQuantity,
   } = useProjectContext();
   const activeProject = project ?? selectedProject;
-  const [expandedCompleted, setExpandedCompleted] = useState<Set<string>>(
-    () => new Set()
-  );
+  const [completedExpansionOverrides, setCompletedExpansionOverrides] =
+    useState<Record<string, boolean>>(
+      () => ({})
+    );
+  const [visitedProjects, setVisitedProjects, visitedProjectsHydrated] =
+    useLocalStorageState<string[]>("arc:projects:visited-stage-layout", []);
+  const [initialLayoutResolved, setInitialLayoutResolved] = useState(false);
   const [recentlyCompleted, setRecentlyCompleted] = useState<Set<string>>(
-    () => new Set()
-  );
-  const [justCompletedStages, setJustCompletedStages] = useState<Set<string>>(
     () => new Set()
   );
   const completionTimers = useRef<Map<string, number>>(new Map());
   const completionStatusRef = useRef<Record<string, boolean>>({});
   const initialCompletionCaptured = useRef(false);
   const activeProjectIdRef = useRef(activeProject?.slug ?? null);
+  const currentProjectVisitedRef = useRef<string | null>(
+    activeProject?.slug ?? null
+  );
   const COMPLETION_DISPLAY_MS = 1200;
 
   const filteredStages = useMemo(() => {
@@ -75,31 +80,55 @@ export function ProjectDashboard({
   }, [activeProject]);
 
   const activeProjectId = activeProject?.slug ?? null;
+  const shouldAutoCollapseCompleted =
+    activeProjectId !== null &&
+    visitedProjectsHydrated &&
+    visitedProjects.includes(activeProjectId);
+
+  const markProjectAsVisited = useCallback(
+    (projectSlug: string | null) => {
+      if (!projectSlug) return;
+      setVisitedProjects((prev) => {
+        if (prev.includes(projectSlug)) {
+          return prev;
+        }
+        return [...prev, projectSlug];
+      });
+    },
+    [setVisitedProjects]
+  );
+
+  useEffect(() => {
+    if (visitedProjectsHydrated) {
+      setInitialLayoutResolved(true);
+    }
+  }, [visitedProjectsHydrated]);
 
   useEffect(() => {
     if (activeProjectIdRef.current !== activeProjectId) {
+      markProjectAsVisited(activeProjectIdRef.current);
       completionStatusRef.current = {};
       initialCompletionCaptured.current = false;
       activeProjectIdRef.current = activeProjectId;
+      currentProjectVisitedRef.current = activeProjectId;
       setRecentlyCompleted(new Set());
-      setJustCompletedStages(new Set());
+      setCompletedExpansionOverrides({});
+      setInitialLayoutResolved(false);
       completionTimers.current.forEach((timer) => window.clearTimeout(timer));
       completionTimers.current.clear();
     }
-  }, [activeProjectId]);
+  }, [activeProjectId, markProjectAsVisited]);
 
   useEffect(() => {
     if (!activeProject) {
       completionStatusRef.current = {};
       initialCompletionCaptured.current = false;
-      setJustCompletedStages(new Set());
       return;
     }
 
     if (!initialCompletionCaptured.current) {
       completionStatusRef.current = stageCompletionStatus;
       initialCompletionCaptured.current = true;
-      setJustCompletedStages(new Set());
       return;
     }
 
@@ -111,8 +140,6 @@ export function ProjectDashboard({
         newlyCompleted.add(stageKey);
       }
     });
-    setJustCompletedStages(newlyCompleted);
-
     if (!newlyCompleted.size) {
       completionStatusRef.current = stageCompletionStatus;
       return;
@@ -127,22 +154,20 @@ export function ProjectDashboard({
         if (prev.has(stageKey)) return prev;
         const next = new Set(prev);
         next.add(stageKey);
-          const timer = window.setTimeout(() => {
-            setRecentlyCompleted((current) => {
-              const nextSet = new Set(current);
-              nextSet.delete(stageKey);
-              return nextSet;
-            });
-            completionTimers.current.delete(stageKey);
-            setExpandedCompleted((prev) => {
-              if (!prev.has(stageKey)) {
-                return prev;
-              }
-              const nextExpanded = new Set(prev);
-              nextExpanded.delete(stageKey);
-              return nextExpanded;
-            });
-          }, COMPLETION_DISPLAY_MS);
+        const timer = window.setTimeout(() => {
+          setRecentlyCompleted((current) => {
+            const nextSet = new Set(current);
+            nextSet.delete(stageKey);
+            return nextSet;
+          });
+          completionTimers.current.delete(stageKey);
+          setCompletedExpansionOverrides((prev) => {
+            if (prev[stageKey] === false) {
+              return prev;
+            }
+            return { ...prev, [stageKey]: false };
+          });
+        }, COMPLETION_DISPLAY_MS);
         completionTimers.current.set(stageKey, timer);
         return next;
       });
@@ -154,8 +179,9 @@ export function ProjectDashboard({
   useEffect(
     () => () => {
       completionTimers.current.forEach((timer) => window.clearTimeout(timer));
+      markProjectAsVisited(currentProjectVisitedRef.current);
     },
-    []
+    [markProjectAsVisited]
   );
 
   if (loading && !activeProject) {
@@ -180,17 +206,28 @@ export function ProjectDashboard({
             const isCompleted = progressItems.length
               ? progressItems.every(
                   (item) =>
-                    item.quantityRequired > 0 &&
+                    item.quantityRequired <= 0 ||
                     item.quantityOwned >= item.quantityRequired
                 )
               : true;
-            const justCompletedNow = justCompletedStages.has(stage.stageKey);
-            const shouldShowCompletionEffect =
-              justCompletedNow || recentlyCompleted.has(stage.stageKey);
-            const isExpanded =
-              !isCompleted ||
-              expandedCompleted.has(stage.stageKey) ||
-              shouldShowCompletionEffect;
+            const shouldShowCompletionEffect = recentlyCompleted.has(
+              stage.stageKey
+            );
+            const expansionOverride =
+              completedExpansionOverrides[stage.stageKey];
+            const isExpanded = !isCompleted
+              ? true
+              : shouldShowCompletionEffect
+                ? true
+                : expansionOverride !== undefined
+                  ? expansionOverride
+                  : !shouldAutoCollapseCompleted;
+            const disableCollapseAnimation =
+              !initialLayoutResolved &&
+              isCompleted &&
+              !shouldShowCompletionEffect &&
+              expansionOverride === undefined &&
+              shouldAutoCollapseCompleted;
             return (
               <ProjectStagePanel
                 key={stage.stageKey}
@@ -198,15 +235,17 @@ export function ProjectDashboard({
                 onAdjust={updateItemQuantity}
                 isExpanded={isExpanded}
                 showCompletionEffect={shouldShowCompletionEffect}
+                disableCollapseAnimation={disableCollapseAnimation}
                 onToggleExpanded={() => {
-                  setExpandedCompleted((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(stage.stageKey)) {
-                      next.delete(stage.stageKey);
-                    } else {
-                      next.add(stage.stageKey);
-                    }
-                    return next;
+                  setCompletedExpansionOverrides((prev) => {
+                    const current =
+                      prev[stage.stageKey] !== undefined
+                        ? prev[stage.stageKey]
+                        : !shouldAutoCollapseCompleted;
+                    return {
+                      ...prev,
+                      [stage.stageKey]: !current,
+                    };
                   });
                 }}
                 stripBlueprintLabel={activeProject.kind === "blueprints"}
