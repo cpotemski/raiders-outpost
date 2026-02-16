@@ -4,6 +4,19 @@ import { login, syncIdentity } from "./helpers";
 const uniqueName = (prefix: string) =>
   `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
+test("community defaults to manage mode when no community exists", async ({ page }) => {
+  await login(page, uniqueName("FreshRaider"));
+  await page.getByRole("link", { name: /Community/ }).click();
+
+  await expect(page.getByTestId("community-mode-switch")).toBeVisible();
+  await expect(page.getByTestId("community-mode-manage")).toHaveAttribute(
+    "aria-pressed",
+    "true"
+  );
+  await expect(page.getByTestId("community-mode-needs")).toBeDisabled();
+  await expect(page.getByTestId("community-empty-panel")).toBeVisible();
+});
+
 test("community can be joined across multiple communities and members removed", async ({
   page,
   browser,
@@ -15,24 +28,22 @@ test("community can be joined across multiple communities and members removed", 
   const alphaCommunityName = uniqueName("Echo");
   await page.getByTestId("community-name-input").fill(alphaCommunityName);
   await page.getByTestId("community-create-submit").click();
-  await expect(
-    page.getByRole("heading", { name: alphaCommunityName, exact: true })
-  ).toBeVisible();
+  await expect(page.getByTestId("community-mode-needs")).toHaveAttribute(
+    "aria-pressed",
+    "true"
+  );
 
-  const alphaInviteLink = await page
-    .getByTestId(/community-invite-tile-/)
-    .first()
-    .getByLabel("Invite link")
-    .inputValue();
+  await page.getByTestId("community-mode-manage").click();
+  await page.getByTestId(/community-copy-invite-/).first().click();
+  const alphaInviteLink = await page.getByTestId("community-invite-link-input").inputValue();
+  await page.getByTestId("community-invite-close").click();
   expect(alphaInviteLink).toContain("/community?invite=");
 
   const nomadContext = await browser.newContext();
   const nomadPage = await nomadContext.newPage();
   await nomadPage.goto(alphaInviteLink);
   await syncIdentity(nomadPage, "Nomad");
-  await expect(
-    nomadPage.getByRole("heading", { name: alphaCommunityName, exact: true })
-  ).toBeVisible();
+  await expect(nomadPage.getByText(alphaCommunityName, { exact: true })).toBeVisible();
   await nomadContext.close();
 
   const scoutContext = await browser.newContext();
@@ -42,30 +53,28 @@ test("community can be joined across multiple communities and members removed", 
   const betaCommunityName = uniqueName("Haven");
   await scoutPage.getByTestId("community-name-input").fill(betaCommunityName);
   await scoutPage.getByTestId("community-create-submit").click();
-  await expect(
-    scoutPage.getByRole("heading", { name: betaCommunityName, exact: true })
-  ).toBeVisible();
+  await expect(scoutPage.getByText(betaCommunityName, { exact: true })).toBeVisible();
+  await scoutPage.getByTestId("community-mode-manage").click();
+  await scoutPage.getByTestId(/community-copy-invite-/).first().click();
   const betaInviteLink = await scoutPage
-    .getByTestId(/community-invite-tile-/)
-    .first()
-    .getByLabel("Invite link")
+    .getByTestId("community-invite-link-input")
     .inputValue();
+  await scoutPage.getByTestId("community-invite-close").click();
   await scoutContext.close();
 
   await page.goto(betaInviteLink);
-  await expect(
-    page.getByRole("heading", { name: betaCommunityName, exact: true })
-  ).toBeVisible();
+  await expect(page.getByText(betaCommunityName, { exact: true })).toBeVisible();
+  await page.getByTestId("community-mode-manage").click();
   const gammaCommunityName = uniqueName("Forge");
+  await page.getByTestId("community-create-open").click();
+  await expect(page.getByTestId("community-create-dialog")).toBeVisible();
   await page.getByTestId("community-name-input").fill(gammaCommunityName);
   await page.getByTestId("community-create-submit").click();
-  await expect(
-    page.getByRole("heading", { name: gammaCommunityName, exact: true })
-  ).toBeVisible();
+  await expect(page.getByText(gammaCommunityName, { exact: true })).toBeVisible();
 
   const communityFilters = page.getByTestId(/community-filter-/);
+  await page.getByTestId("community-mode-needs").click();
   await expect(communityFilters.first()).toBeVisible();
-  const communityFilterCount = await communityFilters.count();
 
   const memberFilters = page.getByTestId(/community-member-filter-/);
   await expect(memberFilters.first()).toBeVisible();
@@ -98,16 +107,24 @@ test("community can be joined across multiple communities and members removed", 
   await page.reload();
   await expect(communityFilterToDisable).toHaveAttribute("aria-pressed", "false");
 
+  await page.getByTestId("community-mode-manage").click();
+  await expect(page.getByTestId("community-management-list")).toBeVisible();
+
   const alphaManageCard = page.getByTestId(/community-manage-/).filter({
-    has: page.getByRole("heading", { name: alphaCommunityName, exact: true }),
+    hasText: alphaCommunityName,
   });
+  const alphaToggle = alphaManageCard.getByTestId(/community-toggle-/).first();
+  const alphaExpanded = await alphaToggle.getAttribute("aria-expanded");
+  if (alphaExpanded !== "true") {
+    await alphaToggle.click();
+  }
   await expect(
     alphaManageCard
       .getByText("Nomad", { exact: true })
   ).toBeVisible();
 
   await alphaManageCard
-    .getByRole("button", { name: /Remove User Nomad|Sever Uplink Nomad/ })
+    .getByRole("button", { name: /Remove Nomad|Entfernen Nomad/ })
     .click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.getByRole("button", { name: "Confirm", exact: true }).click();

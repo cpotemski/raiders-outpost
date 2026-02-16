@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
@@ -25,6 +26,7 @@ type OnboardingProject = {
 };
 
 export function AuthGate() {
+  const router = useRouter();
   const { identity, ready, saveIdentity } = useLocalIdentity();
   const { locale, ready: localeReady } = useLocale();
   const labels = useLabels();
@@ -170,6 +172,7 @@ export function AuthGate() {
       const nextName =
         typeof payload.user.name === "string" ? payload.user.name : trimmed;
       saveIdentity(nextName, payload.user.token);
+      router.replace("/projects");
     } catch {
       setErrorKey("authFailed");
     } finally {
@@ -206,6 +209,7 @@ export function AuthGate() {
       const nextName =
         typeof payload.user.name === "string" ? payload.user.name : "User";
       saveIdentity(nextName, payload.user.token);
+      router.replace("/projects");
     } catch {
       setErrorKey("codeInvalid");
     } finally {
