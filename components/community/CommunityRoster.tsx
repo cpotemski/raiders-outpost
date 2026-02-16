@@ -38,7 +38,6 @@ type InviteTarget = {
 };
 
 type CommunityMode = "needs" | "manage";
-type CommunitySort = "members" | "name";
 
 export function CommunityRoster() {
   const labels = useLabels();
@@ -70,7 +69,6 @@ export function CommunityRoster() {
   const [renaming, setRenaming] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [inviteTarget, setInviteTarget] = useState<InviteTarget | null>(null);
-  const [manageSort, setManageSort] = useState<CommunitySort>("members");
   const [expandedCommunityId, setExpandedCommunityId] = useState<string | null>(null);
   const previousStatusRef = useRef(status);
   const [mode, setMode] = useLocalStorageState<CommunityMode>(
@@ -94,17 +92,14 @@ export function CommunityRoster() {
   );
   const managedCommunities = useMemo(() => {
     const sorted = [...communities];
-    if (manageSort === "name") {
-      sorted.sort((a, b) => a.name.localeCompare(b.name));
-    } else {
-      sorted.sort((a, b) => {
-        const memberDiff = b.members.length - a.members.length;
-        if (memberDiff !== 0) return memberDiff;
-        return a.name.localeCompare(b.name);
-      });
-    }
+    sorted.sort((a, b) => {
+      const createdAtDiff =
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (createdAtDiff !== 0) return createdAtDiff;
+      return a.name.localeCompare(b.name);
+    });
     return sorted;
-  }, [communities, manageSort]);
+  }, [communities]);
 
   useEffect(() => {
     if (
@@ -292,38 +287,6 @@ export function CommunityRoster() {
         </div>
         <div className="border-t border-frame2 px-2 py-3">
           <div className="space-y-3" data-testid="community-management-list">
-            <div className="flex flex-wrap items-center justify-end gap-2">
-                <span className="hud-label">{labels.sortByLabel}</span>
-                <button
-                  type="button"
-                  aria-pressed={manageSort === "members"}
-                  onClick={() => setManageSort("members")}
-                  data-testid="community-sort-members"
-                  className={cn(
-                    "h-7 border px-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
-                    manageSort === "members"
-                      ? "border-accent/80 text-text"
-                      : "border-frame2 text-muted hover:border-accent/60"
-                  )}
-                >
-                  {labels.sortByMembers}
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={manageSort === "name"}
-                  onClick={() => setManageSort("name")}
-                  data-testid="community-sort-name"
-                  className={cn(
-                    "h-7 border px-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
-                    manageSort === "name"
-                      ? "border-accent/80 text-text"
-                      : "border-frame2 text-muted hover:border-accent/60"
-                  )}
-                >
-                  {labels.sortByName}
-                </button>
-            </div>
-
             {managedCommunities.map((community) => {
                 const isExpanded = expandedCommunityId === community.id;
                 const isEditing = editingCommunityId === community.id;

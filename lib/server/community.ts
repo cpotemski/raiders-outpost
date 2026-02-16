@@ -5,6 +5,7 @@ export type CommunityPayload = {
   id: string;
   name: string;
   inviteCode: string;
+  createdAt: Date;
   members: Array<{
     id: string;
     name: string;
@@ -24,6 +25,7 @@ const mapCommunity = (community: {
   id: string;
   name: string;
   inviteCode: string;
+  createdAt: Date;
   members: Array<{
     joinedAt: Date;
     user: { id: string; name: string; activeExpeditionSlug: string | null };
@@ -32,6 +34,7 @@ const mapCommunity = (community: {
   id: community.id,
   name: community.name,
   inviteCode: community.inviteCode,
+  createdAt: community.createdAt,
   members: community.members.map((member) => ({
     id: member.user.id,
     name: member.user.name,
@@ -76,26 +79,28 @@ export const createCommunityWithOwner = async (
 export const getCommunitiesForUser = async (
   userId: string
 ): Promise<CommunityPayload[]> => {
-  const memberships = await prisma.communityMember.findMany({
-    where: { userId },
-    orderBy: { joinedAt: "asc" },
+  const communities = await prisma.community.findMany({
+    where: {
+      members: {
+        some: {
+          userId,
+        },
+      },
+    },
+    orderBy: { createdAt: "asc" },
     include: {
-      community: {
+      members: {
+        orderBy: { joinedAt: "asc" },
         include: {
-          members: {
-            orderBy: { joinedAt: "asc" },
-            include: {
-              user: {
-                select: { id: true, name: true, activeExpeditionSlug: true },
-              },
-            },
+          user: {
+            select: { id: true, name: true, activeExpeditionSlug: true },
           },
         },
       },
     },
   });
 
-  return memberships.map((membership) => mapCommunity(membership.community));
+  return communities.map(mapCommunity);
 };
 
 export const getCommunityForUser = async (

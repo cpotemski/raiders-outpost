@@ -9,6 +9,7 @@ export type Community = {
   id: string;
   name: string;
   inviteCode: string;
+  createdAt: string;
   members: CommunityMember[];
 };
 

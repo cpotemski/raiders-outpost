@@ -28,6 +28,9 @@ export function CommunityCreateForm({
       data-testid="community-create-form"
     >
       <div>
+        <div className="py-3 text-[11px] uppercase tracking-[0.08em] text-muted">
+          {labels.establishUplink}
+        </div>
         <label className="hud-label" htmlFor="community-name">
           {labels.communityNameLabel}
         </label>
