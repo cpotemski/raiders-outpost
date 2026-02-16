@@ -114,3 +114,33 @@ test("new onboarding stores active expedition and completed phases", async ({
   const activeOption = page.getByTestId(`expedition-option-${expeditionSlug}`);
   await expect(activeOption).toHaveAttribute("aria-pressed", "true");
 });
+
+test("public profile link is accessible without login", async ({
+  page,
+  browser,
+}) => {
+  await login(page, "PublicScout");
+  await openUserMenu(page);
+
+  const publicLinkField = page.getByTestId("operator-public-profile-link");
+  await expect(publicLinkField).toContainText("/public/");
+  const publicLink = await publicLinkField.textContent();
+  if (!publicLink) {
+    throw new Error("Public profile link is missing.");
+  }
+
+  const publicContext = await browser.newContext();
+  const publicPage = await publicContext.newPage();
+  await publicPage.goto(publicLink);
+
+  await expect(publicPage.getByTestId("public-profile-panel")).toBeVisible();
+  await expect(publicPage.getByTestId("public-profile-name")).toHaveText(
+    "PublicScout"
+  );
+  await expect(publicPage.getByTestId("community-needs-panel")).toBeVisible();
+  await publicPage
+    .getByTestId("public-profile-panel")
+    .screenshot({ path: "test-results/public-profile.png" });
+
+  await publicContext.close();
+});

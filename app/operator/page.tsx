@@ -18,6 +18,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ExpeditionResetDialog } from "@/components/expeditions/ExpeditionResetDialog";
 import { useExpeditionReset } from "@/hooks/useExpeditionReset";
 import { useLocale } from "@/components/locale/LocaleProvider";
+import { usePublicProfileLink } from "@/hooks/usePublicProfileLink";
 
 export default function RaiderPage() {
   const { identity, ready, clearIdentity } = useLocalIdentity();
@@ -26,6 +27,7 @@ export default function RaiderPage() {
   const { locale } = useLocale();
   const labels = useLabels();
   const [copied, setCopied] = useState(false);
+  const [profileCopied, setProfileCopied] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const { authCode } = useAuthCode(identity?.token ?? null);
   const {
@@ -40,11 +42,33 @@ export default function RaiderPage() {
     onUpdated: () => refreshProjects(),
   });
 
+  const {
+    saving: savingReset,
+    errorKey: resetErrorKey,
+    resetProgress,
+  } = useExpeditionReset({
+    token: identity?.token ?? null,
+    locale,
+    onInvalid: clearIdentity,
+    onUpdated: refreshProjects,
+  });
+  const { publicUrl, loading: loadingPublicUrl } = usePublicProfileLink({
+    token: identity?.token ?? null,
+    onInvalid: clearIdentity,
+  });
+
   const onCopy = async () => {
     if (!authCode) return;
     await copyTextToClipboard(authCode);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1400);
+  };
+
+  const onCopyPublicProfile = async () => {
+    if (!publicUrl) return;
+    await copyTextToClipboard(publicUrl);
+    setProfileCopied(true);
+    window.setTimeout(() => setProfileCopied(false), 1400);
   };
 
   const expeditionProjects = useMemo(
@@ -56,16 +80,6 @@ export default function RaiderPage() {
     },
     [allProjects]
   );
-  const {
-    saving: savingReset,
-    errorKey: resetErrorKey,
-    resetProgress,
-  } = useExpeditionReset({
-    token: identity?.token ?? null,
-    locale,
-    onInvalid: clearIdentity,
-    onUpdated: refreshProjects,
-  });
 
   const activeExpeditionLabel = useMemo(() => {
     if (!activeExpeditionSlug) return labels.noExpedition;
@@ -123,6 +137,31 @@ export default function RaiderPage() {
             </div>
             <div className="mt-2 text-[10px] uppercase tracking-[0.12em] text-muted">
               {labels.authCodeHint}
+            </div>
+          </div>
+          <div>
+            <div className="hud-label">{labels.publicProfileLinkLabel}</div>
+            <div className="mt-2 flex flex-wrap items-start gap-2">
+              <div
+                className="flex-1 rounded-[8px] border border-frame bg-panel2 px-3 py-2 font-mono text-[12px] text-text"
+                aria-label={labels.publicProfileLinkAria}
+                data-testid="operator-public-profile-link"
+              >
+                {publicUrl || (loadingPublicUrl ? "--------" : labels.noSignalTitle)}
+              </div>
+              <Button
+                type="button"
+                variant="default"
+                onClick={onCopyPublicProfile}
+                className="px-2 py-1 text-[10px]"
+                disabled={!publicUrl}
+                data-testid="operator-public-profile-copy"
+              >
+                {profileCopied ? labels.copied : labels.copy}
+              </Button>
+            </div>
+            <div className="mt-2 text-[10px] uppercase tracking-[0.12em] text-muted">
+              {labels.publicProfileLinkHint}
             </div>
           </div>
           <div>
