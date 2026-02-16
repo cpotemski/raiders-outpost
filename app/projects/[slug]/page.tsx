@@ -20,18 +20,22 @@ export default function ProjectDetailPage() {
   const queryStorageKey = `project-filter-${storageScope}-query`;
   const neededOnlyStorageKey = `project-filter-${storageScope}-needed`;
 
-  const [query, setQuery] = useLocalStorageState<string>(queryStorageKey, "", {
-    deserialize: (raw) => {
-      try {
-        const parsed = JSON.parse(raw);
-        return typeof parsed === "string" ? parsed : raw;
-      } catch {
-        return raw;
-      }
-    },
-    serialize: (value) => JSON.stringify(value),
-  });
-  const [neededOnly, setNeededOnly] = useLocalStorageState<boolean>(
+  const [query, setQuery, queryHydrated] = useLocalStorageState<string>(
+    queryStorageKey,
+    "",
+    {
+      deserialize: (raw) => {
+        try {
+          const parsed = JSON.parse(raw);
+          return typeof parsed === "string" ? parsed : raw;
+        } catch {
+          return raw;
+        }
+      },
+      serialize: (value) => JSON.stringify(value),
+    }
+  );
+  const [neededOnly, setNeededOnly, neededOnlyHydrated] = useLocalStorageState<boolean>(
     neededOnlyStorageKey,
     false,
     {
@@ -48,6 +52,7 @@ export default function ProjectDetailPage() {
       serialize: (value) => (value ? "true" : "false"),
     }
   );
+  const filtersHydrated = queryHydrated && neededOnlyHydrated;
 
   const [searchOpen, setSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -113,7 +118,11 @@ export default function ProjectDetailPage() {
             </label>
           </div>
         ) : null}
-        {loading && !project ? (
+        {!filtersHydrated ? (
+          <div className="text-sm uppercase tracking-[0.08em] text-muted">
+            {labels.scanningProjectCache}
+          </div>
+        ) : loading && !project ? (
           <div className="text-sm uppercase tracking-[0.08em] text-muted">
             {labels.scanningProjectCache}
           </div>
