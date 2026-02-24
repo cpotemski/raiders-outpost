@@ -33,6 +33,10 @@ const IMAGE_DIR = path.join(
   process.cwd(),
   "node_modules/arcraiders-data/images/items"
 );
+const UPSCALED_IMAGE_DIR = path.join(
+  process.cwd(),
+  "node_modules/arcraiders-data/images/items_upscaled"
+);
 
 type ArcItemSource = {
   id: string;
@@ -68,11 +72,13 @@ const readArcItems = (locale: AppLocale) =>
       baseItemFiles,
       overrideItemFiles,
       imageFiles,
+      upscaledImageFiles,
       overrideImageFiles,
     ] = await Promise.all([
       fs.readdir(DATA_DIR).catch(() => [] as string[]),
       listOverrideDir("items"),
       fs.readdir(IMAGE_DIR).catch(() => [] as string[]),
+      fs.readdir(UPSCALED_IMAGE_DIR).catch(() => [] as string[]),
       listOverrideDir("images", "items"),
     ]);
 
@@ -81,7 +87,11 @@ const readArcItems = (locale: AppLocale) =>
       ...overrideItemFiles.filter((file) => file.endsWith(".json")),
     ]);
 
-    const imageSet = new Set([...imageFiles, ...overrideImageFiles]);
+    const imageSet = new Set([
+      ...imageFiles,
+      ...upscaledImageFiles,
+      ...overrideImageFiles,
+    ]);
 
     const items = await Promise.all(
       [...jsonItems].sort().map(async (file) => {

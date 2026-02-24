@@ -9,9 +9,14 @@ const IMAGE_DIR = path.join(
   process.cwd(),
   "node_modules/arcraiders-data/images/items"
 );
+const UPSCALED_IMAGE_DIR = path.join(
+  process.cwd(),
+  "node_modules/arcraiders-data/images/items_upscaled"
+);
 
 const IMAGE_LOCATIONS = [
   getOverridePath("images", "items"),
+  UPSCALED_IMAGE_DIR,
   IMAGE_DIR,
 ];
 

@@ -8,6 +8,7 @@ const nextConfig = {
     ],
     "/api/arc-items/image": [
       "./node_modules/arcraiders-data/images/items/**",
+      "./node_modules/arcraiders-data/images/items_upscaled/**",
       "./data/arc-overrides/images/items/**",
     ],
     "/api/blueprints": [

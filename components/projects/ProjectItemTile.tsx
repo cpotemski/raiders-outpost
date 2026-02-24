@@ -121,7 +121,9 @@ export function ProjectItemTile({
           canDecrement ? "text-accent/80 hover:text-accent" : "text-muted/30"
         )}
       >
-        -
+        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-panel/35 drop-shadow-[0_1px_2px_rgba(0,0,0,0.65)] backdrop-blur-[1px]">
+          <span className="block h-[2px] w-2 rounded-full bg-current" aria-hidden="true" />
+        </span>
       </button>
       <button
         type="button"
@@ -146,7 +148,12 @@ export function ProjectItemTile({
           canIncrement ? "text-accent/80 hover:text-accent" : "text-muted/30"
         )}
       >
-        +
+        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-panel/35 drop-shadow-[0_1px_2px_rgba(0,0,0,0.65)] backdrop-blur-[1px]">
+          <span className="relative block h-2 w-2" aria-hidden="true">
+            <span className="absolute left-0 top-1/2 h-[2px] w-full -translate-y-1/2 rounded-full bg-current" />
+            <span className="absolute left-1/2 top-0 h-full w-[2px] -translate-x-1/2 rounded-full bg-current" />
+          </span>
+        </span>
       </button>
       {item.quantityRequired > 1 ? (
         <ProgressRing
@@ -166,7 +173,7 @@ export function ProjectItemTile({
       ) : null}
       <ItemTileMedia
         imageFile={item.imageFile}
-        wrapperClassName="pointer-events-none absolute inset-6 z-0 flex items-center justify-center sm:inset-7"
+        wrapperClassName="pointer-events-none absolute inset-2 z-0 flex items-center justify-center sm:inset-3"
         imgClassName={cn(
           "h-full w-full object-contain transition",
           isComplete
