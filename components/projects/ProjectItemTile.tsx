@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { cn } from "@/lib/cn";
 import type { ProjectItemProgress } from "@/types/projects";
 import {
@@ -17,7 +17,7 @@ type ProjectItemTileProps = {
   stripBlueprintLabel?: boolean;
 };
 
-export function ProjectItemTile({
+function ProjectItemTileComponent({
   item,
   onAdjust,
   stripBlueprintLabel,
@@ -121,7 +121,7 @@ export function ProjectItemTile({
           canDecrement ? "text-accent/80 hover:text-accent" : "text-muted/30"
         )}
       >
-        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-panel/35 drop-shadow-[0_1px_2px_rgba(0,0,0,0.65)] backdrop-blur-[1px]">
+        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-panel/55">
           <span className="block h-[2px] w-2 rounded-full bg-current" aria-hidden="true" />
         </span>
       </button>
@@ -148,7 +148,7 @@ export function ProjectItemTile({
           canIncrement ? "text-accent/80 hover:text-accent" : "text-muted/30"
         )}
       >
-        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-panel/35 drop-shadow-[0_1px_2px_rgba(0,0,0,0.65)] backdrop-blur-[1px]">
+        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-panel/55">
           <span className="relative block h-2 w-2" aria-hidden="true">
             <span className="absolute left-0 top-1/2 h-[2px] w-full -translate-y-1/2 rounded-full bg-current" />
             <span className="absolute left-1/2 top-0 h-full w-[2px] -translate-x-1/2 rounded-full bg-current" />
@@ -190,3 +190,5 @@ export function ProjectItemTile({
     </div>
   );
 }
+
+export const ProjectItemTile = memo(ProjectItemTileComponent);

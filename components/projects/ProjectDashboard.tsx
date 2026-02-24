@@ -49,6 +49,9 @@ export function ProjectDashboard({
   const filteredStages = useMemo(() => {
     if (!activeProject) return [];
     const q = query.trim().toLowerCase();
+    if (!neededOnly && !q) {
+      return activeProject.stages;
+    }
     return activeProject.stages.map((stage) => ({
       ...stage,
       items: stage.items.filter((item) => {
@@ -63,6 +66,20 @@ export function ProjectDashboard({
       }),
     }));
   }, [activeProject, neededOnly, query]);
+
+  const sortedStages = useMemo(
+    () => filteredStages.slice().sort((a, b) => a.sortOrder - b.sortOrder),
+    [filteredStages]
+  );
+
+  const stageItemsByKey = useMemo(() => {
+    if (!activeProject) {
+      return new Map<string, ProjectProgress["stages"][number]["items"]>();
+    }
+    return new Map(
+      activeProject.stages.map((stage) => [stage.stageKey, stage.items])
+    );
+  }, [activeProject]);
 
   const stageCompletionStatus = useMemo(() => {
     if (!activeProject) return {};
@@ -108,6 +125,23 @@ export function ProjectDashboard({
       }
     },
     [setVisitedProjects, VISITED_LAYOUT_STORAGE_KEY]
+  );
+
+  const handleToggleCompletedStage = useCallback(
+    (stageKey: string) => {
+      markProjectAsVisited(activeProjectId);
+      setCompletedExpansionOverrides((prev) => {
+        const current =
+          prev[stageKey] !== undefined
+            ? prev[stageKey]
+            : !shouldAutoCollapseCompleted;
+        return {
+          ...prev,
+          [stageKey]: !current,
+        };
+      });
+    },
+    [activeProjectId, markProjectAsVisited, shouldAutoCollapseCompleted]
   );
 
   useEffect(() => {
@@ -208,14 +242,8 @@ export function ProjectDashboard({
   return activeProject ? (
     <div className="flex flex-col gap-4 pb-24">
       <div className="divide-y divide-frame2/70 border border-frame2/70 bg-panel/70">
-        {filteredStages
-          .slice()
-          .sort((a, b) => a.sortOrder - b.sortOrder)
-          .map((stage, index) => {
-            const fullStage = activeProject.stages.find(
-              (entry) => entry.stageKey === stage.stageKey
-            );
-            const progressItems = fullStage?.items ?? stage.items;
+        {sortedStages.map((stage) => {
+            const progressItems = stageItemsByKey.get(stage.stageKey) ?? stage.items;
             const isCompleted = progressItems.length
               ? progressItems.every(
                   (item) =>
@@ -249,22 +277,9 @@ export function ProjectDashboard({
                 isExpanded={isExpanded}
                 showCompletionEffect={shouldShowCompletionEffect}
                 disableCollapseAnimation={disableCollapseAnimation}
-                onToggleExpanded={() => {
-                  markProjectAsVisited(activeProjectId);
-                  setCompletedExpansionOverrides((prev) => {
-                    const current =
-                      prev[stage.stageKey] !== undefined
-                        ? prev[stage.stageKey]
-                        : !shouldAutoCollapseCompleted;
-                    return {
-                      ...prev,
-                      [stage.stageKey]: !current,
-                    };
-                  });
-                }}
+                onToggleExpanded={handleToggleCompletedStage}
                 stripBlueprintLabel={activeProject.kind === "blueprints"}
                 progressItems={progressItems}
-                isFirst={index === 0}
               />
             );
           })}

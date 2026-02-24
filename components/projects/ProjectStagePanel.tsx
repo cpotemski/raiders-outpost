@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -13,15 +13,14 @@ type ProjectStagePanelProps = {
   stage: ProjectStageProgress;
   onAdjust: (projectItemId: string, nextQuantity: number) => void;
   isExpanded: boolean;
-  onToggleExpanded: () => void;
+  onToggleExpanded: (stageKey: string) => void;
   stripBlueprintLabel?: boolean;
   progressItems?: ProjectStageProgress["items"];
   showCompletionEffect?: boolean;
   disableCollapseAnimation?: boolean;
-  isFirst?: boolean;
 };
 
-export function ProjectStagePanel({
+function ProjectStagePanelComponent({
   stage,
   onAdjust,
   isExpanded,
@@ -30,7 +29,6 @@ export function ProjectStagePanel({
   progressItems,
   showCompletionEffect = false,
   disableCollapseAnimation = false,
-  isFirst = false,
 }: ProjectStagePanelProps) {
   const labels = useLabels();
   const [contentMounted, setContentMounted] = useState(isExpanded);
@@ -149,7 +147,7 @@ export function ProjectStagePanel({
             {isCompleted ? (
               <button
                 type="button"
-                onClick={onToggleExpanded}
+                onClick={() => onToggleExpanded(stage.stageKey)}
                 onPointerUp={handleTogglePointerUp}
                 aria-label={isExpanded ? labels.hide : labels.show}
                 title={isExpanded ? labels.hide : labels.show}
@@ -214,3 +212,5 @@ export function ProjectStagePanel({
     </div>
   );
 }
+
+export const ProjectStagePanel = memo(ProjectStagePanelComponent);

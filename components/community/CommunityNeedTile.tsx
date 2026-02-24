@@ -59,7 +59,7 @@ export function CommunityNeedTile({
       </span>
       <ItemTileMedia
         imageFile={imageFile}
-        wrapperClassName="pointer-events-none absolute inset-6 z-0 flex items-center justify-center sm:inset-7"
+        wrapperClassName="pointer-events-none absolute inset-4 z-0 flex items-center justify-center sm:inset-4"
         imgClassName="h-full w-full object-contain opacity-90 drop-shadow-[0_0_6px_rgba(72,199,214,0.25)] transition group-hover:opacity-100"
         filterStyle="saturate(1.15) contrast(1.1) brightness(1.04)"
         fallback={

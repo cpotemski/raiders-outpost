@@ -10,6 +10,43 @@ const getIdentityHeaders = (token: string, name: string) => ({
   "x-arc-name": name,
 });
 
+const updatePayloadItemQuantity = (
+  prev: ProjectProgressPayload,
+  projectItemId: string,
+  nextQuantity: number
+) => {
+  for (let projectIndex = 0; projectIndex < prev.projects.length; projectIndex += 1) {
+    const project = prev.projects[projectIndex];
+    for (let stageIndex = 0; stageIndex < project.stages.length; stageIndex += 1) {
+      const stage = project.stages[stageIndex];
+      for (let itemIndex = 0; itemIndex < stage.items.length; itemIndex += 1) {
+        const item = stage.items[itemIndex];
+        if (item.projectItemId !== projectItemId) continue;
+
+        const required = item.quantityRequired ?? 0;
+        const boundedQuantity =
+          required > 0 ? Math.max(0, Math.min(required, nextQuantity)) : 0;
+        if (item.quantityOwned === boundedQuantity) {
+          return prev;
+        }
+
+        const nextItems = [...stage.items];
+        nextItems[itemIndex] = { ...item, quantityOwned: boundedQuantity };
+
+        const nextStages = [...project.stages];
+        nextStages[stageIndex] = { ...stage, items: nextItems };
+
+        const nextProjects = [...prev.projects];
+        nextProjects[projectIndex] = { ...project, stages: nextStages };
+
+        return { ...prev, projects: nextProjects };
+      }
+    }
+  }
+
+  return prev;
+};
+
 export const useProjectProgress = (
   locale: AppLocale,
   localeReady: boolean
@@ -99,28 +136,7 @@ export const useProjectProgress = (
       if (!identity) return;
       setPayload((prev) => {
         if (!prev) return prev;
-        const targetItem = prev.projects
-          .flatMap((project) => project.stages)
-          .flatMap((stage) => stage.items)
-          .find((item) => item.projectItemId === projectItemId);
-        const currentOwned = targetItem?.quantityOwned ?? 0;
-        const required = targetItem?.quantityRequired ?? 0;
-        const boundedQuantity =
-          required > 0 ? Math.max(0, Math.min(required, nextQuantity)) : 0;
-
-        return {
-          ...prev,
-          projects: prev.projects.map((project) => ({
-            ...project,
-            stages: project.stages.map((stage) => ({
-              ...stage,
-              items: stage.items.map((item) => {
-                if (item.projectItemId !== projectItemId) return item;
-                return { ...item, quantityOwned: boundedQuantity };
-              }),
-            })),
-          })),
-        };
+        return updatePayloadItemQuantity(prev, projectItemId, nextQuantity);
       });
 
       const persistedQuantity = Math.max(0, nextQuantity);
