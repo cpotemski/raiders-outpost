@@ -1,15 +1,4 @@
 {
   "id": "tactical_mk3_revival_blueprint",
-  "name": {
-    "en": "Tactical Mk. 3 (Revival) Blueprint"
-  },
-  "description": {
-    "en": "Lets you craft Tactical MK. 3 (Revival) Blueprint."
-  },
-  "type": "Blueprint",
-  "rarity": "Legendary",
-  "value": 5000,
-  "weightKg": 0,
-  "imageFilename": "tactical_mk3_revival_blueprint.webp",
-  "updatedAt": "02/02/2026"
+  "imageFilename": "tactical_mk3_revival_blueprint.webp"
 }

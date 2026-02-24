@@ -173,7 +173,7 @@ export function ProjectItemTile({
       ) : null}
       <ItemTileMedia
         imageFile={item.imageFile}
-        wrapperClassName="pointer-events-none absolute inset-2 z-0 flex items-center justify-center sm:inset-3"
+        wrapperClassName="pointer-events-none absolute inset-4 z-0 flex items-center justify-center sm:inset-4"
         imgClassName={cn(
           "h-full w-full object-contain transition",
           isComplete
