@@ -4,7 +4,11 @@ import { loadArcProjects } from "@/lib/arc-projects";
 import { loadArcItems } from "@/lib/arc-items";
 import { getCommunitiesForUser, getCommunityForUser } from "@/lib/server/community";
 import type { AppLocale } from "@/lib/locale";
-import { isExpeditionProjectSlug } from "@/lib/expeditions";
+import {
+  getAvailableExpeditionSlug,
+  isExpeditionProjectSlug,
+  sanitizeCompletedExpeditionSlugs,
+} from "@/lib/expeditions";
 import { isUserToggleProject } from "@/lib/project-categories";
 import { applyAdminProjectFilters, getAdminSettings } from "@/lib/server/admin-settings";
 import {
@@ -138,20 +142,43 @@ export const getProjectProgress = async (
     loadArcItems(locale),
     ensureProjects(projectsPayload),
   ]);
-  const toggleableProjectSlugs = new Set(
-    filteredPayload.projects
-      .filter((project) => isUserToggleProject(project))
-      .map((project) => project.slug)
-  );
+  const expeditionSlugList = filteredPayload.projects
+    .filter((project) => isExpeditionProjectSlug(project.slug))
+    .map((project) => project.slug);
+  const expeditionSlugs = new Set(expeditionSlugList);
   const activeUser = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       activeExpeditionSlug: true,
+      completedExpeditionSlugs: true,
       inactiveProjectSlugs: true,
       expeditionResetDismissedCycle: true,
       expeditionResetCompletedCycle: true,
     },
   });
+  const completedExpeditionSlugs = sanitizeCompletedExpeditionSlugs(
+    activeUser?.completedExpeditionSlugs ?? [],
+    expeditionSlugList
+  );
+  const activeExpeditionSlugFromUser =
+    activeUser?.activeExpeditionSlug &&
+    expeditionSlugs.has(activeUser.activeExpeditionSlug)
+      ? activeUser.activeExpeditionSlug
+      : null;
+  const activeExpeditionSlug =
+    activeExpeditionSlugFromUser ??
+    (completedExpeditionSlugs.length
+      ? getAvailableExpeditionSlug(completedExpeditionSlugs, expeditionSlugList)
+      : null);
+  const toggleableProjectSlugs = new Set(
+    filteredPayload.projects
+      .filter((project) =>
+        isUserToggleProject(project, {
+          availableExpeditionSlug: activeExpeditionSlug,
+        })
+      )
+      .map((project) => project.slug)
+  );
   const inactiveProjectSlugs = normalizeSlugList(
     (activeUser?.inactiveProjectSlugs ?? []).filter((slug) =>
       toggleableProjectSlugs.has(slug)
@@ -171,11 +198,6 @@ export const getProjectProgress = async (
   );
 
   const projectItemIdByStage = new Map<string, Map<string, string>>();
-  const expeditionSlugs = new Set(
-    filteredPayload.projects
-      .filter((project) => isExpeditionProjectSlug(project.slug))
-      .map((project) => project.slug)
-  );
   const projectSlugByItemId = new Map<string, string>();
   const isExpeditionByItemId = new Map<string, boolean>();
 
@@ -333,10 +355,11 @@ export const getProjectProgress = async (
   return {
     projects,
     inactiveProjectSlugs,
+    completedExpeditionSlugs,
     memberCount,
     expeditionMemberCountsBySlug,
     communityCountsByItemId,
-    activeExpeditionSlug: activeUser?.activeExpeditionSlug ?? null,
+    activeExpeditionSlug,
     expeditionReset: {
       cycleId: EXPEDITION_RESET_CYCLE_ID,
       noticeStartIso: EXPEDITION_RESET_NOTICE_START_ISO,
@@ -350,7 +373,7 @@ export const getProjectProgress = async (
         EXPEDITION_RESET_CYCLE_ID,
       showNotice:
         noticeActive &&
-        Boolean(activeUser?.activeExpeditionSlug) &&
+        Boolean(activeExpeditionSlug) &&
         activeUser?.expeditionResetDismissedCycle !==
           EXPEDITION_RESET_CYCLE_ID &&
         activeUser?.expeditionResetCompletedCycle !==
@@ -807,9 +830,17 @@ export const updateUserInactiveProjectSlugs = async (
     getAdminSettings(),
   ]);
   const filteredPayload = applyAdminProjectFilters(projectsPayload, settings);
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { activeExpeditionSlug: true },
+  });
   const allowedProjectSlugs = new Set(
     filteredPayload.projects
-      .filter((project) => isUserToggleProject(project))
+      .filter((project) =>
+        isUserToggleProject(project, {
+          availableExpeditionSlug: user?.activeExpeditionSlug ?? null,
+        })
+      )
       .map((project) => project.slug)
   );
   const sanitized = normalizeSlugList(inactiveProjectSlugs).filter((slug) =>

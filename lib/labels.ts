@@ -79,9 +79,6 @@ const en = {
   onboardingNewIntroTitle: "Welcome to Raiders Outpost",
   onboardingNewIntroBody:
     "Track what you need in Arc Raiders for blueprints, hideout workbenches, projects, and expeditions.",
-  onboardingProjectsTitle: "Core Categories",
-  onboardingProjectsBody:
-    "Set your baseline for each category so progress starts in the right state.",
   onboardingBlueprintsTitle: "Blueprints",
   onboardingBlueprintsBody:
     "Mark blueprint stages as completed if you already finished them.",
@@ -90,10 +87,14 @@ const en = {
     "Mark hideout workbench stages as completed when done.",
   onboardingCategoryProjectsTitle: "Projects",
   onboardingCategoryProjectsBody:
-    "Mark project stages as completed for projects you already finished.",
+    "Enable projects you want to track. You can disable them any time.",
   onboardingExpeditionsTitle: "Expeditions",
   onboardingExpeditionsBody:
-    "Select the expedition you are currently tracking. Then choose how many phases are already completed.",
+    "Mark expeditions you have already completed. We will pick your next available expedition automatically.",
+  onboardingCompletedExpeditionsLabel: "Completed expeditions",
+  onboardingAvailableExpeditionLabel: "Available expedition",
+  onboardingTrackAvailableExpedition: "Track available expedition",
+  onboardingNoAvailableExpedition: "All expeditions completed",
   onboardingNoExpeditions: "No expeditions",
   onboardingPhasesCompletedLabel: "Phases completed",
   onboardingBack: "Back",
@@ -239,9 +240,6 @@ const de: Labels = {
   onboardingNewIntroTitle: "Willkommen bei Raiders Outpost",
   onboardingNewIntroBody:
     "Verfolge, was du in Arc Raiders für Blueprints, Werkbänke, Projekte und Expeditionen brauchst.",
-  onboardingProjectsTitle: "Kernkategorien",
-  onboardingProjectsBody:
-    "Setze je Kategorie eine Ausgangsbasis, damit dein Fortschritt korrekt startet.",
   onboardingBlueprintsTitle: "Blueprints",
   onboardingBlueprintsBody:
     "Markiere Blueprint-Stufen als abgeschlossen, wenn du sie bereits fertig hast.",
@@ -250,10 +248,14 @@ const de: Labels = {
     "Markiere Werkbank-Stufen als abgeschlossen, wenn erledigt.",
   onboardingCategoryProjectsTitle: "Projekte",
   onboardingCategoryProjectsBody:
-    "Markiere Projektstufen als abgeschlossen, die du bereits erledigt hast.",
+    "Aktiviere Projekte, die du verfolgen willst. Du kannst sie jederzeit deaktivieren.",
   onboardingExpeditionsTitle: "Expeditionen",
   onboardingExpeditionsBody:
-    "Wähle die Expedition, die du gerade verfolgst. Danach, wie viele Phasen bereits abgeschlossen sind.",
+    "Markiere Expeditionen, die du bereits abgeschlossen hast. Wir wählen deine nächste verfügbare Expedition automatisch.",
+  onboardingCompletedExpeditionsLabel: "Abgeschlossene Expeditionen",
+  onboardingAvailableExpeditionLabel: "Verfügbare Expedition",
+  onboardingTrackAvailableExpedition: "Verfügbare Expedition verfolgen",
+  onboardingNoAvailableExpedition: "Alle Expeditionen abgeschlossen",
   onboardingNoExpeditions: "Keine Expeditionen",
   onboardingPhasesCompletedLabel: "Phasen abgeschlossen",
   onboardingBack: "Zurück",

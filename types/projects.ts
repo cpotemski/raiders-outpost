@@ -30,6 +30,7 @@ export type ProjectProgress = {
 export type ProjectProgressPayload = {
   projects: ProjectProgress[];
   inactiveProjectSlugs: string[];
+  completedExpeditionSlugs: string[];
   memberCount: number;
   expeditionMemberCountsBySlug: Record<string, number>;
   communityCountsByItemId: Record<string, number>;

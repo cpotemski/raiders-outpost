@@ -160,7 +160,7 @@ test("notice can be dismissed and operator reset remains available", async ({ pa
   await expect(page.getByTestId("expedition-reset-notice")).toBeVisible();
 
   const dismissResponse = page.waitForResponse((response) => {
-    return (
+    return Boolean(
       response.url().includes("/api/user/expedition/reset") &&
       response.request().postData()?.includes('"mode":"dismiss"')
     );

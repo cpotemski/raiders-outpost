@@ -4,7 +4,11 @@ import { normalizeLocale } from "@/lib/locale";
 import { applyAdminProjectFilters, getAdminSettings } from "@/lib/server/admin-settings";
 import { ensureProjects } from "@/lib/server/projects";
 import { getTokenFromRequest } from "@/lib/server/requests";
-import { getNextExpeditionSlug, isExpeditionProjectSlug } from "@/lib/expeditions";
+import {
+  getAvailableExpeditionSlug,
+  isExpeditionProjectSlug,
+  sanitizeCompletedExpeditionSlugs,
+} from "@/lib/expeditions";
 import { EXPEDITION_RESET_CYCLE_ID } from "@/lib/expedition-reset";
 
 export const runtime = "nodejs";
@@ -33,6 +37,8 @@ export const POST = async (request: Request) => {
     select: {
       id: true,
       activeExpeditionSlug: true,
+      completedExpeditionSlugs: true,
+      inactiveProjectSlugs: true,
     },
   });
 
@@ -82,9 +88,34 @@ export const POST = async (request: Request) => {
     .map((project) => project.slug);
 
   const startNextExpedition = body?.startNextExpedition === true;
-  const nextExpeditionSlug = startNextExpedition
-    ? getNextExpeditionSlug(user.activeExpeditionSlug ?? null, expeditionSlugs)
-    : null;
+  const completedSet = new Set(
+    sanitizeCompletedExpeditionSlugs(
+      user.completedExpeditionSlugs ?? [],
+      expeditionSlugs
+    )
+  );
+  if (
+    user.activeExpeditionSlug &&
+    expeditionSlugs.includes(user.activeExpeditionSlug)
+  ) {
+    completedSet.add(user.activeExpeditionSlug);
+  }
+  const nextCompletedExpeditionSlugs = sanitizeCompletedExpeditionSlugs(
+    Array.from(completedSet),
+    expeditionSlugs
+  );
+  const nextExpeditionSlug = getAvailableExpeditionSlug(
+    nextCompletedExpeditionSlugs,
+    expeditionSlugs
+  );
+  const nextInactiveProjectSlugs = new Set(user.inactiveProjectSlugs ?? []);
+  if (nextExpeditionSlug) {
+    if (startNextExpedition) {
+      nextInactiveProjectSlugs.delete(nextExpeditionSlug);
+    } else {
+      nextInactiveProjectSlugs.add(nextExpeditionSlug);
+    }
+  }
 
   const projectItems = await prisma.projectItem.findMany({
     where: {
@@ -114,6 +145,10 @@ export const POST = async (request: Request) => {
       where: { id: user.id },
       data: {
         activeExpeditionSlug: nextExpeditionSlug,
+        completedExpeditionSlugs: nextCompletedExpeditionSlugs,
+        inactiveProjectSlugs: Array.from(nextInactiveProjectSlugs).sort((a, b) =>
+          a.localeCompare(b)
+        ),
         expeditionResetCompletedCycle: EXPEDITION_RESET_CYCLE_ID,
         expeditionResetDismissedCycle: EXPEDITION_RESET_CYCLE_ID,
       },

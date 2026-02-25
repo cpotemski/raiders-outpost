@@ -75,12 +75,16 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const visibleProjects = useMemo(
     () =>
       projectsWithExpeditionFilter.filter((project) => {
-        if (!isUserToggleProject(project)) {
+        if (
+          !isUserToggleProject(project, {
+            availableExpeditionSlug: activeExpeditionSlug,
+          })
+        ) {
           return true;
         }
         return !inactiveProjectSlugSet.has(project.slug);
       }),
-    [inactiveProjectSlugSet, projectsWithExpeditionFilter]
+    [activeExpeditionSlug, inactiveProjectSlugSet, projectsWithExpeditionFilter]
   );
 
   const toggleProjectActive = useCallback((slug: string) => {

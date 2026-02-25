@@ -23,7 +23,7 @@ const resolveBackCategory = (value: string | null) => {
 export default function ProjectDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const searchParams = useSearchParams();
-  const { projects, loading } = useProjectContext();
+  const { projects, loading, activeExpeditionSlug } = useProjectContext();
   const labels = useLabels();
   const storageScope = slug ?? "global";
   const queryStorageKey = `project-filter-${storageScope}-query`;
@@ -76,7 +76,11 @@ export default function ProjectDetailPage() {
     return projects.find((entry) => entry.slug === slug) ?? null;
   }, [projects, slug]);
   const categoryFromQuery = resolveBackCategory(searchParams.get("from"));
-  const categoryFromProject = project ? getProjectDisplayCategory(project) : null;
+  const categoryFromProject = project
+    ? getProjectDisplayCategory(project, {
+        availableExpeditionSlug: activeExpeditionSlug,
+      })
+    : null;
   const backCategory = categoryFromQuery ?? categoryFromProject ?? "projects";
   const isBlueprintProject = project?.kind === "blueprints";
   const filtersReady = !isBlueprintProject || filtersHydrated;

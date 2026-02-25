@@ -36,6 +36,37 @@ export const orderExpeditionProjects = <T extends { slug: string }>(
   });
 };
 
+export const sanitizeCompletedExpeditionSlugs = (
+  completedSlugs: string[],
+  availableSlugs: string[]
+) => {
+  const ordered = orderExpeditionSlugs(availableSlugs);
+  const completedSet = new Set(
+    completedSlugs.filter((slug) => ordered.includes(slug))
+  );
+  const sanitized: string[] = [];
+
+  for (const slug of ordered) {
+    if (!completedSet.has(slug)) {
+      break;
+    }
+    sanitized.push(slug);
+  }
+
+  return sanitized;
+};
+
+export const getAvailableExpeditionSlug = (
+  completedSlugs: string[],
+  availableSlugs: string[]
+) => {
+  const ordered = orderExpeditionSlugs(availableSlugs);
+  const completed = new Set(
+    sanitizeCompletedExpeditionSlugs(completedSlugs, availableSlugs)
+  );
+  return ordered.find((slug) => !completed.has(slug)) ?? null;
+};
+
 export const getNextExpeditionSlug = (
   currentSlug: string | null,
   availableSlugs: string[]

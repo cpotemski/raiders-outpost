@@ -16,6 +16,7 @@ export const getUserByToken = async (token: string) => {
       name: true,
       token: true,
       activeExpeditionSlug: true,
+      completedExpeditionSlugs: true,
       createdAt: true,
     },
   });
@@ -30,6 +31,7 @@ export const updateUserName = async (token: string, name: string) => {
       name: true,
       token: true,
       activeExpeditionSlug: true,
+      completedExpeditionSlugs: true,
       createdAt: true,
     },
   });
@@ -45,6 +47,7 @@ export const upsertUserWithToken = async (name: string, token: string) => {
       name: true,
       token: true,
       activeExpeditionSlug: true,
+      completedExpeditionSlugs: true,
       createdAt: true,
     },
   });
@@ -70,6 +73,30 @@ export const updateUserExpedition = async (
     select: {
       id: true,
       activeExpeditionSlug: true,
+    },
+  });
+};
+
+export const updateUserExpeditionProgress = async (
+  token: string,
+  input: {
+    activeExpeditionSlug: string | null;
+    completedExpeditionSlugs: string[];
+  }
+) => {
+  return prisma.user.update({
+    where: { token },
+    data: {
+      activeExpeditionSlug: input.activeExpeditionSlug,
+      completedExpeditionSlugs: input.completedExpeditionSlugs,
+    },
+    select: {
+      id: true,
+      name: true,
+      token: true,
+      activeExpeditionSlug: true,
+      completedExpeditionSlugs: true,
+      createdAt: true,
     },
   });
 };
@@ -127,6 +154,7 @@ export const getUserByPublicProfileSlug = async (slug: string) => {
       name: true,
       publicProfileSlug: true,
       activeExpeditionSlug: true,
+      completedExpeditionSlugs: true,
       createdAt: true,
     },
   });

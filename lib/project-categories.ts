@@ -3,8 +3,13 @@ import { isExpeditionProjectSlug } from "@/lib/expeditions";
 
 export type ProjectDisplayCategory = "blueprints" | "hideout" | "projects";
 
+type ProjectCategoryOptions = {
+  availableExpeditionSlug?: string | null;
+};
+
 export const getProjectDisplayCategory = (
-  project: Pick<ProjectProgress, "kind" | "slug">
+  project: Pick<ProjectProgress, "kind" | "slug">,
+  options?: ProjectCategoryOptions
 ): ProjectDisplayCategory | null => {
   if (project.kind === "blueprints") {
     return "blueprints";
@@ -12,7 +17,13 @@ export const getProjectDisplayCategory = (
   if (project.kind === "workshop") {
     return "hideout";
   }
-  if (project.kind === "project" && !isExpeditionProjectSlug(project.slug)) {
+  if (project.kind !== "project") {
+    return null;
+  }
+  if (!isExpeditionProjectSlug(project.slug)) {
+    return "projects";
+  }
+  if (options?.availableExpeditionSlug === project.slug) {
     return "projects";
   }
   return null;
@@ -22,12 +33,14 @@ export const filterProjectsByCategory = <
   T extends Pick<ProjectProgress, "kind" | "slug">
 >(
   projects: T[],
-  category: ProjectDisplayCategory
+  category: ProjectDisplayCategory,
+  options?: ProjectCategoryOptions
 ) =>
   projects.filter(
-    (project) => getProjectDisplayCategory(project) === category
+    (project) => getProjectDisplayCategory(project, options) === category
   );
 
 export const isUserToggleProject = (
-  project: Pick<ProjectProgress, "kind" | "slug">
-) => getProjectDisplayCategory(project) === "projects";
+  project: Pick<ProjectProgress, "kind" | "slug">,
+  options?: ProjectCategoryOptions
+) => getProjectDisplayCategory(project, options) === "projects";

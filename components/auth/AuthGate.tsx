@@ -8,7 +8,10 @@ import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
 import { useLocale } from "@/components/locale/LocaleProvider";
 import { cn } from "@/lib/cn";
 import { useLabels } from "@/components/locale/useLabels";
-import { orderExpeditionProjects } from "@/lib/expeditions";
+import {
+  orderExpeditionProjects,
+  sanitizeCompletedExpeditionSlugs,
+} from "@/lib/expeditions";
 import { filterProjectsByCategory } from "@/lib/project-categories";
 
 type OnboardingStage = {
@@ -46,11 +49,8 @@ export function AuthGate() {
   const [projectSelections, setProjectSelections] = useState<
     Record<string, boolean>
   >({});
-  const [selectedExpeditionSlug, setSelectedExpeditionSlug] = useState<
-    string | null
-  >(null);
-  const [selectedExpeditionCompletedPhases, setSelectedExpeditionCompletedPhases] =
-    useState(0);
+  const [completedExpeditionSelections, setCompletedExpeditionSelections] =
+    useState<Record<string, boolean>>({});
   const isNewFlow = flow === "new";
   const isExistingFlow = flow === "existing";
 
@@ -61,8 +61,7 @@ export function AuthGate() {
     setName("");
     setCode("");
     setProjectSelections({});
-    setSelectedExpeditionSlug(null);
-    setSelectedExpeditionCompletedPhases(0);
+    setCompletedExpeditionSelections({});
   };
 
   useEffect(() => {
@@ -91,15 +90,16 @@ export function AuthGate() {
       ),
     [onboardingProjects]
   );
-  const selectedExpedition = useMemo(
+  const completedExpeditionSlugs = useMemo(
     () =>
-      selectedExpeditionSlug
-        ? expeditionProjects.find((project) => project.slug === selectedExpeditionSlug) ??
-          null
-        : null,
-    [expeditionProjects, selectedExpeditionSlug]
+      sanitizeCompletedExpeditionSlugs(
+        expeditionProjects
+          .filter((project) => completedExpeditionSelections[project.slug])
+          .map((project) => project.slug),
+        expeditionProjects.map((project) => project.slug)
+      ),
+    [completedExpeditionSelections, expeditionProjects]
   );
-  const selectedExpeditionPhaseMax = selectedExpedition?.stages.length ?? 0;
   const nonExpeditionProjects = useMemo(
     () => onboardingProjects.filter((project) => !project.isExpedition),
     [onboardingProjects]
@@ -108,21 +108,55 @@ export function AuthGate() {
     () => nonExpeditionProjects.filter((project) => project.kind !== "blueprints"),
     [nonExpeditionProjects]
   );
-  const onboardingHideout = useMemo(
-    () => filterProjectsByCategory(onboardingBaselineProjects, "hideout"),
-    [onboardingBaselineProjects]
-  );
   const onboardingProjectsOnly = useMemo(
     () => filterProjectsByCategory(onboardingBaselineProjects, "projects"),
     [onboardingBaselineProjects]
   );
+  useEffect(() => {
+    if (!onboardingProjectsOnly.length) return;
+    setProjectSelections((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      onboardingProjectsOnly.forEach((project) => {
+        if (typeof next[project.slug] !== "boolean") {
+          next[project.slug] = true;
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [onboardingProjectsOnly]);
+
+  const isProjectTracked = (slug: string) =>
+    projectSelections[slug] ?? true;
+
   const toggleProjectSelection = (slug: string) => {
-    setProjectSelections((prev) => ({ ...prev, [slug]: !prev[slug] }));
+    setProjectSelections((prev) => {
+      const currentlyTracked = prev[slug] ?? true;
+      return { ...prev, [slug]: !currentlyTracked };
+    });
   };
 
-  const selectExpedition = (slug: string | null) => {
-    setSelectedExpeditionSlug(slug);
-    setSelectedExpeditionCompletedPhases(0);
+  const toggleCompletedExpedition = (slug: string) => {
+    setCompletedExpeditionSelections((prev) => {
+      const index = expeditionProjects.findIndex((project) => project.slug === slug);
+      if (index < 0) return prev;
+
+      const isActive = prev[slug] ?? false;
+      const next = { ...prev };
+      if (!isActive) {
+        for (let current = 0; current <= index; current += 1) {
+          const currentSlug = expeditionProjects[current]?.slug;
+          if (currentSlug) next[currentSlug] = true;
+        }
+      } else {
+        for (let current = index; current < expeditionProjects.length; current += 1) {
+          const currentSlug = expeditionProjects[current]?.slug;
+          if (currentSlug) next[currentSlug] = false;
+        }
+      }
+      return next;
+    });
   };
 
   const renderBaselineCategory = (
@@ -141,7 +175,7 @@ export function AuthGate() {
       {entries.length ? (
         <div className="space-y-2">
           {entries.map((project) => {
-            const selected = !!projectSelections[project.slug];
+            const active = isProjectTracked(project.slug);
             return (
               <div
                 key={project.slug}
@@ -153,23 +187,30 @@ export function AuthGate() {
                     {project.name}
                   </div>
                 </div>
-                <label
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={active}
+                  aria-label={`${project.name} ${active ? labels.activeLabel : labels.inactiveLabel}`}
                   className={cn(
-                    "flex items-center gap-2 border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] shrink-0",
-                    selected
-                      ? "border-accent/80 text-text"
-                      : "border-frame2/70 text-muted hover:border-accent/60"
+                    "relative h-5 w-9 shrink-0 rounded-full border transition",
+                    active
+                      ? "border-accent/80 bg-accent/20"
+                      : "border-frame2/80 bg-panel hover:border-accent/70"
                   )}
-                  data-testid={`onboarding-project-complete-${project.slug}`}
+                  data-testid={`onboarding-project-toggle-${project.slug}`}
+                  onClick={() => toggleProjectSelection(project.slug)}
                 >
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={selected}
-                    onChange={() => toggleProjectSelection(project.slug)}
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border transition",
+                      active
+                        ? "left-[18px] border-accent bg-accent/90"
+                        : "left-[2px] border-frame2/80 bg-frame2"
+                    )}
                   />
-                  {labels.completeLabel}
-                </label>
+                </button>
               </div>
             );
           })}
@@ -183,34 +224,13 @@ export function AuthGate() {
   );
 
   const buildBaselinePayload = () => {
-    const selectionMap = new Map<string, Set<number>>();
-
-    for (const project of onboardingBaselineProjects) {
-      if (!project.stages.length) continue;
-      if (!projectSelections[project.slug]) continue;
-      const completed = new Set<number>();
-      project.stages.forEach((stage) => completed.add(stage.sortOrder));
-      selectionMap.set(project.slug, completed);
-    }
-
-    if (selectedExpedition && selectedExpeditionCompletedPhases > 0) {
-      const completed = new Set<number>();
-      selectedExpedition.stages
-        .slice()
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-        .slice(0, selectedExpeditionCompletedPhases)
-        .forEach((stage) => completed.add(stage.sortOrder));
-
-      if (completed.size) {
-        selectionMap.set(selectedExpedition.slug, completed);
-      }
-    }
-
-    return Array.from(selectionMap.entries()).map(([slug, stages]) => ({
-      projectSlug: slug,
-      completedStageSortOrders: Array.from(stages),
-    }));
+    return [];
   };
+
+  const buildInactiveProjectSlugs = () =>
+    onboardingProjectsOnly
+      .filter((project) => !isProjectTracked(project.slug))
+      .map((project) => project.slug);
 
   const submitNewFlow = async () => {
     if (submitting) return;
@@ -223,6 +243,7 @@ export function AuthGate() {
     setSubmitting(true);
     try {
       const baseline = buildBaselinePayload();
+      const inactiveProjectSlugs = buildInactiveProjectSlugs();
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -231,7 +252,8 @@ export function AuthGate() {
           create: true,
           locale,
           baseline,
-          activeExpeditionSlug: selectedExpeditionSlug,
+          inactiveProjectSlugs,
+          completedExpeditionSlugs,
         }),
       });
       const payload = await res.json().catch(() => null);
@@ -307,7 +329,7 @@ export function AuthGate() {
             </div>
           </div>
         </div>
-        <form className="space-y-4 px-2 py-6" onSubmit={onSubmit}>
+        <form className="space-y-4 px-2 py-2" onSubmit={onSubmit}>
           {flow === "entry" ? (
             <div className="space-y-4" data-testid="onboarding-step-account">
               <div>
@@ -428,23 +450,13 @@ export function AuthGate() {
               ) : null}
               {newStep === 1 ? (
                 <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.16em]">
-                    {labels.onboardingProjectsTitle}
-                  </div>
-                  <div className="hud-label">{labels.onboardingProjectsBody}</div>
-                  <div className="mt-3 space-y-3">
+                  <div className="space-y-2">
                     {onboardingLoading ? (
                       <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
                         {labels.scanningProjectCache}
                       </div>
                     ) : onboardingBaselineProjects.length ? (
                       <>
-                        {renderBaselineCategory(
-                          labels.onboardingHideoutTitle,
-                          labels.onboardingHideoutBody,
-                          onboardingHideout,
-                          "onboarding-hideout"
-                        )}
                         {renderBaselineCategory(
                           labels.onboardingCategoryProjectsTitle,
                           labels.onboardingCategoryProjectsBody,
@@ -473,78 +485,59 @@ export function AuthGate() {
                       </div>
                     ) : expeditionProjects.length ? (
                       <>
-                        <div className="hud-label">{labels.selectActiveExpedition}</div>
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => selectExpedition(null)}
-                            aria-pressed={selectedExpeditionSlug === null}
-                            data-testid="onboarding-expedition-active-none"
-                            className={cn(
-                              "h-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
-                              selectedExpeditionSlug === null
-                                ? "border-accent/80 text-text"
-                                : "border-frame2 text-muted hover:border-accent/60"
-                            )}
-                          >
-                            {labels.onboardingNoExpeditions}
-                          </button>
+                        <div className="hud-label">
+                          {labels.onboardingCompletedExpeditionsLabel}
+                        </div>
+                        <div className="space-y-2">
                           {expeditionProjects.map((project) => {
-                            const selected = selectedExpeditionSlug === project.slug;
+                            const completed =
+                              completedExpeditionSelections[project.slug] ?? false;
                             return (
-                              <button
+                              <div
                                 key={project.slug}
-                                type="button"
-                                onClick={() => selectExpedition(project.slug)}
-                                aria-pressed={selected}
-                                data-testid={`onboarding-expedition-active-${project.slug}`}
+                                data-testid={`onboarding-expedition-completed-${project.slug}`}
                                 className={cn(
-                                  "h-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
-                                  selected
-                                    ? "border-accent/80 text-text"
-                                    : "border-frame2 text-muted hover:border-accent/60"
+                                  "flex items-center justify-between gap-3 border px-3 py-2",
+                                  completed
+                                    ? "border-accent/80 bg-panel2/40"
+                                    : "border-frame2/70 bg-panel2/20"
                                 )}
                               >
-                                {project.name}
-                              </button>
+                                <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text">
+                                  {project.name}
+                                </div>
+                                <button
+                                  type="button"
+                                  role="switch"
+                                  aria-checked={completed}
+                                  aria-label={`${project.name} ${
+                                    completed
+                                      ? labels.completeLabel
+                                      : labels.inactiveLabel
+                                  }`}
+                                  className={cn(
+                                    "relative h-5 w-9 shrink-0 rounded-full border transition",
+                                    completed
+                                      ? "border-accent/80 bg-accent/20"
+                                      : "border-frame2/80 bg-panel hover:border-accent/70"
+                                  )}
+                                  data-testid={`onboarding-expedition-completed-toggle-${project.slug}`}
+                                  onClick={() => toggleCompletedExpedition(project.slug)}
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                    className={cn(
+                                      "absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border transition",
+                                      completed
+                                        ? "left-[18px] border-accent bg-accent/90"
+                                        : "left-[2px] border-frame2/80 bg-frame2"
+                                    )}
+                                  />
+                                </button>
+                              </div>
                             );
                           })}
                         </div>
-                        {selectedExpedition ? (
-                          <>
-                            <div className="hud-label">
-                              {labels.onboardingPhasesCompletedLabel}
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {Array.from(
-                                { length: selectedExpeditionPhaseMax + 1 },
-                                (_, index) => index
-                              ).map((phaseCount) => {
-                                const selected =
-                                  selectedExpeditionCompletedPhases === phaseCount;
-                                return (
-                                  <button
-                                    key={`expedition-phase-count-${phaseCount}`}
-                                    type="button"
-                                    onClick={() =>
-                                      setSelectedExpeditionCompletedPhases(phaseCount)
-                                    }
-                                    aria-pressed={selected}
-                                    data-testid={`onboarding-expedition-phase-${phaseCount}`}
-                                    className={cn(
-                                      "h-8 min-w-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
-                                      selected
-                                        ? "border-accent/80 text-text"
-                                        : "border-frame2 text-muted hover:border-accent/60"
-                                    )}
-                                  >
-                                    {phaseCount}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </>
-                        ) : null}
                       </>
                     ) : (
                       <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">

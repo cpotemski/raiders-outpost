@@ -14,9 +14,12 @@ export default function ProjectsPage() {
     toggleProjectActive,
     isProjectActive,
     projectVisibilityHydrated,
+    activeExpeditionSlug,
   } = useProjectContext();
   const labels = useLabels();
-  const projects = filterProjectsByCategory(allProjects, "projects");
+  const projects = filterProjectsByCategory(allProjects, "projects", {
+    availableExpeditionSlug: activeExpeditionSlug,
+  });
   const sortedProjects = projects.slice().sort((a, b) =>
     a.name.localeCompare(b.name)
   );
