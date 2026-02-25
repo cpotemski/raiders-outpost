@@ -1,4 +1,8 @@
-import { getProjectProgress, updateProjectItems } from "@/lib/server/projects";
+import {
+  getProjectProgress,
+  updateProjectItems,
+  updateUserInactiveProjectSlugs,
+} from "@/lib/server/projects";
 import { getTokenFromRequest } from "@/lib/server/requests";
 import { getUserIdByToken } from "@/lib/server/users";
 import { normalizeLocale } from "@/lib/locale";
@@ -53,8 +57,14 @@ export const PATCH = async (request: Request) => {
             Boolean(entry)
         )
     : null;
+  const inactiveProjectSlugs = Array.isArray(body?.inactiveProjectSlugs)
+    ? body.inactiveProjectSlugs
+        .filter((entry: unknown): entry is string => typeof entry === "string")
+        .map((entry: string) => entry.trim())
+        .filter(Boolean)
+    : null;
 
-  if (!updates?.length) {
+  if (!updates?.length && !inactiveProjectSlugs) {
     return Response.json({ error: "Invalid payload" }, { status: 400 });
   }
 
@@ -64,7 +74,17 @@ export const PATCH = async (request: Request) => {
     return Response.json({ error: "Unknown token" }, { status: 404 });
   }
 
-  const payload = await updateProjectItems(user.id, updates);
+  const url = new URL(request.url);
+  const locale = normalizeLocale(url.searchParams.get("locale"));
+  const [updatesPayload, inactiveSlugsPayload] = await Promise.all([
+    updates?.length ? updateProjectItems(user.id, updates) : Promise.resolve([]),
+    inactiveProjectSlugs
+      ? updateUserInactiveProjectSlugs(user.id, inactiveProjectSlugs, locale)
+      : Promise.resolve(null),
+  ]);
 
-  return Response.json({ updates: payload });
+  return Response.json({
+    updates: updatesPayload,
+    inactiveProjectSlugs: inactiveSlugsPayload,
+  });
 };

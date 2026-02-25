@@ -10,6 +10,13 @@ const getIdentityHeaders = (token: string, name: string) => ({
   "x-arc-name": name,
 });
 
+const normalizeSlugs = (slugs: string[]) => {
+  const unique = new Set(
+    slugs.map((slug) => slug.trim()).filter((slug) => slug.length > 0)
+  );
+  return Array.from(unique).sort((a, b) => a.localeCompare(b));
+};
+
 const updatePayloadItemQuantity = (
   prev: ProjectProgressPayload,
   projectItemId: string,
@@ -54,12 +61,18 @@ export const useProjectProgress = (
   const { identity, ready, clearIdentity } = useLocalIdentity();
   const [payload, setPayload] = useState<ProjectProgressPayload | null>(null);
   const [loading, setLoading] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const [refreshIndex, setRefreshIndex] = useState(0);
   const pendingUpdates = useRef<Map<string, number>>(new Map());
   const flushTimeout = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!ready || !identity || !localeReady) return;
+    if (!ready || !identity || !localeReady) {
+      setPayload(null);
+      setLoading(false);
+      setHydrated(false);
+      return;
+    }
     const controller = new AbortController();
     setLoading(true);
 
@@ -80,7 +93,10 @@ export const useProjectProgress = (
         setPayload(data);
       })
       .catch(() => null)
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        setHydrated(true);
+      });
 
     return () => controller.abort();
   }, [clearIdentity, identity, locale, localeReady, ready, refreshIndex]);
@@ -146,6 +162,55 @@ export const useProjectProgress = (
     [identity, scheduleFlush]
   );
 
+  const setInactiveProjectSlugs = useCallback(
+    (inactiveProjectSlugs: string[]) => {
+      if (!identity) return;
+      const normalized = normalizeSlugs(inactiveProjectSlugs);
+      setPayload((prev) =>
+        prev
+          ? {
+              ...prev,
+              inactiveProjectSlugs: normalized,
+            }
+          : prev
+      );
+
+      fetch(`/api/projects?locale=${locale}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...getIdentityHeaders(identity.token, identity.name),
+        },
+        body: JSON.stringify({ inactiveProjectSlugs: normalized }),
+      })
+        .then((res) => {
+          if (res.status === 401 || res.status === 404) {
+            clearIdentity();
+            return null;
+          }
+          return res.ok ? res.json() : null;
+        })
+        .then((data: { inactiveProjectSlugs?: string[] } | null) => {
+          const persisted = data?.inactiveProjectSlugs;
+          if (!Array.isArray(persisted)) return;
+          setPayload((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  inactiveProjectSlugs: normalizeSlugs(
+                    persisted.filter(
+                      (entry): entry is string => typeof entry === "string"
+                    )
+                  ),
+                }
+              : prev
+          );
+        })
+        .catch(() => null);
+    },
+    [clearIdentity, identity, locale]
+  );
+
   const allProjects = useMemo(() => payload?.projects ?? [], [payload]);
   const refresh = useCallback(() => {
     setRefreshIndex((prev) => prev + 1);
@@ -153,11 +218,14 @@ export const useProjectProgress = (
 
   return {
     loading,
+    hydrated,
     payload,
     projects: allProjects,
+    inactiveProjectSlugs: payload?.inactiveProjectSlugs ?? [],
     activeExpeditionSlug: payload?.activeExpeditionSlug ?? null,
     expeditionReset: payload?.expeditionReset ?? null,
     updateItemQuantity,
+    setInactiveProjectSlugs,
     refresh,
   };
 };

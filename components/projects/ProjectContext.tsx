@@ -10,8 +10,6 @@ import {
 } from "react";
 import { useProjectProgress } from "@/hooks/useProjectProgress";
 import { useLocale } from "@/components/locale/LocaleProvider";
-import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
-import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 import type { ProjectProgress } from "@/types/projects";
 import { isExpeditionProjectSlug } from "@/lib/expeditions";
 import { isUserToggleProject } from "@/lib/project-categories";
@@ -45,33 +43,19 @@ const ProjectContext = createContext<ProjectContextValue | null>(null);
 
 export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const { locale, ready: localeReady } = useLocale();
-  const { identity } = useLocalIdentity();
   const {
     loading,
+    hydrated,
     projects,
+    inactiveProjectSlugs,
+    setInactiveProjectSlugs,
     activeExpeditionSlug,
     expeditionReset,
     updateItemQuantity,
     refresh,
   } = useProjectProgress(locale, localeReady);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
-  const inactiveProjectsStorageKey = identity?.token
-    ? `arc:projects:inactive:${identity.token}`
-    : undefined;
-  const [inactiveProjectSlugs, setInactiveProjectSlugs, projectVisibilityHydrated] =
-    useLocalStorageState<string[]>(inactiveProjectsStorageKey, [], {
-      deserialize: (raw) => {
-        try {
-          const parsed = JSON.parse(raw);
-          return Array.isArray(parsed)
-            ? parsed.filter((entry): entry is string => typeof entry === "string")
-            : [];
-        } catch {
-          return [];
-        }
-      },
-      serialize: (value) => JSON.stringify(value),
-    });
+  const projectVisibilityHydrated = hydrated;
 
   const projectsWithExpeditionFilter = useMemo(() => {
     if (!activeExpeditionSlug) {
@@ -100,16 +84,18 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   );
 
   const toggleProjectActive = useCallback((slug: string) => {
-    setInactiveProjectSlugs((prev) => {
-      const next = new Set(prev);
-      if (next.has(slug)) {
-        next.delete(slug);
-      } else {
-        next.add(slug);
-      }
-      return Array.from(next);
-    });
-  }, [setInactiveProjectSlugs]);
+    setInactiveProjectSlugs(
+      (() => {
+        const next = new Set(inactiveProjectSlugs);
+        if (next.has(slug)) {
+          next.delete(slug);
+        } else {
+          next.add(slug);
+        }
+        return Array.from(next);
+      })()
+    );
+  }, [inactiveProjectSlugs, setInactiveProjectSlugs]);
 
   const isProjectActive = useCallback(
     (slug: string) => !inactiveProjectSlugSet.has(slug),

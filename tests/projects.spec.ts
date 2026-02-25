@@ -85,12 +85,12 @@ test("project toggles persist per user", async ({ page }) => {
   const card = page.getByTestId(`project-card-${slug}`).first();
   await expect(card).toBeVisible();
   await firstToggle.click();
-  await expect(firstToggle).toHaveAttribute("aria-pressed", "false");
+  await expect(firstToggle).toHaveAttribute("aria-checked", "false");
   await expect(page.getByTestId(`project-card-link-${slug}`)).toHaveCount(0);
 
   await page.reload();
   const toggleAfterReload = page.getByTestId(`project-toggle-${slug}`);
-  await expect(toggleAfterReload).toHaveAttribute("aria-pressed", "false");
+  await expect(toggleAfterReload).toHaveAttribute("aria-checked", "false");
   await expect(page.getByTestId(`project-card-link-${slug}`)).toHaveCount(0);
 });
 

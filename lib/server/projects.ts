@@ -5,6 +5,7 @@ import { loadArcItems } from "@/lib/arc-items";
 import { getCommunitiesForUser, getCommunityForUser } from "@/lib/server/community";
 import type { AppLocale } from "@/lib/locale";
 import { isExpeditionProjectSlug } from "@/lib/expeditions";
+import { isUserToggleProject } from "@/lib/project-categories";
 import { applyAdminProjectFilters, getAdminSettings } from "@/lib/server/admin-settings";
 import {
   EXPEDITION_RESET_CYCLE_ID,
@@ -19,6 +20,13 @@ type ProjectWithStages = Prisma.ProjectGetPayload<{
 
 let projectsSeedPromise: Promise<ProjectWithStages[]> | null = null;
 let projectsSeedSignature: string | null = null;
+
+const normalizeSlugList = (slugs: string[]) => {
+  const unique = new Set(
+    slugs.map((slug) => slug.trim()).filter((slug) => slug.length > 0)
+  );
+  return Array.from(unique).sort((a, b) => a.localeCompare(b));
+};
 
 const buildPayloadSignature = (
   payload: Awaited<ReturnType<typeof loadArcProjects>>
@@ -130,14 +138,25 @@ export const getProjectProgress = async (
     loadArcItems(locale),
     ensureProjects(projectsPayload),
   ]);
+  const toggleableProjectSlugs = new Set(
+    filteredPayload.projects
+      .filter((project) => isUserToggleProject(project))
+      .map((project) => project.slug)
+  );
   const activeUser = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       activeExpeditionSlug: true,
+      inactiveProjectSlugs: true,
       expeditionResetDismissedCycle: true,
       expeditionResetCompletedCycle: true,
     },
   });
+  const inactiveProjectSlugs = normalizeSlugList(
+    (activeUser?.inactiveProjectSlugs ?? []).filter((slug) =>
+      toggleableProjectSlugs.has(slug)
+    )
+  );
   const noticeActive = isExpeditionResetNoticeActive();
 
   const itemMetaById = new Map(
@@ -313,6 +332,7 @@ export const getProjectProgress = async (
 
   return {
     projects,
+    inactiveProjectSlugs,
     memberCount,
     expeditionMemberCountsBySlug,
     communityCountsByItemId,
@@ -365,7 +385,9 @@ export type PublicProfileNeedsPayload = {
 export const getCommunityNeeds = async (
   userId: string,
   locale: AppLocale,
-  options?: { communityIds?: string[] | null }
+  options?: {
+    communityIds?: string[] | null;
+  }
 ) => {
   const allCommunities = await getCommunitiesForUser(userId);
   const requestedCommunityIds = options?.communityIds ?? null;
@@ -382,7 +404,7 @@ export const getCommunityNeeds = async (
 
   const projectsPayload = await loadArcProjects(locale);
   const settings = await getAdminSettings();
-  const filteredPayload = applyAdminProjectFilters(projectsPayload, settings);
+  const communityPayload = applyAdminProjectFilters(projectsPayload, settings);
   const [projectRecords, arcItems] = await Promise.all([
     ensureProjects(projectsPayload),
     loadArcItems(locale),
@@ -399,7 +421,7 @@ export const getCommunityNeeds = async (
     ])
   );
   const expeditionSlugs = new Set(
-    filteredPayload.projects
+    communityPayload.projects
       .filter((project) => isExpeditionProjectSlug(project.slug))
       .map((project) => project.slug)
   );
@@ -415,7 +437,7 @@ export const getCommunityNeeds = async (
     projectItemIdByStage.set(project.slug, stageMap);
   }
 
-  const projectItems = filteredPayload.projects.flatMap((project) => {
+  const projectItems = communityPayload.projects.flatMap((project) => {
     const stageMap = projectItemIdByStage.get(project.slug) ?? new Map();
     const isExpedition = expeditionSlugs.has(project.slug);
     return project.stages.flatMap((stage) =>
@@ -478,6 +500,16 @@ export const getCommunityNeeds = async (
 
   const members = Array.from(memberById.values());
   const memberIds = members.map((member) => member.id);
+  const userProjectSettings = await prisma.user.findMany({
+    where: { id: { in: memberIds } },
+    select: { id: true, inactiveProjectSlugs: true },
+  });
+  const inactiveSlugsByMemberId = new Map(
+    userProjectSettings.map((entry) => [
+      entry.id,
+      new Set(entry.inactiveProjectSlugs),
+    ])
+  );
   const projectItemIds = projectItems.map((item) => item.projectItemId);
 
   const progress = await prisma.userProjectItem.findMany({
@@ -512,12 +544,14 @@ export const getCommunityNeeds = async (
   >();
 
   for (const member of members) {
+    const inactiveProjectSlugs = inactiveSlugsByMemberId.get(member.id);
     const activeExpedition = expeditionSlugs.has(
       member.activeExpeditionSlug ?? ""
     )
       ? member.activeExpeditionSlug
       : null;
     for (const item of projectItems) {
+      if (inactiveProjectSlugs?.has(item.projectSlug)) continue;
       if (item.isExpedition) {
         if (!activeExpedition) continue;
         if (item.projectSlug !== activeExpedition) continue;
@@ -761,6 +795,34 @@ export const getPublicProfileNeeds = async (
     ],
     items,
   };
+};
+
+export const updateUserInactiveProjectSlugs = async (
+  userId: string,
+  inactiveProjectSlugs: string[],
+  locale: AppLocale = "de"
+) => {
+  const [projectsPayload, settings] = await Promise.all([
+    loadArcProjects(locale),
+    getAdminSettings(),
+  ]);
+  const filteredPayload = applyAdminProjectFilters(projectsPayload, settings);
+  const allowedProjectSlugs = new Set(
+    filteredPayload.projects
+      .filter((project) => isUserToggleProject(project))
+      .map((project) => project.slug)
+  );
+  const sanitized = normalizeSlugList(inactiveProjectSlugs).filter((slug) =>
+    allowedProjectSlugs.has(slug)
+  );
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { inactiveProjectSlugs: sanitized },
+    select: { inactiveProjectSlugs: true },
+  });
+
+  return normalizeSlugList(updated.inactiveProjectSlugs);
 };
 
 export const updateProjectItems = async (

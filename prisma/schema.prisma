@@ -12,6 +12,7 @@ model User {
   token     String   @unique
   publicProfileSlug String? @unique
   activeExpeditionSlug String?
+  inactiveProjectSlugs String[] @default([])
   expeditionResetDismissedCycle String?
   expeditionResetCompletedCycle String?
   projectItems UserProjectItem[]
