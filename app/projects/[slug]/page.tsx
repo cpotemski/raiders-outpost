@@ -78,12 +78,22 @@ export default function ProjectDetailPage() {
   const categoryFromQuery = resolveBackCategory(searchParams.get("from"));
   const categoryFromProject = project ? getProjectDisplayCategory(project) : null;
   const backCategory = categoryFromQuery ?? categoryFromProject ?? "projects";
+  const isBlueprintProject = project?.kind === "blueprints";
+  const filtersReady = !isBlueprintProject || filtersHydrated;
+  const effectiveQuery = isBlueprintProject ? query : "";
+  const effectiveNeededOnly = isBlueprintProject ? neededOnly : false;
   const headingLabel =
     backCategory === "blueprints"
       ? labels.navBlueprints
       : backCategory === "hideout"
         ? labels.navHideout
         : labels.navProjects;
+
+  useEffect(() => {
+    if (!isBlueprintProject && searchOpen) {
+      setSearchOpen(false);
+    }
+  }, [isBlueprintProject, searchOpen]);
 
   return (
     <Panel className="overflow-hidden">
@@ -103,30 +113,34 @@ export default function ProjectDetailPage() {
             label={labels.back}
             testId="nav-back"
           />
-          <IconButton
-            type="button"
-            aria-pressed={neededOnly}
-            aria-label={labels.filterNeededOnly}
-            onClick={() => setNeededOnly((prev) => !prev)}
-            active={neededOnly}
-          >
-            <ListChecks className="h-4 w-4" aria-hidden="true" />
-            <span className="sr-only">{labels.neededOnly}</span>
-          </IconButton>
-          <IconButton
-            type="button"
-            aria-pressed={searchOpen}
-            aria-label={labels.quicksearch}
-            onClick={() => setSearchOpen((prev) => !prev)}
-            active={searchOpen}
-          >
-            <Search className="h-4 w-4" aria-hidden="true" />
-            <span className="sr-only">{labels.quicksearch}</span>
-          </IconButton>
+          {isBlueprintProject ? (
+            <>
+              <IconButton
+                type="button"
+                aria-pressed={neededOnly}
+                aria-label={labels.filterNeededOnly}
+                onClick={() => setNeededOnly((prev) => !prev)}
+                active={neededOnly}
+              >
+                <ListChecks className="h-4 w-4" aria-hidden="true" />
+                <span className="sr-only">{labels.neededOnly}</span>
+              </IconButton>
+              <IconButton
+                type="button"
+                aria-pressed={searchOpen}
+                aria-label={labels.quicksearch}
+                onClick={() => setSearchOpen((prev) => !prev)}
+                active={searchOpen}
+              >
+                <Search className="h-4 w-4" aria-hidden="true" />
+                <span className="sr-only">{labels.quicksearch}</span>
+              </IconButton>
+            </>
+          ) : null}
         </div>
       </div>
       <div className="border-t border-frame2 px-2 py-5">
-        {searchOpen ? (
+        {isBlueprintProject && searchOpen ? (
           <div className="mb-4 flex items-center gap-2">
             <label className="relative flex-1">
               <span className="sr-only">{labels.quicksearch}</span>
@@ -140,7 +154,7 @@ export default function ProjectDetailPage() {
             </label>
           </div>
         ) : null}
-        {!filtersHydrated ? (
+        {!filtersReady ? (
           <div className="text-sm uppercase tracking-[0.08em] text-muted">
             {labels.scanningProjectCache}
           </div>
@@ -151,8 +165,8 @@ export default function ProjectDetailPage() {
         ) : project ? (
           <ProjectDashboard
             project={project}
-            query={query}
-            neededOnly={neededOnly}
+            query={effectiveQuery}
+            neededOnly={effectiveNeededOnly}
           />
         ) : (
           <EmptyState className="px-2">

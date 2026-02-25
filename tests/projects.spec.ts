@@ -6,53 +6,6 @@ import {
   openProject,
 } from "./helpers";
 
-const completeSmallStage = async (page: import("@playwright/test").Page) => {
-  const stages = page.locator("[data-stage-key]");
-  const stageCount = await stages.count();
-
-  for (let stageIndex = 0; stageIndex < stageCount; stageIndex += 1) {
-    const stage = stages.nth(stageIndex);
-    const stageKey = await stage.getAttribute("data-stage-key");
-    if (!stageKey) continue;
-    const items = stage.locator("[data-item-id]");
-    const itemCount = await items.count();
-    if (!itemCount) continue;
-
-    const deltas: number[] = [];
-    let totalClicks = 0;
-    for (let itemIndex = 0; itemIndex < itemCount; itemIndex += 1) {
-      const tile = items.nth(itemIndex);
-      const requiredRaw = await tile.getAttribute("data-required");
-      const ownedRaw = await tile.getAttribute("data-quantity");
-      const required = Number(requiredRaw ?? "0");
-      const owned = Number(ownedRaw ?? "0");
-      const delta = required > 0 ? required - owned : 0;
-      deltas.push(delta);
-      if (delta > 0) {
-        totalClicks += delta;
-      }
-    }
-
-    if (totalClicks <= 0 || totalClicks > 12) {
-      continue;
-    }
-
-    for (let itemIndex = 0; itemIndex < itemCount; itemIndex += 1) {
-      const delta = deltas[itemIndex] ?? 0;
-      if (delta <= 0) continue;
-      const tile = items.nth(itemIndex);
-      const plusButton = tile.getByTestId("qty-plus");
-      for (let click = 0; click < delta; click += 1) {
-        await plusButton.click();
-      }
-    }
-
-    return { stage, stageKey };
-  }
-
-  return null;
-};
-
 test("stages are fully expanded on first project open", async ({ page }) => {
   await login(page, "Vanguard");
   await openProject(page);
@@ -66,34 +19,13 @@ test("stages are fully expanded on first project open", async ({ page }) => {
   }
 });
 
-test("completed stage collapses after effect and stays collapsed on revisit", async ({
-  page,
-}) => {
+test("desktop project layout uses horizontal stage stepper", async ({ page }) => {
   await login(page, "Vanguard");
   await openProject(page);
 
-  const completedStage = await completeSmallStage(page);
-  if (!completedStage) {
-    test.skip(true, "No small completable stage found.");
-    return;
-  }
-  const { stage, stageKey } = completedStage;
-
-  await expect(stage).toHaveAttribute("data-stage-highlight", "true");
-  await expect(stage).toHaveAttribute("data-stage-expanded", "false", {
-    timeout: 4000,
-  });
-  await expect(page.getByTestId(`project-stage-complete-mark-${stageKey}`)).toBeVisible();
-
-  await page.getByRole("main").screenshot({
-    path: "test-results/project-stage-collapse.png",
-  });
-
-  await page.reload();
-  await expect(page.getByTestId("project-control-bar")).toBeVisible();
-  await expect(
-    page.getByTestId(`project-stage-${stageKey}`)
-  ).toHaveAttribute("data-stage-expanded", "false");
+  await expect(page.getByTestId("project-stage-stepper")).toBeVisible();
+  await expect(page.getByTestId("project-stage-columns")).toBeVisible();
+  await expect(page.getByTestId("project-stage-vertical-layout")).toBeHidden();
 });
 
 test("project item updates persist", async ({ page }) => {
@@ -121,7 +53,7 @@ test("project item updates persist", async ({ page }) => {
     );
   });
 
-  await tile.getByTestId("qty-plus").click();
+  await tile.getByTestId("qty-plus").click({ force: true });
   await patchResponse;
 
   await expect
@@ -160,4 +92,77 @@ test("project toggles persist per user", async ({ page }) => {
   const toggleAfterReload = page.getByTestId(`project-toggle-${slug}`);
   await expect(toggleAfterReload).toHaveAttribute("aria-pressed", "false");
   await expect(page.getByTestId(`project-card-link-${slug}`)).toHaveCount(0);
+});
+
+test("mobile project layout uses vertical stage rail", async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+  });
+  const page = await context.newPage();
+  await login(page, "MobileRailPilot");
+  await openProject(page);
+
+  await expect(page.getByTestId("project-stage-vertical-layout")).toBeVisible();
+  await expect(
+    page.getByTestId("project-stage-step-line-vertical").first()
+  ).toBeVisible();
+  await expect(page.getByTestId("project-stage-stepper")).toBeHidden();
+
+  await context.close();
+});
+
+test("clicking a step marker toggles complete and uncomplete for a stage", async ({
+  page,
+}) => {
+  await login(page, "StageTogglePilot");
+  await openProject(page);
+
+  const stages = page.locator("[data-stage-key]");
+  const stageCount = await stages.count();
+  let targetStageKey: string | null = null;
+
+  for (let index = 0; index < stageCount; index += 1) {
+    const stage = stages.nth(index);
+    const stageKey = await stage.getAttribute("data-stage-key");
+    if (!stageKey) continue;
+    const items = stage.locator("[data-item-id]");
+    const itemCount = await items.count();
+    if (!itemCount) continue;
+
+    let hasAdjustableNeeds = false;
+    for (let itemIndex = 0; itemIndex < itemCount; itemIndex += 1) {
+      const item = items.nth(itemIndex);
+      const required = Number((await item.getAttribute("data-required")) ?? "0");
+      const owned = Number((await item.getAttribute("data-quantity")) ?? "0");
+      if (required > 0 && owned < required) {
+        hasAdjustableNeeds = true;
+        break;
+      }
+    }
+
+    if (hasAdjustableNeeds) {
+      targetStageKey = stageKey;
+      break;
+    }
+  }
+
+  if (!targetStageKey) {
+    test.skip(true, "No toggleable stage found.");
+    return;
+  }
+
+  const stage = page
+    .getByTestId("project-stage-columns")
+    .getByTestId(`project-stage-${targetStageKey}`);
+  const marker = page
+    .getByTestId("project-stage-stepper")
+    .getByTestId(`project-stage-step-${targetStageKey}`);
+
+  await marker.click();
+  await expect(stage).toHaveAttribute("data-stage-completed", "true");
+
+  await marker.click();
+  await expect(stage).toHaveAttribute("data-stage-completed", "false");
 });

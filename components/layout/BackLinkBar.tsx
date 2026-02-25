@@ -28,7 +28,7 @@ export function BackLinkBar() {
 
   return (
     <div
-      className={`mx-auto w-full max-w-[1320px] px-2 pt-2 lg:px-4 lg:pt-4 ${
+      className={`mx-auto w-full max-w-[1480px] px-2 pt-2 lg:px-4 lg:pt-4 ${
         hideOnDesktop ? "md:hidden" : ""
       }`}
     >
