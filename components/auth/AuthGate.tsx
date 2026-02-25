@@ -12,7 +12,6 @@ import {
   orderExpeditionProjects,
   sanitizeCompletedExpeditionSlugs,
 } from "@/lib/expeditions";
-import { filterProjectsByCategory } from "@/lib/project-categories";
 
 type OnboardingStage = {
   stageKey: string;
@@ -46,9 +45,6 @@ export function AuthGate() {
     OnboardingProject[]
   >([]);
   const [onboardingLoading, setOnboardingLoading] = useState(false);
-  const [projectSelections, setProjectSelections] = useState<
-    Record<string, boolean>
-  >({});
   const [completedExpeditionSelections, setCompletedExpeditionSelections] =
     useState<Record<string, boolean>>({});
   const isNewFlow = flow === "new";
@@ -60,7 +56,6 @@ export function AuthGate() {
     setErrorKey("");
     setName("");
     setCode("");
-    setProjectSelections({});
     setCompletedExpeditionSelections({});
   };
 
@@ -100,42 +95,6 @@ export function AuthGate() {
       ),
     [completedExpeditionSelections, expeditionProjects]
   );
-  const nonExpeditionProjects = useMemo(
-    () => onboardingProjects.filter((project) => !project.isExpedition),
-    [onboardingProjects]
-  );
-  const onboardingBaselineProjects = useMemo(
-    () => nonExpeditionProjects.filter((project) => project.kind !== "blueprints"),
-    [nonExpeditionProjects]
-  );
-  const onboardingProjectsOnly = useMemo(
-    () => filterProjectsByCategory(onboardingBaselineProjects, "projects"),
-    [onboardingBaselineProjects]
-  );
-  useEffect(() => {
-    if (!onboardingProjectsOnly.length) return;
-    setProjectSelections((prev) => {
-      const next = { ...prev };
-      let changed = false;
-      onboardingProjectsOnly.forEach((project) => {
-        if (typeof next[project.slug] !== "boolean") {
-          next[project.slug] = true;
-          changed = true;
-        }
-      });
-      return changed ? next : prev;
-    });
-  }, [onboardingProjectsOnly]);
-
-  const isProjectTracked = (slug: string) =>
-    projectSelections[slug] ?? true;
-
-  const toggleProjectSelection = (slug: string) => {
-    setProjectSelections((prev) => {
-      const currentlyTracked = prev[slug] ?? true;
-      return { ...prev, [slug]: !currentlyTracked };
-    });
-  };
 
   const toggleCompletedExpedition = (slug: string) => {
     setCompletedExpeditionSelections((prev) => {
@@ -159,78 +118,9 @@ export function AuthGate() {
     });
   };
 
-  const renderBaselineCategory = (
-    title: string,
-    description: string,
-    entries: OnboardingProject[],
-    testIdPrefix: string
-  ) => (
-    <div className="space-y-2">
-      <div>
-        <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text">
-          {title}
-        </div>
-        <div className="hud-label">{description}</div>
-      </div>
-      {entries.length ? (
-        <div className="space-y-2">
-          {entries.map((project) => {
-            const active = isProjectTracked(project.slug);
-            return (
-              <div
-                key={project.slug}
-                data-testid={`${testIdPrefix}-${project.slug}`}
-                className="flex items-center justify-between gap-3 border border-frame2/70 bg-panel2/40 px-3 py-2"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text">
-                    {project.name}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={active}
-                  aria-label={`${project.name} ${active ? labels.activeLabel : labels.inactiveLabel}`}
-                  className={cn(
-                    "relative h-5 w-9 shrink-0 rounded-full border transition",
-                    active
-                      ? "border-accent/80 bg-accent/20"
-                      : "border-frame2/80 bg-panel hover:border-accent/70"
-                  )}
-                  data-testid={`onboarding-project-toggle-${project.slug}`}
-                  onClick={() => toggleProjectSelection(project.slug)}
-                >
-                  <span
-                    aria-hidden="true"
-                    className={cn(
-                      "absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border transition",
-                      active
-                        ? "left-[18px] border-accent bg-accent/90"
-                        : "left-[2px] border-frame2/80 bg-frame2"
-                    )}
-                  />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
-          {labels.dataNotFound}
-        </div>
-      )}
-    </div>
-  );
-
   const buildBaselinePayload = () => {
     return [];
   };
-
-  const buildInactiveProjectSlugs = () =>
-    onboardingProjectsOnly
-      .filter((project) => !isProjectTracked(project.slug))
-      .map((project) => project.slug);
 
   const submitNewFlow = async () => {
     if (submitting) return;
@@ -243,7 +133,6 @@ export function AuthGate() {
     setSubmitting(true);
     try {
       const baseline = buildBaselinePayload();
-      const inactiveProjectSlugs = buildInactiveProjectSlugs();
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -252,7 +141,7 @@ export function AuthGate() {
           create: true,
           locale,
           baseline,
-          inactiveProjectSlugs,
+          inactiveProjectSlugs: [],
           completedExpeditionSlugs,
         }),
       });
@@ -450,30 +339,6 @@ export function AuthGate() {
               ) : null}
               {newStep === 1 ? (
                 <div>
-                  <div className="space-y-2">
-                    {onboardingLoading ? (
-                      <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
-                        {labels.scanningProjectCache}
-                      </div>
-                    ) : onboardingBaselineProjects.length ? (
-                      <>
-                        {renderBaselineCategory(
-                          labels.onboardingCategoryProjectsTitle,
-                          labels.onboardingCategoryProjectsBody,
-                          onboardingProjectsOnly,
-                          "onboarding-project"
-                        )}
-                      </>
-                    ) : (
-                      <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
-                        {labels.dataNotFound}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : null}
-              {newStep === 2 ? (
-                <div>
                   <div className="text-[11px] font-semibold uppercase tracking-[0.16em]">
                     {labels.onboardingExpeditionsTitle}
                   </div>
@@ -563,7 +428,7 @@ export function AuthGate() {
                 >
                   {labels.onboardingBack}
                 </Button>
-                {newStep < 2 ? (
+                {newStep < 1 ? (
                   <Button
                     type="button"
                     variant="primary"
@@ -577,7 +442,7 @@ export function AuthGate() {
                           return;
                         }
                       }
-                      setNewStep((prev) => Math.min(2, prev + 1));
+                      setNewStep((prev) => Math.min(1, prev + 1));
                       setErrorKey("");
                     }}
                   >
@@ -601,7 +466,7 @@ export function AuthGate() {
           {flow !== "entry" ? (
             <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-muted">
               <span>
-                {isNewFlow ? `${newStep + 1} / 3` : "1 / 1"}
+                {isNewFlow ? `${newStep + 1} / 2` : "1 / 1"}
               </span>
             </div>
           ) : null}

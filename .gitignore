@@ -6,3 +6,5 @@ node_modules
 .idea
 /test-results/*
 !/test-results/.gitkeep
+.DS_Store
+tsconfig.tsbuildinfo
