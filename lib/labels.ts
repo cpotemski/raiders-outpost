@@ -2,10 +2,14 @@ import type { AppLocale } from "@/lib/locale";
 
 const en = {
   navHome: "Home",
+  navBlueprints: "Blueprints",
+  navHideout: "Hideout",
   navProjects: "Projects",
   navCommunity: "Community",
   navOperator: "User",
   mainNavigation: "Navigation",
+  navBlueprintsSubtitle: "Track blueprint item progress.",
+  navHideoutSubtitle: "Track all hideout workbench progress.",
   navProjectsSubtitle: "Track project progress and needs.",
   navCommunitySubtitle: "Which items does my community need?",
   navOperatorSubtitle: "Configuration, expeditions, device management",
@@ -74,10 +78,19 @@ const en = {
     "Generate an auth code on your existing device (User menu) and enter it below.",
   onboardingNewIntroTitle: "Welcome to Raiders Outpost",
   onboardingNewIntroBody:
-    "Track what you need in Arc Raiders for workbenches, projects, and expeditions.",
-  onboardingProjectsTitle: "Workbenches & Projects",
+    "Track what you need in Arc Raiders for blueprints, hideout workbenches, projects, and expeditions.",
+  onboardingProjectsTitle: "Core Categories",
   onboardingProjectsBody:
-    "Workbenches & projects are your core progression. Mark what you've already completed.",
+    "Set your baseline for each category so progress starts in the right state.",
+  onboardingBlueprintsTitle: "Blueprints",
+  onboardingBlueprintsBody:
+    "Mark blueprint stages as completed if you already finished them.",
+  onboardingHideoutTitle: "Hideout",
+  onboardingHideoutBody:
+    "Mark hideout workbench stages as completed when done.",
+  onboardingCategoryProjectsTitle: "Projects",
+  onboardingCategoryProjectsBody:
+    "Mark project stages as completed for projects you already finished.",
   onboardingExpeditionsTitle: "Expeditions",
   onboardingExpeditionsBody:
     "Select the expedition you are currently tracking. Then choose how many phases are already completed.",
@@ -88,6 +101,9 @@ const en = {
   raiderNameLabel: "User Name",
   callsignPlaceholder: "Enter user name",
   completeLabel: "Complete",
+  projectActivation: "Project Activation",
+  activeLabel: "Active",
+  inactiveLabel: "Inactive",
   selectActiveExpedition: "Select active expedition",
   authCodePlaceholder: "ENTER LOGIN CODE",
   authCodeValid: "Login code valid for 5 minutes",
@@ -145,10 +161,14 @@ type Labels = Record<keyof typeof en, string>;
 
 const de: Labels = {
   navHome: "Home",
+  navBlueprints: "Blueprints",
+  navHideout: "Hideout",
   navProjects: "Projekte",
   navCommunity: "Community",
   navOperator: "User",
   mainNavigation: "Navigation",
+  navBlueprintsSubtitle: "Blueprint-Itemfortschritt verfolgen.",
+  navHideoutSubtitle: "Fortschritt aller Hideout-Werkbänke verfolgen.",
   navProjectsSubtitle: "Projektfortschritt und Bedarf verfolgen.",
   navCommunitySubtitle: "Welche Items braucht meine Community?",
   navOperatorSubtitle: "Konfiguration, Expedition, Geräteverwaltung",
@@ -218,10 +238,19 @@ const de: Labels = {
     "Erzeuge einen Auth-Code auf deinem bestehenden Gerät (User-Menü) und gib ihn unten ein.",
   onboardingNewIntroTitle: "Willkommen bei Raiders Outpost",
   onboardingNewIntroBody:
-    "Verfolge, was du in Arc-Raiders für Werkbänke, Projekte und Expeditionen brauchst.",
-  onboardingProjectsTitle: "Werkbänke & Projekte",
+    "Verfolge, was du in Arc Raiders für Blueprints, Hideout-Werkbänke, Projekte und Expeditionen brauchst.",
+  onboardingProjectsTitle: "Kernkategorien",
   onboardingProjectsBody:
-    "Werkbänke & Projekte sind dein Kernfortschritt. Markiere, was du bereits abgeschlossen hast.",
+    "Setze je Kategorie eine Ausgangsbasis, damit dein Fortschritt korrekt startet.",
+  onboardingBlueprintsTitle: "Blueprints",
+  onboardingBlueprintsBody:
+    "Markiere Blueprint-Stufen als abgeschlossen, wenn du sie bereits fertig hast.",
+  onboardingHideoutTitle: "Hideout",
+  onboardingHideoutBody:
+    "Markiere Hideout-Werkbank-Stufen als abgeschlossen, wenn erledigt.",
+  onboardingCategoryProjectsTitle: "Projekte",
+  onboardingCategoryProjectsBody:
+    "Markiere Projektstufen als abgeschlossen, die du bereits erledigt hast.",
   onboardingExpeditionsTitle: "Expeditionen",
   onboardingExpeditionsBody:
     "Wähle die Expedition, die du gerade verfolgst. Danach, wie viele Phasen bereits abgeschlossen sind.",
@@ -232,6 +261,9 @@ const de: Labels = {
   raiderNameLabel: "User-Name",
   callsignPlaceholder: "User-Name eingeben",
   completeLabel: "Fertig",
+  projectActivation: "Projektaktivierung",
+  activeLabel: "Aktiv",
+  inactiveLabel: "Inaktiv",
   selectActiveExpedition: "Aktive Expedition wählen",
   authCodePlaceholder: "LOGIN-CODE EINGEBEN",
   authCodeValid: "Login-Code 5 Minuten gültig",

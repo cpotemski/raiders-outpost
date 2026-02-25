@@ -1,8 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Home, Layers, Radar, Users } from "lucide-react";
+import { usePathname, useSearchParams } from "next/navigation";
+import {
+  Home,
+  Layers,
+  Radar,
+  Users,
+} from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
 import { useLocale } from "@/components/locale/LocaleProvider";
@@ -10,16 +15,47 @@ import { useLabels } from "@/components/locale/useLabels";
 
 export function TopNav() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { locale, setLocale } = useLocale();
   const labels = useLabels();
   const { identity, ready } = useLocalIdentity();
   const isHome = pathname === "/";
   const showNav = ready && Boolean(identity);
+  const categoryFromDetail = pathname.startsWith("/projects/")
+    ? searchParams.get("from")
+    : null;
   const desktopNavItems = [
+    {
+      href: "/blueprints",
+      label: labels.navBlueprints,
+      isActive: Boolean(
+        pathname === "/blueprints" ||
+          pathname.startsWith("/blueprints/") ||
+          categoryFromDetail === "blueprints"
+      ),
+      testId: "blueprints",
+      Icon: Layers,
+    },
+    {
+      href: "/hideout",
+      label: labels.navHideout,
+      isActive: Boolean(
+        pathname === "/hideout" ||
+          pathname.startsWith("/hideout/") ||
+          categoryFromDetail === "hideout"
+      ),
+      testId: "hideout",
+      Icon: Layers,
+    },
     {
       href: "/projects",
       label: labels.navProjects,
-      isActive: pathname === "/projects" || pathname.startsWith("/projects/"),
+      isActive: Boolean(
+        pathname === "/projects" ||
+          pathname.startsWith("/projects/") &&
+            categoryFromDetail !== "blueprints" &&
+            categoryFromDetail !== "hideout"
+      ),
       testId: "projects",
       Icon: Layers,
     },

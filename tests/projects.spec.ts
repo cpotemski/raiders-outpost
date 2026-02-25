@@ -137,3 +137,27 @@ test("project item updates persist", async ({ page }) => {
     .poll(async () => getTileQuantity(tileAfter))
     .toBe(before + 1);
 });
+
+test("project toggles persist per user", async ({ page }) => {
+  await login(page, "TogglePilot");
+  await page.goto("/projects");
+
+  const firstToggle = page.locator('[data-testid^="project-toggle-"]').first();
+  await expect(firstToggle).toBeVisible();
+  const toggleTestId = await firstToggle.getAttribute("data-testid");
+  const slug = toggleTestId?.replace("project-toggle-", "");
+  if (!slug) {
+    throw new Error("No project slug found for toggle.");
+  }
+
+  const card = page.getByTestId(`project-card-${slug}`).first();
+  await expect(card).toBeVisible();
+  await firstToggle.click();
+  await expect(firstToggle).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByTestId(`project-card-link-${slug}`)).toHaveCount(0);
+
+  await page.reload();
+  const toggleAfterReload = page.getByTestId(`project-toggle-${slug}`);
+  await expect(toggleAfterReload).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByTestId(`project-card-link-${slug}`)).toHaveCount(0);
+});

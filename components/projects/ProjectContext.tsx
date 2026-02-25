@@ -1,18 +1,32 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useProjectProgress } from "@/hooks/useProjectProgress";
 import { useLocale } from "@/components/locale/LocaleProvider";
+import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
+import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 import type { ProjectProgress } from "@/types/projects";
 import { isExpeditionProjectSlug } from "@/lib/expeditions";
+import { isUserToggleProject } from "@/lib/project-categories";
 
 type ProjectContextValue = {
   loading: boolean;
   allProjects: ProjectProgress[];
   projects: ProjectProgress[];
+  inactiveProjectSlugs: string[];
+  projectVisibilityHydrated: boolean;
   selectedProject: ProjectProgress | null;
   selectedSlug: string | null;
   setSelectedSlug: (slug: string) => void;
+  toggleProjectActive: (slug: string) => void;
+  isProjectActive: (slug: string) => boolean;
   activeExpeditionSlug: string | null;
   expeditionReset: {
     cycleId: string;
@@ -31,6 +45,7 @@ const ProjectContext = createContext<ProjectContextValue | null>(null);
 
 export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const { locale, ready: localeReady } = useLocale();
+  const { identity } = useLocalIdentity();
   const {
     loading,
     projects,
@@ -40,8 +55,25 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     refresh,
   } = useProjectProgress(locale, localeReady);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const inactiveProjectsStorageKey = identity?.token
+    ? `arc:projects:inactive:${identity.token}`
+    : undefined;
+  const [inactiveProjectSlugs, setInactiveProjectSlugs, projectVisibilityHydrated] =
+    useLocalStorageState<string[]>(inactiveProjectsStorageKey, [], {
+      deserialize: (raw) => {
+        try {
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed)
+            ? parsed.filter((entry): entry is string => typeof entry === "string")
+            : [];
+        } catch {
+          return [];
+        }
+      },
+      serialize: (value) => JSON.stringify(value),
+    });
 
-  const visibleProjects = useMemo(() => {
+  const projectsWithExpeditionFilter = useMemo(() => {
     if (!activeExpeditionSlug) {
       return projects.filter(
         (project) => !isExpeditionProjectSlug(project.slug)
@@ -52,6 +84,37 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       return project.slug === activeExpeditionSlug;
     });
   }, [activeExpeditionSlug, projects]);
+  const inactiveProjectSlugSet = useMemo(
+    () => new Set(inactiveProjectSlugs),
+    [inactiveProjectSlugs]
+  );
+  const visibleProjects = useMemo(
+    () =>
+      projectsWithExpeditionFilter.filter((project) => {
+        if (!isUserToggleProject(project)) {
+          return true;
+        }
+        return !inactiveProjectSlugSet.has(project.slug);
+      }),
+    [inactiveProjectSlugSet, projectsWithExpeditionFilter]
+  );
+
+  const toggleProjectActive = useCallback((slug: string) => {
+    setInactiveProjectSlugs((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) {
+        next.delete(slug);
+      } else {
+        next.add(slug);
+      }
+      return Array.from(next);
+    });
+  }, [setInactiveProjectSlugs]);
+
+  const isProjectActive = useCallback(
+    (slug: string) => !inactiveProjectSlugSet.has(slug),
+    [inactiveProjectSlugSet]
+  );
 
   useEffect(() => {
     if (!visibleProjects.length) return;
@@ -75,9 +138,13 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       loading,
       allProjects: projects,
       projects: visibleProjects,
+      inactiveProjectSlugs,
+      projectVisibilityHydrated,
       selectedProject,
       selectedSlug,
       setSelectedSlug,
+      toggleProjectActive,
+      isProjectActive,
       activeExpeditionSlug,
       expeditionReset: expeditionReset ?? null,
       updateItemQuantity,
@@ -87,8 +154,12 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       loading,
       projects,
       visibleProjects,
+      inactiveProjectSlugs,
+      projectVisibilityHydrated,
       selectedProject,
       selectedSlug,
+      toggleProjectActive,
+      isProjectActive,
       activeExpeditionSlug,
       expeditionReset,
       updateItemQuantity,

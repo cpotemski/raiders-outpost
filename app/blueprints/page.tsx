@@ -1,34 +1,21 @@
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ProjectDashboard } from "@/components/projects/ProjectDashboard";
-import { useProjectContext } from "@/components/projects/ProjectContext";
 import { ListChecks, Search } from "lucide-react";
+import { useProjectContext } from "@/components/projects/ProjectContext";
 import { useLabels } from "@/components/locale/useLabels";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
-import { BackButton } from "@/components/layout/BackButton";
+import { filterProjectsByCategory } from "@/lib/project-categories";
+import { ProjectDashboard } from "@/components/projects/ProjectDashboard";
 import { Panel } from "@/components/ui/Panel";
 import { IconButton } from "@/components/ui/IconButton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { getProjectDisplayCategory } from "@/lib/project-categories";
 
-const resolveBackCategory = (value: string | null) => {
-  if (value === "blueprints" || value === "hideout" || value === "projects") {
-    return value;
-  }
-  return null;
-};
-
-export default function ProjectDetailPage() {
-  const { slug } = useParams<{ slug: string }>();
-  const searchParams = useSearchParams();
+export default function BlueprintsPage() {
   const { projects, loading } = useProjectContext();
   const labels = useLabels();
-  const storageScope = slug ?? "global";
-  const queryStorageKey = `project-filter-${storageScope}-query`;
-  const neededOnlyStorageKey = `project-filter-${storageScope}-needed`;
-
+  const queryStorageKey = "project-filter-blueprints-query";
+  const neededOnlyStorageKey = "project-filter-blueprints-needed";
   const [query, setQuery, queryHydrated] = useLocalStorageState<string>(
     queryStorageKey,
     "",
@@ -62,7 +49,6 @@ export default function ProjectDetailPage() {
     }
   );
   const filtersHydrated = queryHydrated && neededOnlyHydrated;
-
   const [searchOpen, setSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -72,37 +58,21 @@ export default function ProjectDetailPage() {
     }
   }, [searchOpen]);
 
-  const project = useMemo(() => {
-    return projects.find((entry) => entry.slug === slug) ?? null;
-  }, [projects, slug]);
-  const categoryFromQuery = resolveBackCategory(searchParams.get("from"));
-  const categoryFromProject = project ? getProjectDisplayCategory(project) : null;
-  const backCategory = categoryFromQuery ?? categoryFromProject ?? "projects";
-  const headingLabel =
-    backCategory === "blueprints"
-      ? labels.navBlueprints
-      : backCategory === "hideout"
-        ? labels.navHideout
-        : labels.navProjects;
+  const blueprintProject = useMemo(
+    () => filterProjectsByCategory(projects, "blueprints")[0] ?? null,
+    [projects]
+  );
 
   return (
     <Panel className="overflow-hidden">
       <div className="arc-panel-header flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="hud-label">{headingLabel}</p>
+          <p className="hud-label">{labels.navBlueprints}</p>
           <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
-            {project ? project.name : labels.projectSelection}
+            {blueprintProject ? blueprintProject.name : labels.navBlueprints}
           </h2>
         </div>
-        <div
-          className="flex flex-wrap items-center gap-2"
-          data-testid="project-control-bar"
-        >
-          <BackButton
-            href={`/${backCategory}`}
-            label={labels.back}
-            testId="nav-back"
-          />
+        <div className="flex flex-wrap items-center gap-2">
           <IconButton
             type="button"
             aria-pressed={neededOnly}
@@ -144,13 +114,13 @@ export default function ProjectDetailPage() {
           <div className="text-sm uppercase tracking-[0.08em] text-muted">
             {labels.scanningProjectCache}
           </div>
-        ) : loading && !project ? (
+        ) : loading && !blueprintProject ? (
           <div className="text-sm uppercase tracking-[0.08em] text-muted">
             {labels.scanningProjectCache}
           </div>
-        ) : project ? (
+        ) : blueprintProject ? (
           <ProjectDashboard
-            project={project}
+            project={blueprintProject}
             query={query}
             neededOnly={neededOnly}
           />

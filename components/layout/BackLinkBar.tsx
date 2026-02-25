@@ -6,6 +6,8 @@ import { BackButton } from "@/components/layout/BackButton";
 
 const getBackHref = (pathname: string) => {
   if (pathname.startsWith("/projects/")) return "/projects";
+  if (pathname.startsWith("/blueprints")) return "/";
+  if (pathname.startsWith("/hideout")) return "/";
   if (pathname.startsWith("/projects")) return "/";
   return "/";
 };
@@ -18,6 +20,8 @@ export function BackLinkBar() {
 
   const backHref = getBackHref(pathname);
   const hideOnDesktop =
+    pathname.startsWith("/blueprints") ||
+    pathname.startsWith("/hideout") ||
     pathname.startsWith("/projects") ||
     pathname.startsWith("/community") ||
     pathname.startsWith("/operator");

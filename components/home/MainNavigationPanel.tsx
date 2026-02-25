@@ -1,12 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { Layers, Users, Radar } from "lucide-react";
+import { Layers, Radar, Users } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useLabels } from "@/components/locale/useLabels";
 import { Panel } from "@/components/ui/Panel";
 
 const navItems = [
+  {
+    href: "/blueprints",
+    titleKey: "navBlueprints",
+    subtitleKey: "navBlueprintsSubtitle",
+    Icon: Layers,
+  },
+  {
+    href: "/hideout",
+    titleKey: "navHideout",
+    subtitleKey: "navHideoutSubtitle",
+    Icon: Layers,
+  },
   {
     href: "/projects",
     titleKey: "navProjects",
@@ -38,7 +50,7 @@ export function MainNavigationPanel() {
         </p>
       </div>
       <div className="border-t border-frame2 bg-panel/70 px-2 py-4">
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {navItems.map((item) => (
             <Link
               key={item.href}

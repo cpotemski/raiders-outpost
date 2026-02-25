@@ -9,6 +9,7 @@ import { useLocale } from "@/components/locale/LocaleProvider";
 import { cn } from "@/lib/cn";
 import { useLabels } from "@/components/locale/useLabels";
 import { orderExpeditionProjects } from "@/lib/expeditions";
+import { filterProjectsByCategory } from "@/lib/project-categories";
 
 type OnboardingStage = {
   stageKey: string;
@@ -103,6 +104,18 @@ export function AuthGate() {
     () => onboardingProjects.filter((project) => !project.isExpedition),
     [onboardingProjects]
   );
+  const onboardingBlueprints = useMemo(
+    () => filterProjectsByCategory(nonExpeditionProjects, "blueprints"),
+    [nonExpeditionProjects]
+  );
+  const onboardingHideout = useMemo(
+    () => filterProjectsByCategory(nonExpeditionProjects, "hideout"),
+    [nonExpeditionProjects]
+  );
+  const onboardingProjectsOnly = useMemo(
+    () => filterProjectsByCategory(nonExpeditionProjects, "projects"),
+    [nonExpeditionProjects]
+  );
   const toggleProjectSelection = (slug: string) => {
     setProjectSelections((prev) => ({ ...prev, [slug]: !prev[slug] }));
   };
@@ -111,6 +124,63 @@ export function AuthGate() {
     setSelectedExpeditionSlug(slug);
     setSelectedExpeditionCompletedPhases(0);
   };
+
+  const renderBaselineCategory = (
+    title: string,
+    description: string,
+    entries: OnboardingProject[],
+    testIdPrefix: string
+  ) => (
+    <div className="space-y-2">
+      <div>
+        <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text">
+          {title}
+        </div>
+        <div className="hud-label">{description}</div>
+      </div>
+      {entries.length ? (
+        <div className="space-y-2">
+          {entries.map((project) => {
+            const selected = !!projectSelections[project.slug];
+            return (
+              <div
+                key={project.slug}
+                data-testid={`${testIdPrefix}-${project.slug}`}
+                className="flex items-center justify-between gap-3 border border-frame2/70 bg-panel2/40 px-3 py-2"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text">
+                    {project.name}
+                  </div>
+                </div>
+                <label
+                  className={cn(
+                    "flex items-center gap-2 border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] shrink-0",
+                    selected
+                      ? "border-accent/80 text-text"
+                      : "border-frame2/70 text-muted hover:border-accent/60"
+                  )}
+                  data-testid={`onboarding-project-complete-${project.slug}`}
+                >
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={selected}
+                    onChange={() => toggleProjectSelection(project.slug)}
+                  />
+                  {labels.completeLabel}
+                </label>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
+          {labels.dataNotFound}
+        </div>
+      )}
+    </div>
+  );
 
   const buildBaselinePayload = () => {
     const selectionMap = new Map<string, Set<number>>();
@@ -368,43 +438,26 @@ export function AuthGate() {
                         {labels.scanningProjectCache}
                       </div>
                     ) : nonExpeditionProjects.length ? (
-                      <div className="space-y-2">
-                        {nonExpeditionProjects.map((project) => {
-                          const selected = !!projectSelections[project.slug];
-                          return (
-                            <div
-                              key={project.slug}
-                              data-testid={`onboarding-project-${project.slug}`}
-                              className="flex items-center justify-between gap-3 border border-frame2/70 bg-panel2/40 px-3 py-2"
-                            >
-                              <div className="min-w-0 flex-1">
-                                <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text">
-                                  {project.name}
-                                </div>
-                              </div>
-                              <label
-                                className={cn(
-                                  "flex items-center gap-2 border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] shrink-0",
-                                  selected
-                                    ? "border-accent/80 text-text"
-                                    : "border-frame2/70 text-muted hover:border-accent/60"
-                                )}
-                                data-testid={`onboarding-project-complete-${project.slug}`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  className="sr-only"
-                                  checked={selected}
-                                  onChange={() =>
-                                    toggleProjectSelection(project.slug)
-                                  }
-                                />
-                                {labels.completeLabel}
-                              </label>
-                            </div>
-                          );
-                        })}
-                      </div>
+                      <>
+                        {renderBaselineCategory(
+                          labels.onboardingBlueprintsTitle,
+                          labels.onboardingBlueprintsBody,
+                          onboardingBlueprints,
+                          "onboarding-blueprints"
+                        )}
+                        {renderBaselineCategory(
+                          labels.onboardingHideoutTitle,
+                          labels.onboardingHideoutBody,
+                          onboardingHideout,
+                          "onboarding-hideout"
+                        )}
+                        {renderBaselineCategory(
+                          labels.onboardingCategoryProjectsTitle,
+                          labels.onboardingCategoryProjectsBody,
+                          onboardingProjectsOnly,
+                          "onboarding-project"
+                        )}
+                      </>
                     ) : (
                       <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
                         {labels.dataNotFound}

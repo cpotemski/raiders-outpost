@@ -57,8 +57,12 @@ export const openProject = async (page: Page, slug?: string) => {
     ? page.getByTestId(`project-card-${slug}`).first()
     : page.locator('[data-testid^="project-card-"]').first();
   await expect(card).toBeVisible();
-  await card.click();
-  await expect(page).toHaveURL(/\/projects\/[^/]+$/);
+  const link = slug
+    ? page.getByTestId(`project-card-link-${slug}`).first()
+    : page.locator('[data-testid^="project-card-link-"]').first();
+  await expect(link).toBeVisible();
+  await link.click();
+  await expect(page).toHaveURL(/\/projects\/[^/?]+(\?.*)?$/);
 };
 
 export const getTileQuantity = async (tile: Locator) => {

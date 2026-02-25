@@ -1,59 +1,59 @@
 "use client";
 
-import { useMemo } from "react";
 import { useProjectContext } from "@/components/projects/ProjectContext";
 import { useLabels } from "@/components/locale/useLabels";
-import { ProjectCardSection } from "@/components/projects/ProjectCardSection";
-import {
-  getProjectCards,
-  splitProjectCards,
-} from "@/components/projects/projectCards";
-import { Panel } from "@/components/ui/Panel";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { filterProjectsByCategory } from "@/lib/project-categories";
+import { ProjectSelectionPanel } from "@/components/projects/ProjectSelectionPanel";
+import { getProjectCards } from "@/components/projects/projectCards";
+import { useMemo } from "react";
 
 export default function ProjectsPage() {
-  const { projects, loading } = useProjectContext();
+  const {
+    allProjects,
+    loading,
+    toggleProjectActive,
+    isProjectActive,
+    projectVisibilityHydrated,
+  } = useProjectContext();
   const labels = useLabels();
-
-  const projectCards = useMemo(() => getProjectCards(projects), [projects]);
-  const { pending: pendingProjects, completed: completedProjects } =
-    useMemo(() => splitProjectCards(projectCards), [projectCards]);
+  const projects = filterProjectsByCategory(allProjects, "projects");
+  const sortedProjects = projects.slice().sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+  const cards = useMemo(
+    () =>
+      getProjectCards(sortedProjects, (project) =>
+        isProjectActive(project.slug)
+          ? `/projects/${project.slug}?from=projects`
+          : null
+      ).map((card) => ({
+        ...card,
+        toggle: {
+          active: isProjectActive(card.project.slug),
+          activeLabel: labels.activeLabel,
+          inactiveLabel: labels.inactiveLabel,
+          onToggle: () => toggleProjectActive(card.project.slug),
+          testId: `project-toggle-${card.project.slug}`,
+        },
+      })),
+    [
+      isProjectActive,
+      labels.activeLabel,
+      labels.inactiveLabel,
+      sortedProjects,
+      toggleProjectActive,
+    ]
+  );
 
   return (
     <div className="flex flex-col gap-4">
-      <Panel className="overflow-hidden">
-        <div className="arc-panel-header">
-          <div>
-            <p className="hud-label text-sm font-semibold tracking-[0.14em]">
-              {labels.projectSelection}
-            </p>
-          </div>
-        </div>
-        <div className="border-t border-frame2 bg-panel/70 px-2 py-4">
-          {loading && !projects.length ? (
-            <EmptyState>
-              {labels.scanningProjectCache}
-            </EmptyState>
-          ) : (
-            <div className="flex flex-col gap-5">
-              <ProjectCardSection
-                title={labels.activeProject}
-                countLabel={`${labels.activeProject}: ${pendingProjects.length}`}
-                cards={pendingProjects}
-                emptyLabel={labels.noActiveProjects}
-                testId="project-list"
-              />
-              <ProjectCardSection
-                title={labels.archived}
-                countLabel={`${labels.archived}: ${completedProjects.length}`}
-                cards={completedProjects}
-                emptyLabel={labels.noProjectsCompleted}
-                testId="project-list-completed"
-              />
-            </div>
-          )}
-        </div>
-      </Panel>
+      <ProjectSelectionPanel
+        title={labels.navProjects}
+        projects={sortedProjects}
+        loading={loading || !projectVisibilityHydrated}
+        testIdPrefix="project"
+        cards={cards}
+      />
     </div>
   );
 }

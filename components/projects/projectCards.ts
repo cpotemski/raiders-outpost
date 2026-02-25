@@ -15,11 +15,19 @@ const HIDEOUT_SLUGS = new Set([
 
 export type ProjectCardData = {
   project: ProjectProgress;
+  href: string | null;
   completedCount: number;
   totalCount: number;
   isCompleted: boolean;
   progressRatio: number;
   progressPercent: number;
+  toggle?: {
+    active: boolean;
+    activeLabel: string;
+    inactiveLabel: string;
+    onToggle: () => void;
+    testId: string;
+  };
 };
 
 const getPriority = (project: ProjectProgress) => {
@@ -29,7 +37,10 @@ const getPriority = (project: ProjectProgress) => {
   return 2;
 };
 
-export const getProjectCards = (projects: ProjectProgress[]) => {
+export const getProjectCards = (
+  projects: ProjectProgress[],
+  getHref?: (project: ProjectProgress) => string | null
+) => {
   const ordered = projects.slice().sort((a, b) => {
     const priorityDiff = getPriority(a) - getPriority(b);
     if (priorityDiff !== 0) return priorityDiff;
@@ -43,6 +54,7 @@ export const getProjectCards = (projects: ProjectProgress[]) => {
 
     return {
       project,
+      href: getHref ? getHref(project) : `/projects/${project.slug}`,
       completedCount,
       totalCount,
       isCompleted,

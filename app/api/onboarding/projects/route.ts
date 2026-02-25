@@ -15,7 +15,6 @@ export const GET = async (request: Request) => {
   const filteredPayload = applyAdminProjectFilters(payload, settings);
 
   const projects = filteredPayload.projects
-    .filter((project) => project.kind !== "blueprints")
     .map((project) => {
       const stages = project.stages
         .map((stage) => ({
