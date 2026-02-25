@@ -3,7 +3,29 @@ import { expect, type Locator, type Page } from "@playwright/test";
 const NAME_KEY = "arc:identity:name";
 const TOKEN_KEY = "arc:identity:token";
 
+export const resetAdminSettings = async (page: Page) => {
+  const response = await page.request.patch(
+    "/api/admin/settings?password=playwright",
+    {
+      data: {
+        disabledProjectSlugs: [],
+        disabledItemIds: [],
+      },
+    }
+  );
+
+  // In production-like setups admin access is intentionally hidden.
+  if (response.ok() || response.status() === 404) {
+    return;
+  }
+
+  throw new Error(
+    `Failed to reset admin settings for test run: ${response.status()}`
+  );
+};
+
 export const login = async (page: Page, name = "Vanguard") => {
+  await resetAdminSettings(page);
   await page.goto("/");
   await page.evaluate(() => {
     localStorage.clear();

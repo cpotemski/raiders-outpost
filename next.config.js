@@ -11,10 +11,6 @@ const nextConfig = {
       "./node_modules/arcraiders-data/images/items_upscaled/**",
       "./data/arc-overrides/images/items/**",
     ],
-    "/api/blueprints": [
-      "./node_modules/arcraiders-data/items/**",
-      "./data/arc-overrides/items/**",
-    ],
     "/api/projects": [
       "./node_modules/arcraiders-data/projects.json",
       "./node_modules/arcraiders-data/hideout/**",

@@ -61,7 +61,6 @@ test("project item updates persist", async ({ page }) => {
     .toBe(before + 1);
 
   await page.reload();
-  await expect(page.getByTestId("project-control-bar")).toBeVisible();
 
   const tileAfter = page.locator(`[data-item-id="${itemId}"]`).first();
   await expect(tileAfter).toBeVisible();

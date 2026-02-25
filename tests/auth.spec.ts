@@ -56,7 +56,7 @@ test("auth code links an existing account", async ({ page, browser }) => {
   await context.close();
 });
 
-test("new onboarding stores active expedition and completed phases", async ({
+test("new onboarding stores completed expeditions", async ({
   page,
 }) => {
   await page.goto("/");
@@ -69,23 +69,25 @@ test("new onboarding stores active expedition and completed phases", async ({
   await page.getByTestId("onboarding-select-new").click();
   await page.locator("#operator-name").fill("PhaseRunner");
   await page.getByTestId("onboarding-next").click();
-  await expect(page.locator('[data-testid^="onboarding-blueprints-"]')).toHaveCount(0);
-  await page.getByTestId("onboarding-next").click();
-
-  const expeditionButton = page
-    .locator('[data-testid^="onboarding-expedition-active-expedition_project"]')
-    .first();
-  await expect(expeditionButton).toBeVisible();
-  const expeditionTestId = await expeditionButton.getAttribute("data-testid");
+  const expeditionToggle = page
+    .locator('[data-testid^="onboarding-expedition-completed-toggle-"]')
+    .nth(1);
+  const hasSecondExpedition = (await expeditionToggle.count()) > 0;
+  const selectedToggle = hasSecondExpedition
+    ? expeditionToggle
+    : page
+        .locator('[data-testid^="onboarding-expedition-completed-toggle-"]')
+        .first();
+  await expect(selectedToggle).toBeVisible();
+  const expeditionTestId = await selectedToggle.getAttribute("data-testid");
   const expeditionSlug = expeditionTestId?.replace(
-    "onboarding-expedition-active-",
+    "onboarding-expedition-completed-toggle-",
     ""
   );
   if (!expeditionSlug) {
-    throw new Error("Could not resolve selected expedition slug.");
+    throw new Error("Could not resolve completed expedition slug.");
   }
-  await expeditionButton.click();
-  await page.getByTestId("onboarding-expedition-phase-1").click();
+  await selectedToggle.click();
 
   const authRequestPromise = page.waitForRequest((request) => {
     return request.url().includes("/api/auth") && request.method() === "POST";
@@ -94,15 +96,11 @@ test("new onboarding stores active expedition and completed phases", async ({
   await page.getByTestId("onboarding-submit").click();
   const authRequest = await authRequestPromise;
   const authPayload = authRequest.postDataJSON() as {
-    activeExpeditionSlug?: string | null;
-    baseline?: { projectSlug: string; completedStageSortOrders: number[] }[];
+    completedExpeditionSlugs?: string[];
   };
 
-  expect(authPayload.activeExpeditionSlug).toBe(expeditionSlug);
-  const expeditionBaseline = authPayload.baseline?.find(
-    (entry) => entry.projectSlug === expeditionSlug
-  );
-  expect(expeditionBaseline?.completedStageSortOrders.length).toBe(1);
+  expect(Array.isArray(authPayload.completedExpeditionSlugs)).toBeTruthy();
+  expect(authPayload.completedExpeditionSlugs).toContain(expeditionSlug);
 
   await expect
     .poll(async () => {
@@ -112,8 +110,10 @@ test("new onboarding stores active expedition and completed phases", async ({
     .toBe(true);
 
   await openUserMenu(page);
-  const activeOption = page.getByTestId(`expedition-option-${expeditionSlug}`);
-  await expect(activeOption).toHaveAttribute("aria-pressed", "true");
+  const completedToggle = page.getByTestId(
+    `expedition-completed-toggle-${expeditionSlug}`
+  );
+  await expect(completedToggle).toHaveAttribute("aria-checked", "true");
 });
 
 test("public profile link is accessible without login", async ({

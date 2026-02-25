@@ -7,13 +7,12 @@ export default defineConfig({
     timeout: 5_000,
   },
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: "http://127.0.0.1:4000",
     headless: true,
   },
   webServer: {
-    command:
-      "EXPEDITION_RESET_NOW=2026-03-02T12:00:00.000Z npm run dev -- --hostname 127.0.0.1 --port 3000",
-    url: "http://localhost:3000",
+    command: "EXPEDITION_RESET_NOW=2026-03-02T12:00:00.000Z npm run dev",
+    url: "http://127.0.0.1:4000",
     reuseExistingServer: true,
     timeout: 120_000,
   },

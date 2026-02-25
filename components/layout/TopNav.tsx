@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   FileText,
   Home,
@@ -17,23 +17,18 @@ import { useLabels } from "@/components/locale/useLabels";
 
 export function TopNav() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { locale, setLocale } = useLocale();
   const labels = useLabels();
   const { identity, ready } = useLocalIdentity();
   const isHome = pathname === "/";
   const showNav = ready && Boolean(identity);
-  const categoryFromDetail = pathname.startsWith("/projects/")
-    ? searchParams.get("from")
-    : null;
   const desktopNavItems = [
     {
       href: "/blueprints",
       label: labels.navBlueprints,
       isActive: Boolean(
         pathname === "/blueprints" ||
-          pathname.startsWith("/blueprints/") ||
-          categoryFromDetail === "blueprints"
+          pathname.startsWith("/blueprints/")
       ),
       testId: "blueprints",
       Icon: FileText,
@@ -43,8 +38,7 @@ export function TopNav() {
       label: labels.navHideout,
       isActive: Boolean(
         pathname === "/hideout" ||
-          pathname.startsWith("/hideout/") ||
-          categoryFromDetail === "hideout"
+          pathname.startsWith("/hideout/")
       ),
       testId: "hideout",
       Icon: Wrench,
@@ -54,9 +48,7 @@ export function TopNav() {
       label: labels.navProjects,
       isActive: Boolean(
         pathname === "/projects" ||
-          pathname.startsWith("/projects/") &&
-            categoryFromDetail !== "blueprints" &&
-            categoryFromDetail !== "hideout"
+          pathname.startsWith("/projects/")
       ),
       testId: "projects",
       Icon: ListChecks,

@@ -1,35 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
+import { login } from "./helpers";
 
 type ExpeditionProgressPayload = {
   activeExpeditionSlug: string | null;
   completedExpeditionSlugs: string[];
-};
-
-const ensureLoggedIn = async (page: Page, name: string) => {
-  await page.goto("/");
-
-  const onboardingAccount = page.getByTestId("onboarding-step-account");
-  const hasToken = await page
-    .evaluate(() => Boolean(localStorage.getItem("arc:identity:token")))
-    .catch(() => false);
-
-  if (!hasToken) {
-    await expect(onboardingAccount).toBeVisible({ timeout: 15_000 });
-    await page.getByTestId("onboarding-select-new").click();
-    await page.locator("#operator-name").fill(name);
-    await page.getByTestId("onboarding-next").click();
-
-    const nextButton = page.getByTestId("onboarding-next");
-    if (await nextButton.isVisible().catch(() => false)) {
-      await nextButton.click();
-    }
-    if (await nextButton.isVisible().catch(() => false)) {
-      await nextButton.click();
-    }
-
-    await page.getByTestId("onboarding-submit").click();
-    await expect(onboardingAccount).toBeHidden();
-  }
 };
 
 const getTokenHeader = async (page: Page) => {
@@ -60,9 +34,12 @@ const loadExpeditionProgress = async (page: Page) => {
 };
 
 test("operator expedition history enforces sequential completion", async ({ page }) => {
-  await ensureLoggedIn(page, `HistoryPilot-${Date.now().toString(36)}`);
+  await login(page, `HistoryPilot-${Date.now().toString(36)}`);
 
   await page.goto("/operator");
+  await expect(
+    page.getByText(/Scanning expedition index|Scanne Expeditionsindex/)
+  ).toBeHidden({ timeout: 15_000 });
   const toggles = page.locator('[data-testid^="expedition-completed-toggle-"]');
   const count = await toggles.count();
   expect(count).toBeGreaterThanOrEqual(2);

@@ -46,22 +46,37 @@ const loadProjects = async (page: Page) => {
   return (await response.json()) as ProjectsPayload;
 };
 
-const setActiveExpedition = async (
+const setCompletedExpeditions = async (
   page: Page,
-  expeditionSlug: string
+  completedExpeditionSlugs: string[]
 ) => {
   const headers = await getTokenHeader(page);
-  const response = await page.request.put("/api/user/expedition?locale=en", {
-    headers: {
-      "x-arc-token": headers.token,
-      "Content-Type": "application/json",
-    },
-    data: { expeditionSlug },
-  });
+  const response = await page.request.put(
+    "/api/user/expedition/progress?locale=en",
+    {
+      headers: {
+        "x-arc-token": headers.token,
+        "Content-Type": "application/json",
+      },
+      data: { completedExpeditionSlugs },
+    }
+  );
 
   if (!response.ok()) {
-    throw new Error(`Failed to set expedition: ${response.status()}`);
+    throw new Error(`Failed to set expedition progress: ${response.status()}`);
   }
+};
+
+const setActiveExpedition = async (
+  page: Page,
+  expeditionSlug: "expedition_project_s1" | "expedition_project"
+) => {
+  const completedBySlug = {
+    expedition_project_s1: [],
+    expedition_project: ["expedition_project_s1"],
+  } as const;
+
+  await setCompletedExpeditions(page, completedBySlug[expeditionSlug]);
 };
 
 test("expedition reset clears only workshop and blueprints and starts next expedition", async ({
@@ -116,25 +131,26 @@ test("expedition reset clears only workshop and blueprints and starts next exped
     throw new Error(`Failed to seed progress: ${patchResponse.status()}`);
   }
 
-  await page.goto("/");
-  await expect(page.getByTestId("expedition-reset-notice")).toBeVisible();
+  await page.goto("/operator");
+  await expect(page.getByTestId("operator-expedition-reset-open")).toBeVisible();
   await page
-    .getByTestId("expedition-reset-notice")
-    .screenshot({ path: "test-results/expedition-reset-notice.png" });
-  await page.getByTestId("expedition-reset-open-dialog").click();
+    .getByTestId("operator-expedition-reset-open")
+    .screenshot({ path: "test-results/expedition-reset-trigger.png" });
+  await page.getByTestId("operator-expedition-reset-open").click();
   await expect(page.getByTestId("expedition-reset-step-confirm")).toBeVisible();
 
   const resetResponse = page.waitForResponse((response) => {
-    return (
+    return Boolean(
       response.url().includes("/api/user/expedition/reset") &&
-      response.request().method() === "POST"
+      response.request().method() === "POST" &&
+      response.request().postData()?.includes('"mode":"reset"')
     );
   });
   await page.getByTestId("expedition-reset-confirm").click();
   const resetResult = await resetResponse;
   expect(resetResult.ok()).toBeTruthy();
-
-  await expect(page.getByTestId("expedition-reset-notice")).toBeHidden();
+  await page.waitForURL("**/", { timeout: 10_000 });
+  await page.waitForLoadState("domcontentloaded");
 
   const after = await loadProjects(page);
   const getQuantity = (projectItemId: string) =>
@@ -150,24 +166,22 @@ test("expedition reset clears only workshop and blueprints and starts next exped
   expect(after.activeExpeditionSlug).toBe("expedition_project");
 });
 
-test("notice can be dismissed and operator reset remains available", async ({ page }) => {
+test("dismiss flow keeps operator reset available", async ({ page }) => {
   await login(page, `ResetDismiss-${Date.now().toString(36)}`);
   await setActiveExpedition(page, "expedition_project");
 
-  await page.goto("/");
-  await expect(page.getByTestId("expedition-reset-notice")).toBeVisible();
-
-  const dismissResponse = page.waitForResponse((response) => {
-    return Boolean(
-      response.url().includes("/api/user/expedition/reset") &&
-      response.request().postData()?.includes('"mode":"dismiss"')
-    );
+  const headers = await getTokenHeader(page);
+  const dismissResult = await page.request.post("/api/user/expedition/reset", {
+    headers: {
+      "x-arc-token": headers.token,
+      "Content-Type": "application/json",
+    },
+    data: {
+      mode: "dismiss",
+      locale: "en",
+    },
   });
-  await page.getByTestId("expedition-reset-dismiss").click();
-  const dismissResult = await dismissResponse;
   expect(dismissResult.ok()).toBeTruthy();
-
-  await expect(page.getByTestId("expedition-reset-notice")).toBeHidden();
 
   await page.goto("/operator");
   await expect(page.getByTestId("operator-expedition-reset-open")).toBeVisible();

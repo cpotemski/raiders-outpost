@@ -80,6 +80,7 @@ model CommunityMember {
   joinedAt    DateTime  @default(now())
 
   @@unique([communityId, userId])
+  @@index([userId])
 }
 
 model AuthCode {

@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { login, syncIdentity } from "./helpers";
+import { getLocalIdentity, login, syncIdentity } from "./helpers";
 
 const uniqueName = (prefix: string) =>
   `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
 test("community defaults to manage mode when no community exists", async ({ page }) => {
   await login(page, uniqueName("FreshRaider"));
-  await page.getByRole("link", { name: /Community/ }).click();
+  await page.getByTestId("nav-community").click();
 
   await expect(page.getByTestId("community-mode-switch")).toBeVisible();
   await expect(page.getByTestId("community-mode-manage")).toHaveAttribute(
@@ -43,6 +43,7 @@ test("community can be joined across multiple communities and members removed", 
   const nomadPage = await nomadContext.newPage();
   await nomadPage.goto(alphaInviteLink);
   await syncIdentity(nomadPage, "Nomad");
+  await nomadPage.goto(alphaInviteLink);
   await expect(nomadPage.getByText(alphaCommunityName, { exact: true })).toBeVisible();
   await nomadContext.close();
 
@@ -62,7 +63,26 @@ test("community can be joined across multiple communities and members removed", 
   await scoutPage.getByTestId("community-invite-close").click();
   await scoutContext.close();
 
-  await page.goto(betaInviteLink);
+  const betaInviteCode = new URL(betaInviteLink).searchParams.get("invite");
+  if (!betaInviteCode) {
+    throw new Error("Beta invite code missing.");
+  }
+  const vanguardIdentity = await getLocalIdentity(page);
+  if (!vanguardIdentity.token) {
+    throw new Error("Missing Vanguard token.");
+  }
+  const joinBetaResponse = await page.request.post("/api/community/join", {
+    headers: {
+      "Content-Type": "application/json",
+      "x-arc-token": vanguardIdentity.token,
+    },
+    data: { code: betaInviteCode },
+  });
+  if (!joinBetaResponse.ok()) {
+    throw new Error(`Failed to join beta community: ${joinBetaResponse.status()}`);
+  }
+
+  await page.goto("/community");
   await expect(page.getByText(betaCommunityName, { exact: true })).toBeVisible();
   await page.getByTestId("community-mode-manage").click();
   const gammaCommunityName = uniqueName("Forge");
