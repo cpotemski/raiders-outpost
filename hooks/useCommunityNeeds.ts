@@ -24,7 +24,6 @@ export const useCommunityNeeds = (
     setLoading(true);
 
     const idsParam = communityIds.join(",");
-
     fetch(
       `/api/community/needs?locale=${locale}&communityIds=${encodeURIComponent(
         idsParam
@@ -50,7 +49,15 @@ export const useCommunityNeeds = (
       .finally(() => setLoading(false));
 
     return () => controller.abort();
-  }, [clearIdentity, communityIds, enabled, identity, locale, localeReady, ready]);
+  }, [
+    clearIdentity,
+    communityIds,
+    enabled,
+    identity,
+    locale,
+    localeReady,
+    ready,
+  ]);
 
   return { payload, loading };
 };

@@ -11,6 +11,7 @@ import { useCommunityRoster } from "@/hooks/useCommunityRoster";
 import { useCommunityNeeds } from "@/hooks/useCommunityNeeds";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 import { useLabels } from "@/components/locale/useLabels";
+import { useProjectContext } from "@/components/projects/ProjectContext";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
@@ -41,6 +42,7 @@ type CommunityMode = "needs" | "manage";
 
 export function CommunityRoster() {
   const labels = useLabels();
+  const { inactiveProjectSlugs } = useProjectContext();
   const {
     ready,
     identityName,
@@ -88,7 +90,8 @@ export function CommunityRoster() {
 
   const { payload: needsPayload, loading: needsLoading } = useCommunityNeeds(
     Boolean(communities.length) && activeMode === "needs",
-    selectedCommunityIdList
+    selectedCommunityIdList,
+    inactiveProjectSlugs
   );
   const managedCommunities = useMemo(() => {
     const sorted = [...communities];

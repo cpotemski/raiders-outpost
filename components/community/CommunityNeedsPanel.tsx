@@ -104,7 +104,7 @@ export function CommunityNeedsPanel({
                   {!collapsedGroups.has(group.type) ? (
                     <div
                       id={`needs-group-${group.type}`}
-                      className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 lg:gap-1.5 xl:grid-cols-9 2xl:grid-cols-10"
+                      className="grid gap-1 [grid-template-columns:repeat(auto-fill,minmax(96px,1fr))] sm:[grid-template-columns:repeat(auto-fill,minmax(112px,1fr))] lg:[grid-template-columns:repeat(auto-fill,minmax(120px,1fr))]"
                     >
                       {group.items.map((item) => (
                         <CommunityNeedTile

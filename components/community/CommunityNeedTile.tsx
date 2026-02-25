@@ -41,7 +41,7 @@ export function CommunityNeedTile({
       aria-expanded={active}
       onClick={() => onToggle(item.itemId)}
       className={cn(
-        "group relative flex aspect-square w-full select-none items-center justify-center overflow-hidden rounded-[8px] border bg-panel2/80 text-left transition [-webkit-touch-callout:none]",
+        "group relative flex aspect-square w-full max-w-[120px] justify-self-center lg:justify-self-start select-none items-center justify-center overflow-hidden rounded-[8px] border bg-panel2/80 text-left transition [-webkit-touch-callout:none]",
         "hover:border-accent/70 hover:bg-panel2/90",
         active ? "border-accent/80 shadow-arcHover" : "border-frame2"
       )}
