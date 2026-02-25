@@ -13,19 +13,9 @@ import {
   sanitizeCompletedExpeditionSlugs,
 } from "@/lib/expeditions";
 
-type OnboardingStage = {
-  stageKey: string;
-  name: string;
-  sortOrder: number;
-  itemCount: number;
-};
-
 type OnboardingProject = {
   slug: string;
   name: string;
-  kind: "workshop" | "project" | "blueprints";
-  isExpedition: boolean;
-  stages: OnboardingStage[];
 };
 
 export function AuthGate() {
@@ -79,10 +69,7 @@ export function AuthGate() {
   }, [identity, locale, localeReady, flow, ready]);
 
   const expeditionProjects = useMemo(
-    () =>
-      orderExpeditionProjects(
-        onboardingProjects.filter((project) => project.isExpedition)
-      ),
+    () => orderExpeditionProjects(onboardingProjects),
     [onboardingProjects]
   );
   const completedExpeditionSlugs = useMemo(
@@ -118,10 +105,6 @@ export function AuthGate() {
     });
   };
 
-  const buildBaselinePayload = () => {
-    return [];
-  };
-
   const submitNewFlow = async () => {
     if (submitting) return;
     setErrorKey("");
@@ -132,7 +115,6 @@ export function AuthGate() {
     }
     setSubmitting(true);
     try {
-      const baseline = buildBaselinePayload();
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -140,7 +122,6 @@ export function AuthGate() {
           name: trimmed,
           create: true,
           locale,
-          baseline,
           inactiveProjectSlugs: [],
           completedExpeditionSlugs,
         }),

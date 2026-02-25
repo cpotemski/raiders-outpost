@@ -78,16 +78,7 @@ const en = {
     "Generate an auth code on your existing device (User menu) and enter it below.",
   onboardingNewIntroTitle: "Welcome to Raiders Outpost",
   onboardingNewIntroBody:
-    "Track what you need in Arc Raiders for blueprints, hideout workbenches, projects, and expeditions.",
-  onboardingBlueprintsTitle: "Blueprints",
-  onboardingBlueprintsBody:
-    "Mark blueprint stages as completed if you already finished them.",
-  onboardingHideoutTitle: "Hideout",
-  onboardingHideoutBody:
-    "Mark hideout workbench stages as completed when done.",
-  onboardingCategoryProjectsTitle: "Projects",
-  onboardingCategoryProjectsBody:
-    "Enable projects you want to track. You can disable them any time.",
+    "Set your expedition history so we can unlock and track your next available expedition.",
   onboardingExpeditionsTitle: "Expeditions",
   onboardingExpeditionsBody:
     "Mark expeditions you have already completed. We will pick your next available expedition automatically.",
@@ -96,7 +87,6 @@ const en = {
   onboardingTrackAvailableExpedition: "Track available expedition",
   onboardingNoAvailableExpedition: "All expeditions completed",
   onboardingNoExpeditions: "No expeditions",
-  onboardingPhasesCompletedLabel: "Phases completed",
   onboardingBack: "Back",
   onboardingNext: "Next",
   raiderNameLabel: "User Name",
@@ -239,16 +229,7 @@ const de: Labels = {
     "Erzeuge einen Auth-Code auf deinem bestehenden Gerät (User-Menü) und gib ihn unten ein.",
   onboardingNewIntroTitle: "Willkommen bei Raiders Outpost",
   onboardingNewIntroBody:
-    "Verfolge, was du in Arc Raiders für Blueprints, Werkbänke, Projekte und Expeditionen brauchst.",
-  onboardingBlueprintsTitle: "Blueprints",
-  onboardingBlueprintsBody:
-    "Markiere Blueprint-Stufen als abgeschlossen, wenn du sie bereits fertig hast.",
-  onboardingHideoutTitle: "Werkstatt",
-  onboardingHideoutBody:
-    "Markiere Werkbank-Stufen als abgeschlossen, wenn erledigt.",
-  onboardingCategoryProjectsTitle: "Projekte",
-  onboardingCategoryProjectsBody:
-    "Aktiviere Projekte, die du verfolgen willst. Du kannst sie jederzeit deaktivieren.",
+    "Lege deinen Expeditionsverlauf fest, damit wir die nächste verfügbare Expedition freischalten und verfolgen können.",
   onboardingExpeditionsTitle: "Expeditionen",
   onboardingExpeditionsBody:
     "Markiere Expeditionen, die du bereits abgeschlossen hast. Wir wählen deine nächste verfügbare Expedition automatisch.",
@@ -257,7 +238,6 @@ const de: Labels = {
   onboardingTrackAvailableExpedition: "Verfügbare Expedition verfolgen",
   onboardingNoAvailableExpedition: "Alle Expeditionen abgeschlossen",
   onboardingNoExpeditions: "Keine Expeditionen",
-  onboardingPhasesCompletedLabel: "Phasen abgeschlossen",
   onboardingBack: "Zurück",
   onboardingNext: "Weiter",
   raiderNameLabel: "User-Name",

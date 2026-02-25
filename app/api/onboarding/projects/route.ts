@@ -15,25 +15,12 @@ export const GET = async (request: Request) => {
   const filteredPayload = applyAdminProjectFilters(payload, settings);
 
   const projects = filteredPayload.projects
-    .map((project) => {
-      const stages = project.stages
-        .map((stage) => ({
-          stageKey: stage.stageKey,
-          name: stage.name,
-          sortOrder: stage.sortOrder,
-          itemCount: stage.items.length,
-        }))
-        .filter((stage) => stage.itemCount > 0);
-
-      return {
-        slug: project.slug,
-        name: project.name,
-        kind: project.kind,
-        isExpedition: isExpeditionProjectSlug(project.slug),
-        stages,
-      };
-    })
-    .filter((project) => project.stages.length > 0);
+    .filter((project) => isExpeditionProjectSlug(project.slug))
+    .filter((project) => project.stages.some((stage) => stage.items.length > 0))
+    .map((project) => ({
+      slug: project.slug,
+      name: project.name,
+    }));
 
   return Response.json({ projects });
 };

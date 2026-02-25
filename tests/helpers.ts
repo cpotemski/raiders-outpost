@@ -38,15 +38,10 @@ export const login = async (page: Page, name = "Vanguard") => {
 export const syncIdentity = async (page: Page, name: string) => {
   await expect(page.getByTestId("onboarding-step-account")).toBeVisible();
   await page.getByTestId("onboarding-select-new").click();
+  await expect(page.getByTestId("onboarding-step-new")).toBeVisible();
   await page.locator("#operator-name").fill(name);
   await page.getByTestId("onboarding-next").click();
-  const nextButton = page.getByTestId("onboarding-next");
-  if (await nextButton.isVisible()) {
-    await nextButton.click();
-  }
-  if (await nextButton.isVisible()) {
-    await nextButton.click();
-  }
+  await expect(page.getByTestId("onboarding-submit")).toBeVisible();
   await page.getByTestId("onboarding-submit").click();
   await expect
     .poll(async () => {

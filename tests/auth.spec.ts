@@ -69,15 +69,13 @@ test("new onboarding stores completed expeditions", async ({
   await page.getByTestId("onboarding-select-new").click();
   await page.locator("#operator-name").fill("PhaseRunner");
   await page.getByTestId("onboarding-next").click();
-  const expeditionToggle = page
-    .locator('[data-testid^="onboarding-expedition-completed-toggle-"]')
-    .nth(1);
-  const hasSecondExpedition = (await expeditionToggle.count()) > 0;
-  const selectedToggle = hasSecondExpedition
-    ? expeditionToggle
-    : page
-        .locator('[data-testid^="onboarding-expedition-completed-toggle-"]')
-        .first();
+  const expeditionToggles = page.locator(
+    '[data-testid^="onboarding-expedition-completed-toggle-"]'
+  );
+  await expect(expeditionToggles.first()).toBeVisible();
+  const expeditionToggleCount = await expeditionToggles.count();
+  const selectedToggle =
+    expeditionToggleCount > 1 ? expeditionToggles.nth(1) : expeditionToggles.first();
   await expect(selectedToggle).toBeVisible();
   const expeditionTestId = await selectedToggle.getAttribute("data-testid");
   const expeditionSlug = expeditionTestId?.replace(
@@ -97,10 +95,14 @@ test("new onboarding stores completed expeditions", async ({
   const authRequest = await authRequestPromise;
   const authPayload = authRequest.postDataJSON() as {
     completedExpeditionSlugs?: string[];
+    baseline?: unknown;
+    activeExpeditionSlug?: unknown;
   };
 
   expect(Array.isArray(authPayload.completedExpeditionSlugs)).toBeTruthy();
   expect(authPayload.completedExpeditionSlugs).toContain(expeditionSlug);
+  expect(authPayload.baseline).toBeUndefined();
+  expect(authPayload.activeExpeditionSlug).toBeUndefined();
 
   await expect
     .poll(async () => {

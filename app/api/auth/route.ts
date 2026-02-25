@@ -1,10 +1,8 @@
 import { generateUserToken } from "@/lib/server/auth";
-import { applyOnboardingBaseline } from "@/lib/server/onboarding";
 import { loadArcProjects } from "@/lib/arc-projects";
 import {
   getAvailableExpeditionSlug,
   isExpeditionProjectSlug,
-  orderExpeditionSlugs,
   sanitizeCompletedExpeditionSlugs,
 } from "@/lib/expeditions";
 import { normalizeLocale } from "@/lib/locale";
@@ -25,7 +23,6 @@ export const POST = async (request: Request) => {
   const token = typeof body?.token === "string" ? body.token.trim() : "";
   const create = body?.create === true;
   const locale = body?.locale;
-  const baseline = Array.isArray(body?.baseline) ? body.baseline : null;
   const inactiveProjectSlugs = Array.isArray(body?.inactiveProjectSlugs)
     ? body.inactiveProjectSlugs
         .filter((entry: unknown): entry is string => typeof entry === "string")
@@ -38,10 +35,6 @@ export const POST = async (request: Request) => {
         .map((entry: string) => entry.trim())
         .filter(Boolean)
     : null;
-  const activeExpeditionSlug =
-    body?.activeExpeditionSlug === null || typeof body?.activeExpeditionSlug === "string"
-      ? body.activeExpeditionSlug
-      : null;
 
   if (create) {
     if (!name) {
@@ -59,7 +52,6 @@ export const POST = async (request: Request) => {
       .filter((project) => isExpeditionProjectSlug(project.slug))
       .filter((project) => project.stages.some((stage) => stage.items.length > 0))
       .map((project) => project.slug);
-    const validExpeditionSlugSet = new Set(expeditionSlugs);
 
     let nextCompletedExpeditionSlugs = sanitizeCompletedExpeditionSlugs(
       completedExpeditionSlugs ?? [],
@@ -69,27 +61,6 @@ export const POST = async (request: Request) => {
       completedExpeditionSlugs !== null
         ? getAvailableExpeditionSlug(nextCompletedExpeditionSlugs, expeditionSlugs)
         : null;
-
-    // Backward compatibility with old clients that only submit activeExpeditionSlug.
-    if (
-      !completedExpeditionSlugs &&
-      typeof activeExpeditionSlug === "string" &&
-      activeExpeditionSlug
-    ) {
-      if (
-        !isExpeditionProjectSlug(activeExpeditionSlug) ||
-        !validExpeditionSlugSet.has(activeExpeditionSlug)
-      ) {
-        return Response.json({ error: "Invalid payload" }, { status: 400 });
-      }
-      nextActiveExpeditionSlug = activeExpeditionSlug;
-      const orderedExpeditionSlugs = orderExpeditionSlugs(expeditionSlugs);
-      const activeIndex = orderedExpeditionSlugs.indexOf(activeExpeditionSlug);
-      nextCompletedExpeditionSlugs = sanitizeCompletedExpeditionSlugs(
-        activeIndex > 0 ? orderedExpeditionSlugs.slice(0, activeIndex) : [],
-        expeditionSlugs
-      );
-    }
 
     const nextToken = token || generateUserToken();
     let user = await upsertUserWithToken(name, nextToken);
@@ -101,20 +72,13 @@ export const POST = async (request: Request) => {
       const refreshedUser = await getUserByToken(nextToken);
       if (refreshedUser) user = refreshedUser;
     }
-    await Promise.all([
-      applyOnboardingBaseline({
-        userId: user.id,
-        locale,
-        baseline,
-      }),
-      inactiveProjectSlugs
-        ? updateUserInactiveProjectSlugs(
-            user.id,
-            inactiveProjectSlugs,
-            normalizeLocale(typeof locale === "string" ? locale : null)
-          )
-        : Promise.resolve(null),
-    ]);
+    await (inactiveProjectSlugs
+      ? updateUserInactiveProjectSlugs(
+          user.id,
+          inactiveProjectSlugs,
+          normalizeLocale(typeof locale === "string" ? locale : null)
+        )
+      : Promise.resolve(null));
     return Response.json({ user });
   }
 

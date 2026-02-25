@@ -22,7 +22,7 @@ test("community can be joined across multiple communities and members removed", 
   browser,
 }) => {
   await login(page, "Vanguard");
-  await page.getByRole("link", { name: /Community/ }).click();
+  await page.getByTestId("nav-community").click();
   await expect(page.getByTestId("community-name-input")).toBeVisible();
 
   const alphaCommunityName = uniqueName("Echo");
@@ -50,7 +50,7 @@ test("community can be joined across multiple communities and members removed", 
   const scoutContext = await browser.newContext();
   const scoutPage = await scoutContext.newPage();
   await login(scoutPage, "Scout");
-  await scoutPage.getByRole("link", { name: /Community/ }).click();
+  await scoutPage.getByTestId("nav-community").click();
   const betaCommunityName = uniqueName("Haven");
   await scoutPage.getByTestId("community-name-input").fill(betaCommunityName);
   await scoutPage.getByTestId("community-create-submit").click();
