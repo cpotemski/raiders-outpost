@@ -98,21 +98,25 @@ export default function ProjectDetailPage() {
   return (
     <Panel className="overflow-hidden">
       <div className="arc-panel-header flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="hud-label">{headingLabel}</p>
-          <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
-            {project ? project.name : labels.projectSelection}
-          </h2>
+        <div className="flex items-center gap-2">
+          <BackButton
+            href={`/${backCategory}`}
+            label={labels.back}
+            testId="nav-back"
+            iconOnly
+            className="mt-[1px]"
+          />
+          <div>
+            <p className="hud-label">{headingLabel}</p>
+            <h2 className="text-lg font-semibold uppercase tracking-[0.08em]">
+              {project ? project.name : labels.projectSelection}
+            </h2>
+          </div>
         </div>
         <div
           className="flex flex-wrap items-center gap-2"
           data-testid="project-control-bar"
         >
-          <BackButton
-            href={`/${backCategory}`}
-            label={labels.back}
-            testId="nav-back"
-          />
           {isBlueprintProject ? (
             <>
               <IconButton
