@@ -57,17 +57,17 @@ const en = {
   expeditionResetDialogLabel: "Expedition Reset",
   expeditionResetDialogTitle: "Confirm reset flow",
   expeditionResetExplainLine1:
-    "Expeditions send your Raider beyond the Rust Belt and start a new cycle.",
+    "Departure marks your current expedition as completed.",
   expeditionResetExplainLine2:
-    "After departure, your next Raider keeps a unique edge until the next expedition leaves.",
+    "The next expedition in sequence becomes available after departure.",
   expeditionResetExplainLine3:
-    "Use this when you have participated and want your account state aligned.",
+    "Use this only when you actually participated in the departure.",
   expeditionResetScopeLine:
     "This resets workshop and blueprints for your user only. Project entries stay untouched.",
   expeditionResetConfirm: "I participated",
-  expeditionResetNextQuestion: "Start your next expedition now?",
+  expeditionResetNextQuestion: "Track the next available expedition now?",
   expeditionResetNextNo: "No, reset only",
-  expeditionResetNextYes: "Yes, start next",
+  expeditionResetNextYes: "Yes, track next",
   updateFailed: "Update failed",
   logOut: "Log Out",
   authRegister: "Register",
@@ -218,17 +218,17 @@ const de: Labels = {
   expeditionResetDialogLabel: "Expeditions-Reset",
   expeditionResetDialogTitle: "Reset-Ablauf bestätigen",
   expeditionResetExplainLine1:
-    "Expeditionen schicken deinen Raider über den Rostgürtel hinaus und starten einen neuen Zyklus.",
+    "Die Abfahrt markiert deine aktuelle Expedition als abgeschlossen.",
   expeditionResetExplainLine2:
-    "Nach der Abfahrt behält dein nächster Raider einen einzigartigen Vorteil bis zur nächsten Expedition.",
+    "Die nächste Expedition in der Reihenfolge wird danach verfügbar.",
   expeditionResetExplainLine3:
-    "Nutze das, wenn du teilgenommen hast und deinen Account-Status angleichen willst.",
+    "Nutze das nur, wenn du wirklich an der Abfahrt teilgenommen hast.",
   expeditionResetScopeLine:
     "Zurückgesetzt werden nur Workshop und Blueprints für deinen User. Projekt-Einträge bleiben unberührt.",
   expeditionResetConfirm: "Ich habe teilgenommen",
-  expeditionResetNextQuestion: "Direkt die nächste Expedition starten?",
+  expeditionResetNextQuestion: "Die nächste verfügbare Expedition jetzt verfolgen?",
   expeditionResetNextNo: "Nein, nur reseten",
-  expeditionResetNextYes: "Ja, nächste starten",
+  expeditionResetNextYes: "Ja, nächste verfolgen",
   updateFailed: "Update fehlgeschlagen",
   logOut: "Abmelden",
   authRegister: "Registrieren",

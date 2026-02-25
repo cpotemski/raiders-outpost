@@ -123,8 +123,6 @@ test("expedition reset clears only workshop and blueprints and starts next exped
     .screenshot({ path: "test-results/expedition-reset-notice.png" });
   await page.getByTestId("expedition-reset-open-dialog").click();
   await expect(page.getByTestId("expedition-reset-step-confirm")).toBeVisible();
-  await page.getByTestId("expedition-reset-confirm").click();
-  await expect(page.getByTestId("expedition-reset-step-next")).toBeVisible();
 
   const resetResponse = page.waitForResponse((response) => {
     return (
@@ -132,7 +130,7 @@ test("expedition reset clears only workshop and blueprints and starts next exped
       response.request().method() === "POST"
     );
   });
-  await page.getByTestId("expedition-reset-next-yes").click();
+  await page.getByTestId("expedition-reset-confirm").click();
   const resetResult = await resetResponse;
   expect(resetResult.ok()).toBeTruthy();
 

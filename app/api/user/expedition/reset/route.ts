@@ -15,7 +15,6 @@ export const runtime = "nodejs";
 
 type ResetRequestBody = {
   mode?: "dismiss" | "reset";
-  startNextExpedition?: boolean;
   locale?: string;
 };
 
@@ -87,7 +86,6 @@ export const POST = async (request: Request) => {
     .filter((project) => isExpeditionProjectSlug(project.slug))
     .map((project) => project.slug);
 
-  const startNextExpedition = body?.startNextExpedition === true;
   const completedSet = new Set(
     sanitizeCompletedExpeditionSlugs(
       user.completedExpeditionSlugs ?? [],
@@ -110,11 +108,7 @@ export const POST = async (request: Request) => {
   );
   const nextInactiveProjectSlugs = new Set(user.inactiveProjectSlugs ?? []);
   if (nextExpeditionSlug) {
-    if (startNextExpedition) {
-      nextInactiveProjectSlugs.delete(nextExpeditionSlug);
-    } else {
-      nextInactiveProjectSlugs.add(nextExpeditionSlug);
-    }
+    nextInactiveProjectSlugs.delete(nextExpeditionSlug);
   }
 
   const projectItems = await prisma.projectItem.findMany({

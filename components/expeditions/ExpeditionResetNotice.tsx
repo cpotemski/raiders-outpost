@@ -107,8 +107,8 @@ export function ExpeditionResetNotice() {
       {openDialog ? (
         <ExpeditionResetDialog
           onClose={() => setOpenDialog(false)}
-          onConfirmReset={async (startNextExpedition) => {
-            const success = await resetProgress(startNextExpedition);
+          onConfirmReset={async () => {
+            const success = await resetProgress();
             if (success) {
               setOpenDialog(false);
             }

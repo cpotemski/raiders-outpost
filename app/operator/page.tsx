@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 import {
   isExpeditionProjectSlug,
   orderExpeditionProjects,
+  sanitizeCompletedExpeditionSlugs,
 } from "@/lib/expeditions";
 import { useLabels } from "@/components/locale/useLabels";
 import { copyTextToClipboard } from "@/lib/clipboard";
@@ -32,10 +33,11 @@ export default function RaiderPage() {
   const { authCode } = useAuthCode(identity?.token ?? null);
   const {
     activeExpeditionSlug,
+    completedExpeditionSlugs,
     loading: loadingExpedition,
     saving: savingExpedition,
     errorKey: expeditionErrorKey,
-    setExpedition,
+    setCompletedExpeditions,
   } = useExpeditionSelection({
     token: identity?.token ?? null,
     onInvalid: clearIdentity,
@@ -89,6 +91,32 @@ export default function RaiderPage() {
       )?.name ?? labels.unknownExpedition
     );
   }, [activeExpeditionSlug, expeditionProjects, labels]);
+
+  const completedExpeditionSet = useMemo(
+    () => new Set(completedExpeditionSlugs),
+    [completedExpeditionSlugs]
+  );
+
+  const updateCompletedFromIndex = async (index: number, checked: boolean) => {
+    const nextSet = new Set(completedExpeditionSlugs);
+    if (checked) {
+      for (let current = 0; current <= index; current += 1) {
+        const slug = expeditionProjects[current]?.slug;
+        if (slug) nextSet.add(slug);
+      }
+    } else {
+      for (let current = index; current < expeditionProjects.length; current += 1) {
+        const slug = expeditionProjects[current]?.slug;
+        if (slug) nextSet.delete(slug);
+      }
+    }
+
+    const nextCompleted = sanitizeCompletedExpeditionSlugs(
+      Array.from(nextSet),
+      expeditionProjects.map((project) => project.slug)
+    );
+    await setCompletedExpeditions(nextCompleted);
+  };
 
   if (!ready) return null;
 
@@ -165,53 +193,63 @@ export default function RaiderPage() {
             </div>
           </div>
           <div>
-            <div className="hud-label">{labels.activeExpeditionLabel}</div>
+            <div className="hud-label">{labels.onboardingCompletedExpeditionsLabel}</div>
             <div
               className="mt-2 flex flex-wrap items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted"
               data-testid="expedition-config"
             >
-              <span>{activeExpeditionLabel}</span>
+              <span>{labels.activeExpeditionLabel}: {activeExpeditionLabel}</span>
             </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setExpedition(null)}
-                aria-pressed={!activeExpeditionSlug}
-                data-testid="expedition-option-none"
-                className={cn(
-                  "h-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
-                  !activeExpeditionSlug
-                    ? "border-accent/80 text-text"
-                    : "border-frame2 text-muted hover:border-accent/60"
-                )}
-                disabled={savingExpedition || loadingExpedition}
-              >
-                {labels.noExpedition}
-              </button>
+            <div className="mt-3 space-y-2">
               {projectsLoading && !expeditionProjects.length ? (
                 <div className="hud-empty-state flex h-8 items-center px-3 py-0 text-[10px] tracking-[0.16em]">
                   {labels.scanningExpeditionIndex}
                 </div>
               ) : expeditionProjects.length ? (
-                expeditionProjects.map((project) => {
-                  const active = activeExpeditionSlug === project.slug;
+                expeditionProjects.map((project, index) => {
+                  const checked = completedExpeditionSet.has(project.slug);
                   return (
-                    <button
+                    <div
                       key={project.slug}
-                      type="button"
-                      onClick={() => setExpedition(project.slug)}
-                      aria-pressed={active}
-                      data-testid={`expedition-option-${project.slug}`}
                       className={cn(
-                        "h-8 border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
-                        active
-                          ? "border-accent/80 text-text"
-                          : "border-frame2 text-muted hover:border-accent/60"
+                        "flex items-center justify-between gap-3 border px-3 py-2",
+                        checked
+                          ? "border-accent/80 bg-panel2/40"
+                          : "border-frame2/70 bg-panel2/20"
                       )}
-                      disabled={savingExpedition || loadingExpedition}
+                      data-testid={`expedition-option-${project.slug}`}
                     >
-                      {project.name}
-                    </button>
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text">
+                        {project.name}
+                      </div>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={checked}
+                        aria-label={`${project.name} ${
+                          checked ? labels.completeLabel : labels.inactiveLabel
+                        }`}
+                        className={cn(
+                          "relative h-5 w-9 shrink-0 rounded-full border transition",
+                          checked
+                            ? "border-accent/80 bg-accent/20"
+                            : "border-frame2/80 bg-panel hover:border-accent/70"
+                        )}
+                        data-testid={`expedition-completed-toggle-${project.slug}`}
+                        onClick={() => updateCompletedFromIndex(index, !checked)}
+                        disabled={savingExpedition || loadingExpedition}
+                      >
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            "absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border transition",
+                            checked
+                              ? "left-[18px] border-accent bg-accent/90"
+                              : "left-[2px] border-frame2/80 bg-frame2"
+                          )}
+                        />
+                      </button>
+                    </div>
                   );
                 })
               ) : (
@@ -261,8 +299,8 @@ export default function RaiderPage() {
       {resetDialogOpen ? (
         <ExpeditionResetDialog
           onClose={() => setResetDialogOpen(false)}
-          onConfirmReset={async (startNextExpedition) => {
-            const success = await resetProgress(startNextExpedition);
+          onConfirmReset={async () => {
+            const success = await resetProgress();
             if (success) {
               setResetDialogOpen(false);
             }

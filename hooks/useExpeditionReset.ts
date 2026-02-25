@@ -54,7 +54,7 @@ export const useExpeditionReset = ({
   }, [locale, onInvalid, onUpdated, saving, token]);
 
   const resetProgress = useCallback(
-    async (startNextExpedition: boolean) => {
+    async () => {
       if (!token || saving) return false;
       setSaving(true);
       setErrorKey("");
@@ -69,7 +69,6 @@ export const useExpeditionReset = ({
           body: JSON.stringify({
             mode: "reset",
             locale,
-            startNextExpedition,
           }),
         });
 
