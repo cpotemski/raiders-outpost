@@ -17,6 +17,7 @@ import {
   ClipboardList,
   Copy,
   Filter,
+  ListChecks,
   Plus,
   Pencil,
   Wrench,
@@ -24,6 +25,7 @@ import {
 import { cn } from "@/lib/cn";
 import { getInitials } from "@/lib/format";
 import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 import type { CommunityMember } from "@/types/community";
 
 type ConfirmTarget = {
@@ -79,6 +81,14 @@ export function CommunityRoster() {
       deserialize: (raw) => (raw === "manage" ? "manage" : "needs"),
     }
   );
+  const [hideEasyItems, setHideEasyItems] = useLocalStorageState<boolean>(
+    "community-needs-hide-easy",
+    true,
+    {
+      serialize: (value) => (value ? "1" : "0"),
+      deserialize: (raw) => raw !== "0",
+    }
+  );
   const activeMode: CommunityMode = communities.length ? mode : "manage";
 
   const selectedCommunityIdList = useMemo(
@@ -88,7 +98,8 @@ export function CommunityRoster() {
 
   const { payload: needsPayload, loading: needsLoading } = useCommunityNeeds(
     Boolean(communities.length) && activeMode === "needs",
-    selectedCommunityIdList
+    selectedCommunityIdList,
+    hideEasyItems
   );
   const managedCommunities = useMemo(() => {
     const sorted = [...communities];
@@ -221,10 +232,23 @@ export function CommunityRoster() {
   } else if (activeMode === "needs") {
     body = (
       <div className="arc-panel overflow-hidden" data-testid="community-needs-mode">
-        <div className="arc-panel-header">
+        <div className="arc-panel-header flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="font-semibold uppercase tracking-[0.08em]">
             {labels.communityModeNeeds}
           </h3>
+          <div className="flex flex-wrap items-center gap-2">
+            <IconButton
+              type="button"
+              aria-pressed={hideEasyItems}
+              aria-label={labels.hideEasyItems}
+              onClick={() => setHideEasyItems((prev) => !prev)}
+              data-testid="community-filter-hide-easy"
+              active={hideEasyItems}
+            >
+              <ListChecks className="h-4 w-4" aria-hidden="true" />
+              <span className="sr-only">{labels.hideEasyItems}</span>
+            </IconButton>
+          </div>
         </div>
         <div className="border-t border-frame2 px-2 py-3">
           <div className="mt-2 flex flex-wrap items-center gap-2">

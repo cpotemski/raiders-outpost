@@ -7,7 +7,8 @@ import type { CommunityNeedsPayload } from "@/types/community";
 
 export const useCommunityNeeds = (
   enabled: boolean,
-  communityIds: string[]
+  communityIds: string[],
+  hideEasy: boolean
 ) => {
   const { identity, ready, clearIdentity } = useLocalIdentity();
   const { locale, ready: localeReady } = useLocale();
@@ -27,7 +28,7 @@ export const useCommunityNeeds = (
     fetch(
       `/api/community/needs?locale=${locale}&communityIds=${encodeURIComponent(
         idsParam
-      )}`,
+      )}&hideEasy=${hideEasy ? "true" : "false"}`,
       {
       method: "GET",
       headers: { "x-arc-token": identity.token },
@@ -53,6 +54,7 @@ export const useCommunityNeeds = (
     clearIdentity,
     communityIds,
     enabled,
+    hideEasy,
     identity,
     locale,
     localeReady,

@@ -13,6 +13,7 @@ export const getCommunityNeeds = async (
   locale: AppLocale,
   options?: {
     communityIds?: string[] | null;
+    hideEasy?: boolean;
   }
 ) => {
   const allCommunities = await getCommunitiesForUser(userId);
@@ -31,6 +32,8 @@ export const getCommunityNeeds = async (
   const projectsPayload = await loadArcProjects(locale);
   const settings = await getAdminSettings();
   const communityPayload = applyAdminProjectFilters(projectsPayload, settings);
+  const hideEasy = options?.hideEasy ?? true;
+  const easyItemIds = new Set(settings.easyItemIds);
   const [projectRecords, arcItems] = await Promise.all([
     ensureProjects(projectsPayload),
     loadArcItems(locale),
@@ -177,6 +180,7 @@ export const getCommunityNeeds = async (
       ? member.activeExpeditionSlug
       : null;
     for (const item of projectItems) {
+      if (hideEasy && easyItemIds.has(item.itemId)) continue;
       if (inactiveProjectSlugs?.has(item.projectSlug)) continue;
       if (item.isExpedition) {
         if (!activeExpedition) continue;

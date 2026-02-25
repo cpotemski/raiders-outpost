@@ -14,16 +14,30 @@ const normalizeList = (values?: string[] | null) => {
   return Array.from(unique).sort((a, b) => a.localeCompare(b));
 };
 
+type AdminSettingsPayload = {
+  disabledProjectSlugs: string[];
+  disabledItemIds: string[];
+  easyItemIds: string[];
+};
+
 export const getAdminSettings = async () => {
-  let settings: { disabledProjectSlugs: string[]; disabledItemIds: string[] } | null = null;
+  let settings: { disabledProjectSlugs: string[]; disabledItemIds: string[] } | null =
+    null;
+  let easyItems: { itemId: string }[] = [];
+
   try {
-    settings = await prisma.adminSettings.findUnique({
-      where: { id: SETTINGS_ID },
-      select: {
-        disabledProjectSlugs: true,
-        disabledItemIds: true,
-      },
-    });
+    [settings, easyItems] = await Promise.all([
+      prisma.adminSettings.findUnique({
+        where: { id: SETTINGS_ID },
+        select: {
+          disabledProjectSlugs: true,
+          disabledItemIds: true,
+        },
+      }),
+      prisma.easyItemFilter.findMany({
+        select: { itemId: true },
+      }),
+    ]);
   } catch (err) {
     const error = err as { code?: string; message?: string };
     if (error?.code !== "P2021") {
@@ -34,33 +48,71 @@ export const getAdminSettings = async () => {
   return {
     disabledProjectSlugs: normalizeList(settings?.disabledProjectSlugs ?? []),
     disabledItemIds: normalizeList(settings?.disabledItemIds ?? []),
-  };
+    easyItemIds: normalizeList(easyItems.map((entry) => entry.itemId)),
+  } satisfies AdminSettingsPayload;
 };
 
 export const updateAdminSettings = async (input: {
   disabledProjectSlugs?: string[] | null;
   disabledItemIds?: string[] | null;
+  easyItemIds?: string[] | null;
 }) => {
-  const disabledProjectSlugs = normalizeList(input.disabledProjectSlugs ?? []);
-  const disabledItemIds = normalizeList(input.disabledItemIds ?? []);
+  const nextDisabledProjectSlugs = Array.isArray(input.disabledProjectSlugs)
+    ? normalizeList(input.disabledProjectSlugs)
+    : undefined;
+  const nextDisabledItemIds = Array.isArray(input.disabledItemIds)
+    ? normalizeList(input.disabledItemIds)
+    : undefined;
+  const nextEasyItemIds = Array.isArray(input.easyItemIds)
+    ? normalizeList(input.easyItemIds)
+    : undefined;
 
-  const settings = await prisma.adminSettings.upsert({
-    where: { id: SETTINGS_ID },
-    update: { disabledProjectSlugs, disabledItemIds },
-    create: {
-      id: SETTINGS_ID,
-      disabledProjectSlugs,
-      disabledItemIds,
-    },
-    select: {
-      disabledProjectSlugs: true,
-      disabledItemIds: true,
-    },
+  const current = await getAdminSettings();
+
+  const disabledProjectSlugs =
+    nextDisabledProjectSlugs ?? current.disabledProjectSlugs;
+  const disabledItemIds = nextDisabledItemIds ?? current.disabledItemIds;
+  let easyItemIds = nextEasyItemIds ?? current.easyItemIds;
+
+  const settings = await prisma.$transaction(async (tx) => {
+    const updatedSettings = await tx.adminSettings.upsert({
+      where: { id: SETTINGS_ID },
+      update: { disabledProjectSlugs, disabledItemIds },
+      create: {
+        id: SETTINGS_ID,
+        disabledProjectSlugs,
+        disabledItemIds,
+      },
+      select: {
+        disabledProjectSlugs: true,
+        disabledItemIds: true,
+      },
+    });
+
+    if (nextEasyItemIds !== undefined) {
+      try {
+        await tx.easyItemFilter.deleteMany({});
+        if (nextEasyItemIds.length) {
+          await tx.easyItemFilter.createMany({
+            data: nextEasyItemIds.map((itemId) => ({ itemId })),
+          });
+        }
+      } catch (err) {
+        const error = err as { code?: string };
+        if (error.code !== "P2021") {
+          throw err;
+        }
+        easyItemIds = current.easyItemIds;
+      }
+    }
+
+    return updatedSettings;
   });
 
   return {
     disabledProjectSlugs: normalizeList(settings.disabledProjectSlugs ?? []),
     disabledItemIds: normalizeList(settings.disabledItemIds ?? []),
+    easyItemIds,
   };
 };
 

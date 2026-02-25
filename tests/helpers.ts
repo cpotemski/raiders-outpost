@@ -10,6 +10,7 @@ export const resetAdminSettings = async (page: Page) => {
       data: {
         disabledProjectSlugs: [],
         disabledItemIds: [],
+        easyItemIds: [],
       },
     }
   );

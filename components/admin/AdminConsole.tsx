@@ -9,10 +9,14 @@ import { useAdminSettings } from "@/hooks/useAdminSettings";
 import { useLocale } from "@/components/locale/LocaleProvider";
 import { cn } from "@/lib/cn";
 import { Input } from "@/components/ui/Input";
+import { AdminItemTile } from "@/components/admin/AdminItemTile";
 
 type AdminConsoleProps = {
   password: string;
 };
+
+type AdminViewMode = "system" | "easy-items";
+type EasyItemSelectionFilter = "all" | "selected" | "unselected";
 
 const listWrapperClasses =
   "h-[240px] overflow-y-auto pr-1 border border-frame2 rounded-[10px] bg-panel2/30";
@@ -41,16 +45,22 @@ export function AdminConsole({ password }: AdminConsoleProps) {
     error: settingsError,
     toggleProject,
     toggleItem,
+    toggleEasyItem,
     activeProjectCount,
     activeItemCount,
+    easyItemCount,
   } = useAdminSettings(password, locale);
 
   const totalProjects = projects.length;
   const totalItems = items.length;
+  const [viewMode, setViewMode] = useState<AdminViewMode>("system");
   const [userFilter, setUserFilter] = useState("");
   const [communityFilter, setCommunityFilter] = useState("");
   const [projectFilter, setProjectFilter] = useState("");
   const [itemFilter, setItemFilter] = useState("");
+  const [easyItemFilter, setEasyItemFilter] = useState("");
+  const [easySelectionFilter, setEasySelectionFilter] =
+    useState<EasyItemSelectionFilter>("all");
 
   const filteredUsers = useMemo(() => {
     if (!userFilter.trim()) return users;
@@ -102,10 +112,35 @@ export function AdminConsole({ password }: AdminConsoleProps) {
     });
   }, [itemFilter, items]);
 
+  const filteredEasyItems = useMemo(() => {
+    const bySelection = items.filter((item) => {
+      if (easySelectionFilter === "selected") return item.easy;
+      if (easySelectionFilter === "unselected") return !item.easy;
+      return true;
+    });
+    if (!easyItemFilter.trim()) return bySelection;
+    const needle = easyItemFilter.toLowerCase();
+    return bySelection.filter((item) => {
+      return (
+        item.name.toLowerCase().includes(needle) ||
+        item.itemType.toLowerCase().includes(needle) ||
+        item.rarity.toLowerCase().includes(needle) ||
+        item.id.toLowerCase().includes(needle)
+      );
+    });
+  }, [easyItemFilter, easySelectionFilter, items]);
+
   const headerSubtitle = useMemo(() => {
     if (settingsLoading) return "Scanning project cache...";
-    return `${activeProjectCount}/${totalProjects} Projekte aktiv · ${activeItemCount}/${totalItems} Items aktiv`;
-  }, [activeItemCount, activeProjectCount, settingsLoading, totalItems, totalProjects]);
+    return `${activeProjectCount}/${totalProjects} Projekte aktiv · ${activeItemCount}/${totalItems} Items aktiv · ${easyItemCount} Easy`;
+  }, [
+    activeItemCount,
+    activeProjectCount,
+    easyItemCount,
+    settingsLoading,
+    totalItems,
+    totalProjects,
+  ]);
 
   return (
     <div className="space-y-4">
@@ -127,13 +162,43 @@ export function AdminConsole({ password }: AdminConsoleProps) {
             ) : null}
           </div>
         </div>
-        <div className="px-2 py-4 text-xs text-muted">
-          Kompakte Admin-Tools für Cleanup und Content-Steuerung. Passwort bleibt
-          Pflicht (per Query-Parameter).
+      </Panel>
+
+      <Panel className="arc-corners">
+        <div className="arc-panel-header">
+          <div className="flex w-full items-center gap-2">
+            <Button
+              type="button"
+              data-testid="admin-view-system"
+              className={cn(
+                "h-8 px-3 text-[10px] uppercase tracking-[0.14em]",
+                viewMode === "system"
+                  ? "border-accent/70 text-text"
+                  : "border-frame2 text-muted hover:border-accent/50"
+              )}
+              onClick={() => setViewMode("system")}
+            >
+              System
+            </Button>
+            <Button
+              type="button"
+              data-testid="admin-view-easy-items"
+              className={cn(
+                "h-8 px-3 text-[10px] uppercase tracking-[0.14em]",
+                viewMode === "easy-items"
+                  ? "border-accent/70 text-text"
+                  : "border-frame2 text-muted hover:border-accent/50"
+              )}
+              onClick={() => setViewMode("easy-items")}
+            >
+              Easy Item Filter
+            </Button>
+          </div>
         </div>
       </Panel>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      {viewMode === "system" ? (
+        <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-4">
           <Panel className="arc-corners">
             <div className="arc-panel-header">
@@ -449,6 +514,94 @@ export function AdminConsole({ password }: AdminConsoleProps) {
           </Panel>
         </div>
       </div>
+      ) : (
+        <Panel className="arc-corners">
+          <div className="arc-panel-header">
+            <div>
+              <p className="hud-label">Items</p>
+              <h2 className="text-base font-semibold tracking-tight">
+                Easy Item Filter
+              </h2>
+            </div>
+            <div className="text-xs text-muted">
+              {settingsLoading
+                ? "Loading…"
+                : `${easyItemCount} von ${totalItems} markiert`}
+            </div>
+          </div>
+          <div className="px-2 pb-3">
+            <Input
+              placeholder="Filter items..."
+              value={easyItemFilter}
+              onChange={(event) => setEasyItemFilter(event.target.value)}
+              className="text-xs bg-panel2/40"
+            />
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                data-testid="admin-easy-filter-selected"
+                className={cn(
+                  "h-7 px-2 text-[10px] uppercase tracking-[0.14em]",
+                  easySelectionFilter === "selected"
+                    ? "border-accent/70 text-text"
+                    : "border-frame2 text-muted hover:border-accent/50"
+                )}
+                onClick={() =>
+                  setEasySelectionFilter((prev) =>
+                    prev === "selected" ? "all" : "selected"
+                  )
+                }
+              >
+                Show selected
+              </Button>
+              <Button
+                type="button"
+                data-testid="admin-easy-filter-unselected"
+                className={cn(
+                  "h-7 px-2 text-[10px] uppercase tracking-[0.14em]",
+                  easySelectionFilter === "unselected"
+                    ? "border-accent/70 text-text"
+                    : "border-frame2 text-muted hover:border-accent/50"
+                )}
+                onClick={() =>
+                  setEasySelectionFilter((prev) =>
+                    prev === "unselected" ? "all" : "unselected"
+                  )
+                }
+              >
+                Show unselected
+              </Button>
+            </div>
+          </div>
+          <div className="border-t border-frame2 px-2 py-3">
+            {settingsLoading ? (
+              <div className="px-3 py-3 text-xs text-muted">Loading…</div>
+            ) : filteredEasyItems.length ? (
+              <div className="grid gap-1 [grid-template-columns:repeat(auto-fill,minmax(72px,1fr))] sm:[grid-template-columns:repeat(auto-fill,minmax(84px,1fr))] lg:[grid-template-columns:repeat(auto-fill,minmax(96px,1fr))]">
+                {filteredEasyItems.map((item) => (
+                  <AdminItemTile
+                    key={item.id}
+                    id={item.id}
+                    name={item.name}
+                    itemType={item.itemType}
+                    rarity={item.rarity}
+                    imageFile={item.imageFile ?? null}
+                    selected={item.easy}
+                    onToggle={toggleEasyItem}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="px-3 py-3 text-xs text-muted">Keine Items.</div>
+            )}
+            {settingsError ? (
+              <div className="mt-2 text-[10px] uppercase tracking-[0.12em] text-bad">
+                {settingsError}
+              </div>
+            ) : null}
+          </div>
+        </Panel>
+      )}
     </div>
   );
 }

@@ -43,7 +43,9 @@ export const GET = async (request: Request) => {
         name: item.name,
         itemType: item.itemType,
         rarity: item.rarity,
+        imageFile: item.imageFile ?? null,
         inactive: disabledItems.has(id),
+        easy: settings.easyItemIds.includes(id),
       };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
@@ -51,6 +53,7 @@ export const GET = async (request: Request) => {
   return Response.json({
     disabledProjectSlugs: settings.disabledProjectSlugs,
     disabledItemIds: settings.disabledItemIds,
+    easyItemIds: settings.easyItemIds,
     projects,
     items,
   });
@@ -69,10 +72,14 @@ export const PATCH = async (request: Request) => {
   const disabledItemIds = Array.isArray(body?.disabledItemIds)
     ? body.disabledItemIds.filter((value: unknown) => typeof value === "string")
     : undefined;
+  const easyItemIds = Array.isArray(body?.easyItemIds)
+    ? body.easyItemIds.filter((value: unknown) => typeof value === "string")
+    : undefined;
 
   const settings = await updateAdminSettings({
     disabledProjectSlugs,
     disabledItemIds,
+    easyItemIds,
   });
 
   return Response.json(settings);

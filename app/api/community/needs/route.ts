@@ -25,7 +25,15 @@ export const GET = async (request: Request) => {
         .map((entry) => entry.trim())
         .filter(Boolean)
     : [];
-  const payload = await getCommunityNeeds(user.id, locale, { communityIds });
+  const hideEasyParam = url.searchParams.get("hideEasy");
+  const hideEasy =
+    hideEasyParam === null
+      ? true
+      : hideEasyParam !== "false" && hideEasyParam !== "0";
+  const payload = await getCommunityNeeds(user.id, locale, {
+    communityIds,
+    hideEasy,
+  });
 
   return Response.json(payload);
 };

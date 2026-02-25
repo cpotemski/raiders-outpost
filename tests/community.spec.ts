@@ -92,12 +92,74 @@ test("community can be joined across multiple communities and members removed", 
   await page.getByTestId("community-create-submit").click();
   await expect(page.getByText(gammaCommunityName, { exact: true })).toBeVisible();
 
-  const communityFilters = page.getByTestId(/community-filter-/);
+  const communityFilters = page.getByTestId(/community-filter-(?!hide-easy)/);
   await page.getByTestId("community-mode-needs").click();
   await expect(communityFilters.first()).toBeVisible();
+  const hideEasyToggle = page.getByTestId("community-filter-hide-easy");
+  await expect(hideEasyToggle).toHaveAttribute("aria-pressed", "true");
 
   const memberFilters = page.getByTestId(/community-member-filter-/);
   await expect(memberFilters.first()).toBeVisible();
+
+  const vanguardIdentityAfterJoin = await getLocalIdentity(page);
+  if (!vanguardIdentityAfterJoin.token) {
+    throw new Error("Missing Vanguard token after join.");
+  }
+  const communitiesResponse = await page.request.get("/api/community", {
+    headers: {
+      "x-arc-token": vanguardIdentityAfterJoin.token,
+    },
+  });
+  if (!communitiesResponse.ok()) {
+    throw new Error(`Failed to load communities: ${communitiesResponse.status()}`);
+  }
+  const communitiesPayload = (await communitiesResponse.json()) as {
+    communities?: Array<{ id: string }>;
+  };
+  const selectedCommunityIds =
+    communitiesPayload.communities?.map((community) => community.id) ?? [];
+  if (!selectedCommunityIds.length) {
+    throw new Error("Expected at least one community.");
+  }
+  const needsResponse = await page.request.get(
+    `/api/community/needs?locale=en&communityIds=${encodeURIComponent(
+      selectedCommunityIds.join(",")
+    )}&hideEasy=false`,
+    {
+      headers: {
+        "x-arc-token": vanguardIdentityAfterJoin.token,
+      },
+    }
+  );
+  if (!needsResponse.ok()) {
+    throw new Error(`Failed to load community needs: ${needsResponse.status()}`);
+  }
+  const needsPayload = (await needsResponse.json()) as {
+    items?: Array<{ itemId: string }>;
+  };
+  const easyCandidateId = needsPayload.items?.[0]?.itemId;
+  if (!easyCandidateId) {
+    throw new Error("Expected at least one needed item.");
+  }
+  const saveEasyResponse = await page.request.patch(
+    "/api/admin/settings?password=playwright",
+    {
+      data: {
+        easyItemIds: [easyCandidateId],
+      },
+    }
+  );
+  if (!saveEasyResponse.ok()) {
+    throw new Error(`Failed to save easy items: ${saveEasyResponse.status()}`);
+  }
+
+  await page.reload();
+  await page.getByTestId("community-mode-needs").click();
+  await expect(hideEasyToggle).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByTestId(`community-need-${easyCandidateId}`)).toHaveCount(0);
+  await hideEasyToggle.click();
+  await expect(hideEasyToggle).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByTestId(`community-need-${easyCandidateId}`)).toBeVisible();
 
   const firstMemberFilter = memberFilters.first();
   const disabledMemberId = await firstMemberFilter.getAttribute("data-member-id");

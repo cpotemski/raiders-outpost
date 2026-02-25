@@ -12,12 +12,15 @@ export type AdminItemSetting = {
   name: string;
   itemType: string;
   rarity: string;
+  imageFile?: string | null;
   inactive: boolean;
+  easy: boolean;
 };
 
 type AdminSettingsResponse = {
   disabledProjectSlugs: string[];
   disabledItemIds: string[];
+  easyItemIds: string[];
   projects: AdminProjectSetting[];
   items: AdminItemSetting[];
 };
@@ -34,6 +37,7 @@ export const useAdminSettings = (password: string, locale: string) => {
     []
   );
   const [disabledItemIds, setDisabledItemIds] = useState<string[]>([]);
+  const [easyItemIds, setEasyItemIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +56,7 @@ export const useAdminSettings = (password: string, locale: string) => {
       setItems(payload.items ?? []);
       setDisabledProjectSlugs(payload.disabledProjectSlugs ?? []);
       setDisabledItemIds(payload.disabledItemIds ?? []);
+      setEasyItemIds(payload.easyItemIds ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -60,7 +65,11 @@ export const useAdminSettings = (password: string, locale: string) => {
   }, [locale, password]);
 
   const updateSettings = useCallback(
-    async (nextProjectSlugs: string[], nextItemIds: string[]) => {
+    async (
+      nextProjectSlugs: string[],
+      nextItemIds: string[],
+      nextEasyItemIds: string[]
+    ) => {
       if (!password) return false;
       setSaving(true);
       setError(null);
@@ -71,6 +80,7 @@ export const useAdminSettings = (password: string, locale: string) => {
           body: JSON.stringify({
             disabledProjectSlugs: nextProjectSlugs,
             disabledItemIds: nextItemIds,
+            easyItemIds: nextEasyItemIds,
           }),
         });
         if (!res.ok) {
@@ -78,10 +88,11 @@ export const useAdminSettings = (password: string, locale: string) => {
         }
         const payload = (await res.json()) as Pick<
           AdminSettingsResponse,
-          "disabledProjectSlugs" | "disabledItemIds"
+          "disabledProjectSlugs" | "disabledItemIds" | "easyItemIds"
         >;
         setDisabledProjectSlugs(payload.disabledProjectSlugs ?? []);
         setDisabledItemIds(payload.disabledItemIds ?? []);
+        setEasyItemIds(payload.easyItemIds ?? []);
         return true;
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
@@ -101,7 +112,11 @@ export const useAdminSettings = (password: string, locale: string) => {
       } else {
         next.add(slug);
       }
-      const result = await updateSettings(Array.from(next), disabledItemIds);
+      const result = await updateSettings(
+        Array.from(next),
+        disabledItemIds,
+        easyItemIds
+      );
       if (result) {
         setProjects((prev) =>
           prev.map((project) =>
@@ -112,7 +127,7 @@ export const useAdminSettings = (password: string, locale: string) => {
         );
       }
     },
-    [disabledItemIds, disabledProjectSlugs, updateSettings]
+    [disabledItemIds, disabledProjectSlugs, easyItemIds, updateSettings]
   );
 
   const toggleItem = useCallback(
@@ -123,7 +138,11 @@ export const useAdminSettings = (password: string, locale: string) => {
       } else {
         next.add(id);
       }
-      const result = await updateSettings(disabledProjectSlugs, Array.from(next));
+      const result = await updateSettings(
+        disabledProjectSlugs,
+        Array.from(next),
+        easyItemIds
+      );
       if (result) {
         setItems((prev) =>
           prev.map((item) =>
@@ -132,7 +151,31 @@ export const useAdminSettings = (password: string, locale: string) => {
         );
       }
     },
-    [disabledItemIds, disabledProjectSlugs, updateSettings]
+    [disabledItemIds, disabledProjectSlugs, easyItemIds, updateSettings]
+  );
+
+  const toggleEasyItem = useCallback(
+    async (id: string) => {
+      const next = new Set(easyItemIds);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      const result = await updateSettings(
+        disabledProjectSlugs,
+        disabledItemIds,
+        Array.from(next)
+      );
+      if (result) {
+        setItems((prev) =>
+          prev.map((item) =>
+            item.id === id ? { ...item, easy: !item.easy } : item
+          )
+        );
+      }
+    },
+    [disabledItemIds, disabledProjectSlugs, easyItemIds, updateSettings]
   );
 
   const activeProjectCount = useMemo(
@@ -141,6 +184,10 @@ export const useAdminSettings = (password: string, locale: string) => {
   );
   const activeItemCount = useMemo(
     () => items.filter((item) => !item.inactive).length,
+    [items]
+  );
+  const easyItemCount = useMemo(
+    () => items.filter((item) => item.easy).length,
     [items]
   );
 
@@ -153,13 +200,16 @@ export const useAdminSettings = (password: string, locale: string) => {
     items,
     disabledProjectSlugs,
     disabledItemIds,
+    easyItemIds,
     loading,
     saving,
     error,
     refresh,
     toggleProject,
     toggleItem,
+    toggleEasyItem,
     activeProjectCount,
     activeItemCount,
+    easyItemCount,
   };
 };
