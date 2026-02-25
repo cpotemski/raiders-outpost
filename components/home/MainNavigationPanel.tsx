@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Layers, Radar, Users } from "lucide-react";
+import { FileText, ListChecks, Radar, Users, Wrench } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useLabels } from "@/components/locale/useLabels";
 import { Panel } from "@/components/ui/Panel";
@@ -11,19 +11,19 @@ const navItems = [
     href: "/blueprints",
     titleKey: "navBlueprints",
     subtitleKey: "navBlueprintsSubtitle",
-    Icon: Layers,
+    Icon: FileText,
   },
   {
     href: "/hideout",
     titleKey: "navHideout",
     subtitleKey: "navHideoutSubtitle",
-    Icon: Layers,
+    Icon: Wrench,
   },
   {
     href: "/projects",
     titleKey: "navProjects",
     subtitleKey: "navProjectsSubtitle",
-    Icon: Layers,
+    Icon: ListChecks,
   },
   {
     href: "/community",

@@ -69,6 +69,7 @@ test("new onboarding stores active expedition and completed phases", async ({
   await page.getByTestId("onboarding-select-new").click();
   await page.locator("#operator-name").fill("PhaseRunner");
   await page.getByTestId("onboarding-next").click();
+  await expect(page.locator('[data-testid^="onboarding-blueprints-"]')).toHaveCount(0);
   await page.getByTestId("onboarding-next").click();
 
   const expeditionButton = page

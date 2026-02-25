@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
+  FileText,
   Home,
-  Layers,
+  ListChecks,
   Radar,
   Users,
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useLocalIdentity } from "@/components/auth/useLocalIdentity";
@@ -34,7 +36,7 @@ export function TopNav() {
           categoryFromDetail === "blueprints"
       ),
       testId: "blueprints",
-      Icon: Layers,
+      Icon: FileText,
     },
     {
       href: "/hideout",
@@ -45,7 +47,7 @@ export function TopNav() {
           categoryFromDetail === "hideout"
       ),
       testId: "hideout",
-      Icon: Layers,
+      Icon: Wrench,
     },
     {
       href: "/projects",
@@ -57,7 +59,7 @@ export function TopNav() {
             categoryFromDetail !== "hideout"
       ),
       testId: "projects",
-      Icon: Layers,
+      Icon: ListChecks,
     },
     {
       href: "/community",

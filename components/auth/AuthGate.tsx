@@ -104,17 +104,17 @@ export function AuthGate() {
     () => onboardingProjects.filter((project) => !project.isExpedition),
     [onboardingProjects]
   );
-  const onboardingBlueprints = useMemo(
-    () => filterProjectsByCategory(nonExpeditionProjects, "blueprints"),
+  const onboardingBaselineProjects = useMemo(
+    () => nonExpeditionProjects.filter((project) => project.kind !== "blueprints"),
     [nonExpeditionProjects]
   );
   const onboardingHideout = useMemo(
-    () => filterProjectsByCategory(nonExpeditionProjects, "hideout"),
-    [nonExpeditionProjects]
+    () => filterProjectsByCategory(onboardingBaselineProjects, "hideout"),
+    [onboardingBaselineProjects]
   );
   const onboardingProjectsOnly = useMemo(
-    () => filterProjectsByCategory(nonExpeditionProjects, "projects"),
-    [nonExpeditionProjects]
+    () => filterProjectsByCategory(onboardingBaselineProjects, "projects"),
+    [onboardingBaselineProjects]
   );
   const toggleProjectSelection = (slug: string) => {
     setProjectSelections((prev) => ({ ...prev, [slug]: !prev[slug] }));
@@ -185,7 +185,7 @@ export function AuthGate() {
   const buildBaselinePayload = () => {
     const selectionMap = new Map<string, Set<number>>();
 
-    for (const project of nonExpeditionProjects) {
+    for (const project of onboardingBaselineProjects) {
       if (!project.stages.length) continue;
       if (!projectSelections[project.slug]) continue;
       const completed = new Set<number>();
@@ -437,14 +437,8 @@ export function AuthGate() {
                       <div className="border border-frame2/70 bg-panel2/40 px-3 py-3 text-[11px] uppercase tracking-[0.12em] text-muted">
                         {labels.scanningProjectCache}
                       </div>
-                    ) : nonExpeditionProjects.length ? (
+                    ) : onboardingBaselineProjects.length ? (
                       <>
-                        {renderBaselineCategory(
-                          labels.onboardingBlueprintsTitle,
-                          labels.onboardingBlueprintsBody,
-                          onboardingBlueprints,
-                          "onboarding-blueprints"
-                        )}
                         {renderBaselineCategory(
                           labels.onboardingHideoutTitle,
                           labels.onboardingHideoutBody,

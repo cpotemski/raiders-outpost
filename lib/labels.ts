@@ -162,13 +162,13 @@ type Labels = Record<keyof typeof en, string>;
 const de: Labels = {
   navHome: "Home",
   navBlueprints: "Blueprints",
-  navHideout: "Hideout",
+  navHideout: "Werkstatt",
   navProjects: "Projekte",
   navCommunity: "Community",
   navOperator: "User",
   mainNavigation: "Navigation",
-  navBlueprintsSubtitle: "Blueprint-Itemfortschritt verfolgen.",
-  navHideoutSubtitle: "Fortschritt aller Hideout-Werkbänke verfolgen.",
+  navBlueprintsSubtitle: "Blueprint-Fortschritt verfolgen.",
+  navHideoutSubtitle: "Fortschritt aller Werkbänke verfolgen.",
   navProjectsSubtitle: "Projektfortschritt und Bedarf verfolgen.",
   navCommunitySubtitle: "Welche Items braucht meine Community?",
   navOperatorSubtitle: "Konfiguration, Expedition, Geräteverwaltung",
@@ -238,16 +238,16 @@ const de: Labels = {
     "Erzeuge einen Auth-Code auf deinem bestehenden Gerät (User-Menü) und gib ihn unten ein.",
   onboardingNewIntroTitle: "Willkommen bei Raiders Outpost",
   onboardingNewIntroBody:
-    "Verfolge, was du in Arc Raiders für Blueprints, Hideout-Werkbänke, Projekte und Expeditionen brauchst.",
+    "Verfolge, was du in Arc Raiders für Blueprints, Werkbänke, Projekte und Expeditionen brauchst.",
   onboardingProjectsTitle: "Kernkategorien",
   onboardingProjectsBody:
     "Setze je Kategorie eine Ausgangsbasis, damit dein Fortschritt korrekt startet.",
   onboardingBlueprintsTitle: "Blueprints",
   onboardingBlueprintsBody:
     "Markiere Blueprint-Stufen als abgeschlossen, wenn du sie bereits fertig hast.",
-  onboardingHideoutTitle: "Hideout",
+  onboardingHideoutTitle: "Werkstatt",
   onboardingHideoutBody:
-    "Markiere Hideout-Werkbank-Stufen als abgeschlossen, wenn erledigt.",
+    "Markiere Werkbank-Stufen als abgeschlossen, wenn erledigt.",
   onboardingCategoryProjectsTitle: "Projekte",
   onboardingCategoryProjectsBody:
     "Markiere Projektstufen als abgeschlossen, die du bereits erledigt hast.",
