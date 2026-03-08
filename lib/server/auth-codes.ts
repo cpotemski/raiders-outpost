@@ -6,6 +6,8 @@ type AuthCodeResult = {
   expiresAt: Date;
 };
 
+const BACKUP_CODE_EXPIRY = new Date("2126-01-01T00:00:00.000Z");
+
 const generateCode = () => {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const values = new Uint8Array(8);
@@ -27,16 +29,19 @@ const generateCode = () => {
 export const createAuthCodeForUser = async (
   userId: string
 ): Promise<AuthCodeResult> => {
-  await prisma.authCode.deleteMany({
-    where: {
-      OR: [{ userId }, { expiresAt: { lt: new Date() } }],
-    },
+  const existing = await prisma.authCode.findUnique({
+    where: { userId },
+    select: { code: true, expiresAt: true },
   });
+
+  if (existing) {
+    return existing;
+  }
 
   for (let attempt = 0; attempt < 4; attempt += 1) {
     const code = generateCode();
     try {
-      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+      const expiresAt = BACKUP_CODE_EXPIRY;
       await prisma.authCode.create({
         data: {
           code,
@@ -50,6 +55,13 @@ export const createAuthCodeForUser = async (
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === "P2002"
       ) {
+        const latest = await prisma.authCode.findUnique({
+          where: { userId },
+          select: { code: true, expiresAt: true },
+        });
+        if (latest) {
+          return latest;
+        }
         continue;
       }
       throw error;
@@ -61,8 +73,7 @@ export const createAuthCodeForUser = async (
 
 type RedeemResult =
   | { status: 200; user: { id: string; name: string; token: string; createdAt: Date } }
-  | { status: 404; error: "Unknown code" }
-  | { status: 410; error: "Code expired" };
+  | { status: 404; error: "Unknown code" };
 
 export const redeemAuthCode = async (code: string): Promise<RedeemResult> => {
   const authCode = await prisma.authCode.findUnique({
@@ -77,13 +88,6 @@ export const redeemAuthCode = async (code: string): Promise<RedeemResult> => {
   if (!authCode) {
     return { status: 404, error: "Unknown code" };
   }
-
-  if (authCode.expiresAt <= new Date()) {
-    await prisma.authCode.delete({ where: { id: authCode.id } });
-    return { status: 410, error: "Code expired" };
-  }
-
-  await prisma.authCode.delete({ where: { id: authCode.id } });
 
   return { status: 200, user: authCode.user };
 };

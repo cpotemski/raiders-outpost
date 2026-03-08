@@ -28,7 +28,7 @@ export function AuthGate() {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [errorKey, setErrorKey] = useState<
-    "nameRequired" | "authFailed" | "codeRequired" | "codeExpired" | "codeInvalid" | ""
+    "nameRequired" | "authFailed" | "codeRequired" | "codeInvalid" | ""
   >("");
   const [submitting, setSubmitting] = useState(false);
   const [onboardingProjects, setOnboardingProjects] = useState<
@@ -161,10 +161,6 @@ export function AuthGate() {
       });
       const payload = await res.json().catch(() => null);
       if (!res.ok || !payload?.user?.token) {
-        if (res.status === 410) {
-          setErrorKey("codeExpired");
-          return;
-        }
         setErrorKey("codeInvalid");
         return;
       }

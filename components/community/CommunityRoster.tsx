@@ -232,11 +232,11 @@ export function CommunityRoster() {
   } else if (activeMode === "needs") {
     body = (
       <div className="arc-panel overflow-hidden" data-testid="community-needs-mode">
-        <div className="arc-panel-header flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="font-semibold uppercase tracking-[0.08em]">
+        <div className="arc-panel-header flex items-center justify-between gap-2">
+          <h3 className="min-w-0 font-semibold uppercase tracking-[0.08em] leading-tight">
             {labels.communityModeNeeds}
           </h3>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <IconButton
               type="button"
               aria-pressed={hideEasyItems}

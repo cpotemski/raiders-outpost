@@ -36,7 +36,7 @@ const en = {
   raiderLabel: "User",
   authCodeLabel: "Login Code",
   authCodeValueAria: "Login code",
-  authCodeHint: "Use this code on another device to sign in.",
+  authCodeHint: "Keep this backup code so you can sign in again if logged out.",
   publicProfileLabel: "Public Profile",
   publicProfileLinkLabel: "Public Profile Link",
   publicProfileLinkAria: "Public profile link",
@@ -75,7 +75,7 @@ const en = {
   onboardingAccountPrompt: "Do you already have an account?",
   onboardingAccountHelp: "Choose how to link your user.",
   onboardingExistingHelp:
-    "Generate an auth code on your existing device (User menu) and enter it below.",
+    "Open the User menu on your existing device and enter your backup login code below.",
   onboardingNewIntroTitle: "Welcome to Raiders Outpost",
   onboardingNewIntroBody:
     "Set your expedition history so we can unlock and track your next available expedition.",
@@ -97,7 +97,7 @@ const en = {
   inactiveLabel: "Inactive",
   selectActiveExpedition: "Select active expedition",
   authCodePlaceholder: "ENTER LOGIN CODE",
-  authCodeValid: "Login code valid for 5 minutes",
+  authCodeValid: "Enter your backup login code",
   syncUplink: "Register",
   nameRequired: "Name required",
   authFailed: "Auth failed",
@@ -187,7 +187,8 @@ const de: Labels = {
   raiderLabel: "User",
   authCodeLabel: "Login-Code",
   authCodeValueAria: "Login-Code",
-  authCodeHint: "Nutze diesen Code auf einem anderen Gerät, um dich anzumelden.",
+  authCodeHint:
+    "Behalte diesen Backup-Code, damit du dich nach einem Logout wieder anmelden kannst.",
   publicProfileLabel: "Öffentliches Profil",
   publicProfileLinkLabel: "Öffentlicher Profil-Link",
   publicProfileLinkAria: "Öffentlicher Profil-Link",
@@ -227,7 +228,7 @@ const de: Labels = {
   onboardingAccountPrompt: "Hast du bereits einen Account?",
   onboardingAccountHelp: "Wähle den Weg zum Verknüpfen deines Users.",
   onboardingExistingHelp:
-    "Erzeuge einen Auth-Code auf deinem bestehenden Gerät (User-Menü) und gib ihn unten ein.",
+    "Öffne das User-Menü auf deinem bestehenden Gerät und gib unten deinen Backup-Login-Code ein.",
   onboardingNewIntroTitle: "Willkommen bei Raiders Outpost",
   onboardingNewIntroBody:
     "Lege deinen Expeditionsverlauf fest, damit wir die nächste verfügbare Expedition freischalten und verfolgen können.",
@@ -249,7 +250,7 @@ const de: Labels = {
   inactiveLabel: "Inaktiv",
   selectActiveExpedition: "Aktive Expedition wählen",
   authCodePlaceholder: "LOGIN-CODE EINGEBEN",
-  authCodeValid: "Login-Code 5 Minuten gültig",
+  authCodeValid: "Gib deinen Backup-Login-Code ein",
   syncUplink: "Registrieren",
   nameRequired: "Name erforderlich",
   authFailed: "Auth fehlgeschlagen",
