@@ -104,3 +104,13 @@ model EasyItemFilter {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model ScriptCache {
+  key              String   @id
+  payload          Json
+  sourceUrl        String
+  fetchedAt        DateTime
+  refreshStartedAt DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
