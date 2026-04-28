@@ -1,0 +1,24 @@
+import { getRandomItemAnnouncement } from "@/lib/scripts/random-item";
+
+export const runtime = "nodejs";
+
+export const GET = async (request: Request) => {
+  try {
+    const url = new URL(request.url);
+    const rarity = url.searchParams.get("rarity") ?? undefined;
+    const message = await getRandomItemAnnouncement(rarity);
+    return new Response(message, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    });
+  } catch {
+    return new Response("Aktuell konnten die Item-Daten nicht geladen werden.", {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+};
