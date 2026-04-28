@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { unstable_cache } from "next/cache";
 import { loadArcItems } from "@/lib/arc-items";
+import { stripBlueprintLabel } from "@/lib/item-labels";
 import type { AppLocale } from "@/lib/locale";
 import {
   getOverridePath,
@@ -88,7 +89,16 @@ const buildBlueprintFallback = async (
         item.id ?? item.imageFile?.replace(/\.[^/.]+$/, "") ?? "unknown",
       displayName: item.name,
       quantityRequired: 1,
-    }));
+    }))
+    .sort((a, b) =>
+      stripBlueprintLabel(a.displayName).localeCompare(
+        stripBlueprintLabel(b.displayName),
+        locale,
+        {
+        sensitivity: "base",
+        }
+      )
+    );
 
   return {
     slug: "blueprints",

@@ -1,5 +1,10 @@
 import { Prisma } from "@prisma/client";
 import { setTimeout as sleep } from "node:timers/promises";
+import type { AppLocale } from "@/lib/locale";
+import {
+  translateMapConditionName,
+  translateMapName,
+} from "@/lib/map-condition-labels";
 import { prisma } from "@/lib/prisma";
 
 const CACHE_KEY = "scripts:map-conditions";
@@ -319,22 +324,26 @@ export const getActiveMapConditionsSnapshot = async (
   }
 };
 
-export const getMapStates = (snapshot: ActiveMapConditionsSnapshot) => {
+export const getMapStates = (
+  snapshot: ActiveMapConditionsSnapshot,
+  locale: AppLocale = "de"
+) => {
   return dedupe(
     snapshot.knownMaps.length ? snapshot.knownMaps : FALLBACK_MAPS
   ).map((map) => ({
-    map,
+    map: translateMapName(map, locale),
     activeConditions: snapshot.activeEntries
       .filter((entry) => entry.map === map)
-      .map((entry) => entry.condition),
+      .map((entry) => translateMapConditionName(entry.condition, locale)),
   }));
 };
 
 export const formatRandomMapAnnouncement = (
   snapshot: ActiveMapConditionsSnapshot,
-  random = Math.random
+  random = Math.random,
+  locale: AppLocale = "de"
 ) => {
-  const maps = getMapStates(snapshot);
+  const maps = getMapStates(snapshot, locale);
   const selectedMap = maps[Math.floor(random() * maps.length)];
 
   if (!selectedMap || !selectedMap.activeConditions.length) {
@@ -349,7 +358,7 @@ export const formatRandomMapAnnouncement = (
   return `Map: ${selectedMap.map} - ${selectedCondition}`;
 };
 
-export const getRandomMapAnnouncement = async () => {
+export const getRandomMapAnnouncement = async (locale: AppLocale = "de") => {
   const snapshot = await getActiveMapConditionsSnapshot();
-  return formatRandomMapAnnouncement(snapshot);
+  return formatRandomMapAnnouncement(snapshot, Math.random, locale);
 };

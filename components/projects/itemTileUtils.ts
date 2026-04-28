@@ -1,4 +1,5 @@
 import blueprintBg from "@/blueprint-bg.webp";
+import { stripBlueprintLabel as stripBlueprintLabelText } from "@/lib/item-labels";
 
 const getRarityKey = (rarity: string) =>
   (rarity || "unknown").toLowerCase().replace(/[^a-z]/g, "");
@@ -10,10 +11,7 @@ export const getItemLabel = (
 ) => {
   const rawLabel = displayName || itemId;
   if (!stripBlueprintLabel) return rawLabel;
-  return rawLabel
-    .replace(/^\s*(blueprint|bauplan)\s*:\s*/i, "")
-    .replace(/\s*(blueprint|bauplan)\s*$/i, "")
-    .trim();
+  return stripBlueprintLabelText(rawLabel);
 };
 
 export const getItemRarityColor = (rarity: string) => {

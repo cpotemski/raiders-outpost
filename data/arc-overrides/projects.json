@@ -1,11 +1,32 @@
 [
   {
+    "id": "expedition_project_s1",
+    "name": {
+      "de": "Expedition 1",
+      "en": "Expedition 1"
+    }
+  },
+  {
+    "id": "expedition_project",
+    "name": {
+      "de": "Expedition 2",
+      "en": "Expedition 2"
+    }
+  },
+  {
     "id": "expedition_project_s3",
     "disabled": false,
     "name": {
-      "de": "Expeditionsprojekt (Saison 3)",
-      "en": "Expedition Project (Season 3)"
+      "de": "Expedition 3",
+      "en": "Expedition 3"
     },
     "phases": []
+  },
+  {
+    "id": "expedition_project_s4",
+    "name": {
+      "de": "Expedition 4",
+      "en": "Expedition 4"
+    }
   }
 ]
