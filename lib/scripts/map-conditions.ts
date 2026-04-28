@@ -2,6 +2,8 @@ import { Prisma } from "@prisma/client";
 import { setTimeout as sleep } from "node:timers/promises";
 import type { AppLocale } from "@/lib/locale";
 import {
+  KNOWN_MAPS,
+  normalizeMapName,
   translateMapConditionName,
   translateMapName,
 } from "@/lib/map-condition-labels";
@@ -9,19 +11,24 @@ import { prisma } from "@/lib/prisma";
 
 const CACHE_KEY = "scripts:map-conditions";
 const DEFAULT_SOURCE_URL =
-  process.env.ARC_MAP_CONDITIONS_SOURCE_URL ??
-  "https://arcraiders.com/de/map-conditions";
-const FALLBACK_MAPS = [
-  "Buried City",
-  "Dam Battlegrounds",
-  "Riven Tides",
-  "Spaceport",
-  "Stella Montis",
-  "The Blue Gate",
-];
+  process.env.ARC_EVENTS_SCHEDULE_SOURCE_URL ??
+  "https://metaforge.app/api/arc-raiders/events-schedule";
+const CACHE_TTL_MS = 5 * 60 * 1000;
 const REFRESH_LEASE_MS = 2 * 60 * 1000;
 const REFRESH_WAIT_MS = 400;
 const REFRESH_WAIT_ATTEMPTS = 8;
+
+type ScheduledEvent = {
+  name: string;
+  map: string;
+  startTime: number;
+  endTime: number;
+};
+
+type EventsScheduleResponse = {
+  cachedAt?: number;
+  data?: unknown;
+};
 
 export type ActiveMapCondition = {
   condition: string;
@@ -37,63 +44,25 @@ export type ActiveMapConditionsSnapshot = {
 };
 
 type ScriptCachePayload = {
-  activeEntries: ActiveMapCondition[];
+  cachedAtMs: number;
   knownMaps: string[];
+  schedule: ScheduledEvent[];
 };
-
-const decodeHtmlText = (value: string) =>
-  value
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .trim();
 
 const dedupe = (values: string[]) => [...new Set(values.filter(Boolean))];
 
-const getCurrentHalfHourWindowStart = (now: Date) => {
-  const start = new Date(now);
-  start.setUTCMinutes(now.getUTCMinutes() < 30 ? 0 : 30, 0, 0);
-  return start;
-};
-
-export const isCurrentHalfHourCache = (fetchedAt: Date, now = new Date()) =>
-  fetchedAt.getTime() >= getCurrentHalfHourWindowStart(now).getTime();
-
-const parseKnownMapsFromHtml = (html: string) => {
-  const matches = html.matchAll(
-    /href="\/de\/map-conditions\/map\/[^"]+">([^<]+)<\/a>/g
-  );
-  return dedupe(
-    [...matches].map((match) => decodeHtmlText(match[1] ?? ""))
-  );
-};
-
-const parseActiveSectionFromHtml = (html: string) => {
-  const match = html.match(
-    /<h2[^>]*>\s*Active now\s*<\/h2>([\s\S]*?)<\/section>/
-  );
-  return match?.[1] ?? null;
-};
-
-export const parseActiveEntriesFromHtml = (
-  html: string
-): ActiveMapCondition[] => {
-  const activeSection = parseActiveSectionFromHtml(html);
-  if (!activeSection) {
-    throw new Error("Unable to find Active now section in map conditions page.");
+const isScheduledEvent = (value: unknown): value is ScheduledEvent => {
+  if (!value || typeof value !== "object") {
+    return false;
   }
 
-  const matches = activeSection.matchAll(
-    /<a class="map-condition-card_row[\s\S]*?<span class="map-condition-card_conditionName[^"]*">([^<]+)<\/span><span class="map-condition-card_map[^"]*"><button[^>]*>([^<]+)<\/button><\/span>[\s\S]*?<span class="map-condition-card_time[^"]*">([^<]+)<\/span>/g
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.name === "string" &&
+    typeof candidate.map === "string" &&
+    typeof candidate.startTime === "number" &&
+    typeof candidate.endTime === "number"
   );
-
-  return [...matches].map((match) => ({
-    condition: decodeHtmlText(match[1] ?? ""),
-    map: decodeHtmlText(match[2] ?? ""),
-    timeLabel: decodeHtmlText(match[3] ?? ""),
-  }));
 };
 
 const toCachePayload = (payload: Prisma.JsonValue): ScriptCachePayload | null => {
@@ -102,67 +71,71 @@ const toCachePayload = (payload: Prisma.JsonValue): ScriptCachePayload | null =>
   }
 
   const record = payload as {
-    activeEntries?: unknown;
+    cachedAtMs?: unknown;
     knownMaps?: unknown;
+    schedule?: unknown;
   };
 
-  if (!Array.isArray(record.activeEntries) || !Array.isArray(record.knownMaps)) {
+  if (
+    typeof record.cachedAtMs !== "number" ||
+    !Array.isArray(record.knownMaps) ||
+    !Array.isArray(record.schedule)
+  ) {
     return null;
   }
-
-  const activeEntries = record.activeEntries
-    .map((entry) => {
-      if (!entry || typeof entry !== "object") return null;
-      const candidate = entry as {
-        condition?: unknown;
-        map?: unknown;
-        timeLabel?: unknown;
-      };
-      if (
-        typeof candidate.condition !== "string" ||
-        typeof candidate.map !== "string" ||
-        typeof candidate.timeLabel !== "string"
-      ) {
-        return null;
-      }
-
-      return {
-        condition: candidate.condition,
-        map: candidate.map,
-        timeLabel: candidate.timeLabel,
-      };
-    })
-    .filter(
-      (entry): entry is ActiveMapCondition =>
-        Boolean(entry?.condition && entry?.map && entry?.timeLabel)
-    );
 
   const knownMaps = record.knownMaps.filter(
     (entry: unknown): entry is string => typeof entry === "string" && Boolean(entry)
   );
-
-  if (!knownMaps.length) {
-    return null;
-  }
+  const schedule = record.schedule.filter(isScheduledEvent);
 
   return {
-    activeEntries,
+    cachedAtMs: record.cachedAtMs,
     knownMaps: dedupe(knownMaps),
+    schedule,
   };
 };
 
 const normalizeSnapshot = (
   payload: ScriptCachePayload,
-  fetchedAt: Date,
-  sourceUrl: string
-): ActiveMapConditionsSnapshot => ({
-  activeEntries: payload.activeEntries,
-  knownMaps: payload.knownMaps.length ? payload.knownMaps : FALLBACK_MAPS,
-  fetchedAt: fetchedAt.toISOString(),
-  sourceUrl,
-});
+  sourceUrl: string,
+  now = new Date()
+): ActiveMapConditionsSnapshot => {
+  const nowMs = now.getTime();
 
-const readSnapshotFromCache = async () => {
+  return {
+    activeEntries: payload.schedule
+      .filter((entry) => entry.startTime <= nowMs && entry.endTime > nowMs)
+      .map((entry) => ({
+        condition: entry.name,
+        map: normalizeMapName(entry.map),
+        timeLabel: `${new Date(entry.startTime).toISOString()}-${new Date(
+          entry.endTime
+        ).toISOString()}`,
+      })),
+    knownMaps: payload.knownMaps.length ? payload.knownMaps : KNOWN_MAPS,
+    fetchedAt: new Date(payload.cachedAtMs).toISOString(),
+    sourceUrl,
+  };
+};
+
+const getNextBoundaryTs = (schedule: ScheduledEvent[], nowMs: number) => {
+  const futureBoundaries = schedule.flatMap((entry) => [entry.startTime, entry.endTime]);
+  const nextBoundary = futureBoundaries
+    .filter((value) => value > nowMs)
+    .sort((left, right) => left - right)[0];
+
+  return nextBoundary ?? nowMs + CACHE_TTL_MS;
+};
+
+const isFreshCachePayload = (payload: ScriptCachePayload, now = new Date()) => {
+  const nowMs = now.getTime();
+  const ttlFresh = payload.cachedAtMs + CACHE_TTL_MS > nowMs;
+  const beforeNextBoundary = nowMs < getNextBoundaryTs(payload.schedule, nowMs);
+  return ttlFresh && beforeNextBoundary;
+};
+
+const readSnapshotFromCache = async (now = new Date()) => {
   const cache = await prisma.scriptCache.findUnique({
     where: { key: CACHE_KEY },
   });
@@ -176,37 +149,44 @@ const readSnapshotFromCache = async () => {
     return null;
   }
 
-  return normalizeSnapshot(payload, cache.fetchedAt, cache.sourceUrl);
+  return {
+    fresh: isFreshCachePayload(payload, now),
+    snapshot: normalizeSnapshot(payload, cache.sourceUrl, now),
+  };
 };
 
-const fetchMapConditionsHtml = async () => {
+const fetchEventsSchedule = async (): Promise<ScriptCachePayload> => {
   const response = await fetch(DEFAULT_SOURCE_URL, {
     headers: {
-      "User-Agent": "RaidersOutpost/1.0 (+https://arcraiders.com)",
+      "User-Agent": "RaidersOutpost/1.0 (+https://metaforge.app)",
     },
     cache: "no-store",
+    signal: AbortSignal.timeout(10_000),
   });
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch map conditions page: ${response.status} ${response.statusText}`
+      `Failed to fetch events schedule: ${response.status} ${response.statusText}`
     );
   }
 
-  return response.text();
-};
-
-const buildCachePayloadFromHtml = (html: string): ScriptCachePayload => {
-  const activeEntries = parseActiveEntriesFromHtml(html);
-  const knownMaps = parseKnownMapsFromHtml(html);
+  const payload = (await response.json()) as EventsScheduleResponse;
+  const schedule = Array.isArray(payload.data)
+    ? payload.data.filter(isScheduledEvent)
+    : [];
+  const knownMaps = dedupe(
+    schedule.map((entry) => normalizeMapName(entry.map)).concat(KNOWN_MAPS)
+  );
 
   return {
-    activeEntries,
-    knownMaps: knownMaps.length ? knownMaps : FALLBACK_MAPS,
+    cachedAtMs:
+      typeof payload.cachedAt === "number" ? payload.cachedAt : Date.now(),
+    knownMaps,
+    schedule,
   };
 };
 
-const persistSnapshot = async (payload: ScriptCachePayload) => {
+const persistSnapshot = async (payload: ScriptCachePayload, now = new Date()) => {
   const fetchedAt = new Date();
   const record = await prisma.scriptCache.upsert({
     where: { key: CACHE_KEY },
@@ -225,7 +205,7 @@ const persistSnapshot = async (payload: ScriptCachePayload) => {
     },
   });
 
-  return normalizeSnapshot(payload, record.fetchedAt, record.sourceUrl);
+  return normalizeSnapshot(payload, record.sourceUrl, now);
 };
 
 const acquireRefreshLease = async () => {
@@ -235,8 +215,9 @@ const acquireRefreshLease = async () => {
     create: {
       key: CACHE_KEY,
       payload: {
-        activeEntries: [],
-        knownMaps: FALLBACK_MAPS,
+        cachedAtMs: 0,
+        knownMaps: KNOWN_MAPS,
+        schedule: [],
       } as Prisma.InputJsonValue,
       sourceUrl: DEFAULT_SOURCE_URL,
       fetchedAt: new Date(0),
@@ -271,30 +252,26 @@ const releaseRefreshLease = async () => {
 const waitForFreshSnapshot = async (now: Date) => {
   for (let attempt = 0; attempt < REFRESH_WAIT_ATTEMPTS; attempt += 1) {
     await sleep(REFRESH_WAIT_MS);
-    const snapshot = await readSnapshotFromCache();
-    if (
-      snapshot &&
-      isCurrentHalfHourCache(new Date(snapshot.fetchedAt), now)
-    ) {
-      return snapshot;
+    const cached = await readSnapshotFromCache(now);
+    if (cached?.fresh) {
+      return cached.snapshot;
     }
   }
 
   return null;
 };
 
-const refreshSnapshot = async () => {
-  const html = await fetchMapConditionsHtml();
-  const payload = buildCachePayloadFromHtml(html);
-  return persistSnapshot(payload);
+const refreshSnapshot = async (now: Date) => {
+  const payload = await fetchEventsSchedule();
+  return persistSnapshot(payload, now);
 };
 
 export const getActiveMapConditionsSnapshot = async (
   now = new Date()
 ): Promise<ActiveMapConditionsSnapshot> => {
-  const cached = await readSnapshotFromCache();
-  if (cached && isCurrentHalfHourCache(new Date(cached.fetchedAt), now)) {
-    return cached;
+  const cached = await readSnapshotFromCache(now);
+  if (cached?.fresh) {
+    return cached.snapshot;
   }
 
   const hasLease = await acquireRefreshLease();
@@ -305,17 +282,17 @@ export const getActiveMapConditionsSnapshot = async (
     }
 
     if (cached) {
-      return cached;
+      return cached.snapshot;
     }
 
     throw new Error("Map conditions refresh is already running.");
   }
 
   try {
-    return await refreshSnapshot();
+    return await refreshSnapshot(now);
   } catch (error) {
     if (cached) {
-      return cached;
+      return cached.snapshot;
     }
 
     throw error;
@@ -328,14 +305,14 @@ export const getMapStates = (
   snapshot: ActiveMapConditionsSnapshot,
   locale: AppLocale = "de"
 ) => {
-  return dedupe(
-    snapshot.knownMaps.length ? snapshot.knownMaps : FALLBACK_MAPS
-  ).map((map) => ({
-    map: translateMapName(map, locale),
-    activeConditions: snapshot.activeEntries
-      .filter((entry) => entry.map === map)
-      .map((entry) => translateMapConditionName(entry.condition, locale)),
-  }));
+  return dedupe(snapshot.knownMaps.length ? snapshot.knownMaps : KNOWN_MAPS).map(
+    (map) => ({
+      map: translateMapName(map, locale),
+      activeConditions: snapshot.activeEntries
+        .filter((entry) => entry.map === map)
+        .map((entry) => translateMapConditionName(entry.condition, locale)),
+    })
+  );
 };
 
 export const formatRandomMapAnnouncement = (
@@ -346,8 +323,12 @@ export const formatRandomMapAnnouncement = (
   const maps = getMapStates(snapshot, locale);
   const selectedMap = maps[Math.floor(random() * maps.length)];
 
-  if (!selectedMap || !selectedMap.activeConditions.length) {
-    return `Map: ${selectedMap?.map ?? "Unbekannt"}`;
+  if (!selectedMap) {
+    throw new Error("No known maps available.");
+  }
+
+  if (!selectedMap.activeConditions.length) {
+    return `Map: ${selectedMap.map}`;
   }
 
   const selectedCondition =

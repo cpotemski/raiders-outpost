@@ -2,6 +2,7 @@ import type { AppLocale } from "@/lib/locale";
 
 const MAP_ALIASES: Record<string, string> = {
   "Buried City": "Buried City",
+  Dam: "Dam Battlegrounds",
   "Dam Battleground": "Dam Battlegrounds",
   "Dam Battlegrounds": "Dam Battlegrounds",
   "Riven Tides": "Riven Tides",
@@ -59,7 +60,7 @@ const EVENT_ALIASES: Record<string, string> = {
   None: "None",
 };
 
-const EVENT_LABELS: Record<string, Record<AppLocale, string>> = {
+export const EVENT_LABELS: Record<string, Record<AppLocale, string>> = {
   Beachcombing: {
     de: "Standgut-Suche",
     en: "Beachcombing",
@@ -129,6 +130,10 @@ const EVENT_LABELS: Record<string, Record<AppLocale, string>> = {
     en: "None",
   },
 };
+
+export const KNOWN_MAPS = Object.keys(MAP_LABELS);
+
+export const normalizeMapName = (value: string) => MAP_ALIASES[value] ?? value;
 
 const resolveLabel = (
   value: string,
