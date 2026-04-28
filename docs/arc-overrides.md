@@ -12,6 +12,8 @@ Custom data and assets for the Arc database now live under `data/arc-overrides`.
   - Overrides take precedence over upstream files with the same name.
 - `data/arc-overrides/projects.json`
   - Supply a partial array that patches existing projects by `id`. You can update names, stages, requirements, etc., without copying the whole file.
+- `data/arc-overrides/bots.json`
+  - Supply a partial array that patches ARC entries by `id`. This is useful for adding missing bots or overriding names without copying the full upstream dataset.
 - `data/arc-overrides/hideout/<id>.json`
   - Hideout entries are merged by filename with the builtin hideout data. Add new levels or tweak requirements simply by dropping a partial JSON file that includes the fields you want to change.
 

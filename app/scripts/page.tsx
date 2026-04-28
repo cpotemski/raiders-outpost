@@ -20,6 +20,13 @@ export default async function ScriptsPage() {
   const requestOrigin = await getRequestOrigin();
   const endpoints: ScriptEndpoint[] = [
     {
+      path: "/scripts/arc",
+      description:
+        "Gibt einen zufaelligen ARC als Plaintext zurueck. Es gibt keinen weiteren Filter.",
+      output: 'Beispiel: "ARC: Matriarchin"',
+      command: `!command add !arc $(customapi ${requestOrigin}/scripts/arc)`,
+    },
+    {
       path: "/scripts/map",
       description:
         "Gibt einen zufaelligen Map-Pick als Plaintext zurueck. Maps ohne aktives Event koennen ebenfalls gezogen werden.",

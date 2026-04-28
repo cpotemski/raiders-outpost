@@ -1,0 +1,26 @@
+[
+  {
+    "id": "arc_assessor",
+    "name": "ARC Assessor"
+  },
+  {
+    "id": "arc_comet",
+    "name": "Comet"
+  },
+  {
+    "id": "arc_firefly",
+    "name": "Firefly"
+  },
+  {
+    "id": "arc_vaporizer",
+    "name": "Vaporizer"
+  },
+  {
+    "id": "arc_turbine",
+    "name": "Turbine"
+  },
+  {
+    "id": "arc_the_queen",
+    "name": "Queen"
+  }
+]
