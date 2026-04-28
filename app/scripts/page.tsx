@@ -22,14 +22,14 @@ export default async function ScriptsPage() {
     {
       path: "/scripts/arc",
       description:
-        "Gibt einen zufaelligen ARC als Plaintext zurueck. Es gibt keinen weiteren Filter.",
-      output: 'Beispiel: "ARC: Matriarchin"',
+        "Gibt einen zufälligen ARC zurück.",
+      output: 'Beispiel: "ARC: Bastion"',
       command: `!command add !arc $(customapi ${requestOrigin}/scripts/arc)`,
     },
     {
       path: "/scripts/map",
       description:
-        "Gibt einen zufaelligen Map-Pick als Plaintext zurueck. Maps ohne aktives Event koennen ebenfalls gezogen werden.",
+        "Gibt eine zufällige Map zurück. Maps ohne aktives Event können ebenfalls gezogen werden.",
       output:
         'Beispiel: "Map: Raumhafen - Naechtliche Pluenderung" oder "Map: Blaues Tor"',
       command: `!command add !map $(customapi ${requestOrigin}/scripts/map)`,
@@ -37,9 +37,9 @@ export default async function ScriptsPage() {
     {
       path: "/scripts/item",
       description:
-        "Gibt ein zufaelliges Item als Plaintext zurueck. Mit einem optionalen Twitch-Argument wie !item rare wird auf diese Rarity gefiltert.",
+        "Gibt ein zufälliges Item zurück. Mit einem optionalen Twitch-Argument wie !item rare wird auf diese Rarity gefiltert.",
       output:
-        'Beispiel: "Item: Kaktusfeige" oder bei ungueltiger rarity ein Hinweis mit verfuegbaren Rarities',
+        'Beispiel: "Item: Kaktusfeige" oder bei ungültiger rarity ein Hinweis mit verfügbaren Rarities',
       command: `!command add !item $(customapi ${requestOrigin}/scripts/item?rarity=$(queryescape $(1)))`,
     },
   ];
