@@ -90,7 +90,7 @@ export const EVENT_LABELS: Record<string, Record<AppLocale, string>> = {
     en: "Matriarch",
   },
   "Close Scrutiny": {
-    de: "Genaue Prüfung",
+    de: "Unter Genauer Beobachtung",
     en: "Close Scrutiny",
   },
   "Electromagnetic Storm": {
