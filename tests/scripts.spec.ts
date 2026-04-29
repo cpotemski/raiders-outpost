@@ -71,6 +71,16 @@ test("item script endpoint supports rarity filtering", async ({ page }) => {
   expect(text).toMatch(/^Item: .+$/);
 });
 
+test("item script endpoint treats unresolved chat placeholders as no rarity filter", async ({ page }) => {
+  const response = await page.request.get("/scripts/item?rarity=$(1)");
+  expect(response.ok()).toBeTruthy();
+
+  const text = await response.text();
+  expect(text).toMatch(
+    /^(Item: .+|Aktuell konnten die Item-Daten nicht geladen werden\.)$/
+  );
+});
+
 test("item script endpoint lists available rarities for invalid rarity", async ({ page }) => {
   const response = await page.request.get("/scripts/item?rarity=definitely-not-real");
   expect(response.ok()).toBeTruthy();

@@ -4,6 +4,23 @@ import type { ArcItem } from "@/lib/arc-items";
 const normalizeRarity = (value: string) => value.trim().toLocaleLowerCase();
 const normalizeItemType = (value: string) => value.trim().toLocaleLowerCase();
 
+const normalizeScriptRarityInput = (value?: string) => {
+  const trimmed = value?.trim();
+
+  if (!trimmed) {
+    return undefined;
+  }
+
+  // Some chat command providers forward unresolved placeholders when an
+  // optional argument is omitted. Treat those as "no filter" instead of an
+  // invalid rarity so `!item` still returns a random item.
+  if (/^\$\(.+\)$/.test(trimmed)) {
+    return undefined;
+  }
+
+  return trimmed;
+};
+
 const toUniqueSortedRarities = (rarities: string[]) =>
   [...new Set(rarities.filter(Boolean))].sort((left, right) =>
     left.localeCompare(right)
@@ -42,7 +59,7 @@ export const getRandomItemAnnouncement = async (rarity?: string) => {
   const availableRarities = toUniqueSortedRarities(
     items.map((item) => item.rarity.trim()).filter(Boolean)
   );
-  const normalizedRarity = rarity?.trim();
+  const normalizedRarity = normalizeScriptRarityInput(rarity);
 
   const filteredItems = normalizedRarity
     ? items.filter(
