@@ -41,6 +41,7 @@ const excludedItemTypes = new Set([
   "augment",
   "blueprint",
   "key",
+  "modification",
   "trinket",
   ...SCRIPT_WEAPON_ITEM_TYPES,
 ]);

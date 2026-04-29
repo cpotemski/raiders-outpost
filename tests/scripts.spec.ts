@@ -216,6 +216,13 @@ test("item script exclusions filter non-loot categories generically", async () =
       itemType: "Sniper Rifle",
       imageFile: null,
     },
+    {
+      id: "mod",
+      name: "Angled Grip II",
+      rarity: "Rare",
+      itemType: "Modification",
+      imageFile: null,
+    },
   ]);
 
   expect(items).toHaveLength(1);
