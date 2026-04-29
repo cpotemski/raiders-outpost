@@ -1,7 +1,14 @@
 import { expect, test } from "@playwright/test";
 import { translateBotName } from "@/lib/arc-bot-labels";
 import { loadArcBots } from "@/lib/arc-bots";
+import { pickWeightedLoadout } from "@/lib/scripts/random-loadout";
 import { getScriptEligibleItems } from "@/lib/scripts/random-item";
+import {
+  getScriptEligibleWeapons,
+  getScriptEligibleWeaponsByRarity,
+  normalizeWeaponName,
+  pickWeightedWeaponRarity,
+} from "@/lib/scripts/random-weapon";
 
 test("scripts page documents the available script endpoints", async ({ page }) => {
   await page.goto("/scripts");
@@ -9,18 +16,26 @@ test("scripts page documents the available script endpoints", async ({ page }) =
   const expectedArcCommand = `!command add !arc $(customapi ${scriptsUrl.origin}/scripts/arc)`;
   const expectedMapCommand = `!command add !map $(customapi ${scriptsUrl.origin}/scripts/map)`;
   const expectedItemCommand = `!command add !item $(customapi "${scriptsUrl.origin}/scripts/item?rarity=$(queryescape $(1|all))")`;
+  const expectedLoadoutCommand = `!command add !loadout $(customapi ${scriptsUrl.origin}/scripts/loadout)`;
+  const expectedWeaponCommand = `!command add !weapon $(customapi ${scriptsUrl.origin}/scripts/weapon)`;
 
   await expect(page.getByTestId("scripts-page")).toBeVisible();
   await expect(page.getByText("Stream Endpunkte")).toBeVisible();
   await expect(page.locator("article").getByText("/scripts/arc", { exact: true })).toBeVisible();
   await expect(page.locator("article").getByText("/scripts/map", { exact: true })).toBeVisible();
   await expect(page.locator("article").getByText("/scripts/item", { exact: true })).toBeVisible();
+  await expect(page.locator("article").getByText("/scripts/loadout", { exact: true })).toBeVisible();
+  await expect(page.locator("article").getByText("/scripts/weapon", { exact: true })).toBeVisible();
   await expect(page.getByText(expectedArcCommand)).toBeVisible();
   await expect(page.getByText(expectedMapCommand)).toBeVisible();
   await expect(page.getByText(expectedItemCommand)).toBeVisible();
+  await expect(page.getByText(expectedLoadoutCommand)).toBeVisible();
+  await expect(page.getByText(expectedWeaponCommand)).toBeVisible();
   await expect(page.getByTestId("copy-command--scripts-arc")).toBeVisible();
   await expect(page.getByTestId("copy-command--scripts-map")).toBeVisible();
   await expect(page.getByTestId("copy-command--scripts-item")).toBeVisible();
+  await expect(page.getByTestId("copy-command--scripts-loadout")).toBeVisible();
+  await expect(page.getByTestId("copy-command--scripts-weapon")).toBeVisible();
 
   await page.getByTestId("scripts-page").screenshot({
     path: "test-results/scripts-page.png",
@@ -101,6 +116,38 @@ test("item script endpoint lists available rarities for invalid rarity", async (
   );
 });
 
+test("loadout script endpoint returns one of the expected plain text values", async ({
+  page,
+}) => {
+  const response = await page.request.get("/scripts/loadout");
+  expect(response.ok()).toBeTruthy();
+
+  const text = await response.text();
+  expect(text).toMatch(/^Loadout: (free|normal|ohne waffe|naked)$/);
+});
+
+test("loadout weighting maps random values to the requested distribution", () => {
+  expect(pickWeightedLoadout(0)).toBe("normal");
+  expect(pickWeightedLoadout(0.54)).toBe("normal");
+  expect(pickWeightedLoadout(0.55)).toBe("free");
+  expect(pickWeightedLoadout(0.79)).toBe("free");
+  expect(pickWeightedLoadout(0.8)).toBe("ohne waffe");
+  expect(pickWeightedLoadout(0.94)).toBe("ohne waffe");
+  expect(pickWeightedLoadout(0.95)).toBe("naked");
+  expect(pickWeightedLoadout(0.9999)).toBe("naked");
+});
+
+test("weapon script endpoint returns a plain text weapon name without tier suffix", async ({
+  page,
+}) => {
+  const response = await page.request.get("/scripts/weapon");
+  expect(response.ok()).toBeTruthy();
+
+  const text = await response.text();
+  expect(text).toMatch(/^(Waffe: .+|Aktuell konnten die Waffen-Daten nicht geladen werden\.)$/);
+  expect(text).not.toMatch(/^Waffe: .+ (I|II|III|IV)$/);
+});
+
 test("item script exclusions filter blueprints and keys generically", async () => {
   const items = getScriptEligibleItems([
     {
@@ -135,6 +182,138 @@ test("item script exclusions filter blueprints and keys generically", async () =
 
   expect(items).toHaveLength(1);
   expect(items[0]?.id).toBe("allowed");
+});
+
+test("weapon name normalization strips tier suffixes only", () => {
+  expect(normalizeWeaponName("Venator IV")).toBe("Venator");
+  expect(normalizeWeaponName("Il Toro II")).toBe("Il Toro");
+  expect(normalizeWeaponName("Dolabra")).toBe("Dolabra");
+});
+
+test("weapon script items are deduplicated by normalized weapon name", () => {
+  const weapons = getScriptEligibleWeapons([
+    {
+      id: "venator_i",
+      name: "Venator I",
+      rarity: "Common",
+      itemType: "Sniper Rifle",
+      imageFile: null,
+    },
+    {
+      id: "venator_iv",
+      name: "Venator IV",
+      rarity: "Legendary",
+      itemType: "Sniper Rifle",
+      imageFile: null,
+    },
+    {
+      id: "dolabra",
+      name: "Dolabra",
+      rarity: "Rare",
+      itemType: "Shotgun",
+      imageFile: null,
+    },
+    {
+      id: "not-a-weapon",
+      name: "Agave Juice",
+      rarity: "Common",
+      itemType: "Nature",
+      imageFile: null,
+    },
+  ]);
+
+  expect(weapons).toEqual(["Dolabra", "Venator"]);
+});
+
+test("weapon script groups normalized weapon names by rarity", () => {
+  const weaponsByRarity = getScriptEligibleWeaponsByRarity([
+    {
+      id: "venator_i",
+      name: "Venator I",
+      rarity: "Common",
+      itemType: "Sniper Rifle",
+      imageFile: null,
+    },
+    {
+      id: "venator_ii",
+      name: "Venator II",
+      rarity: "Common",
+      itemType: "Sniper Rifle",
+      imageFile: null,
+    },
+    {
+      id: "venator_iv",
+      name: "Venator IV",
+      rarity: "Common",
+      itemType: "Sniper Rifle",
+      imageFile: null,
+    },
+    {
+      id: "dolabra",
+      name: "Dolabra",
+      rarity: "Rare",
+      itemType: "Shotgun",
+      imageFile: null,
+    },
+  ]);
+
+  expect(weaponsByRarity.get("common")).toEqual(["Venator"]);
+  expect(weaponsByRarity.get("rare")).toEqual(["Dolabra"]);
+});
+
+test("weapon script keeps one rarity per normalized base weapon", () => {
+  const weaponsByRarity = getScriptEligibleWeaponsByRarity([
+    {
+      id: "venator_i",
+      name: "Venator I",
+      rarity: "Common",
+      itemType: "Sniper Rifle",
+      imageFile: null,
+    },
+    {
+      id: "venator_iv",
+      name: "Venator IV",
+      rarity: "Common",
+      itemType: "Sniper Rifle",
+      imageFile: null,
+    },
+  ]);
+
+  expect(weaponsByRarity.get("common")).toEqual(["Venator"]);
+  expect(weaponsByRarity.size).toBe(1);
+});
+
+test("weapon rarity weighting maps random values to the requested distribution", () => {
+  const weaponsByRarity = new Map<string, string[]>([
+    ["common", ["Venator"]],
+    ["uncommon", ["Arpeggio"]],
+    ["rare", ["Dolabra"]],
+    ["epic", ["Jupiter"]],
+    ["legendary", ["Equalizer"]],
+  ]);
+
+  expect(pickWeightedWeaponRarity(weaponsByRarity, 0)).toBe("uncommon");
+  expect(pickWeightedWeaponRarity(weaponsByRarity, 0.29)).toBe("uncommon");
+  expect(pickWeightedWeaponRarity(weaponsByRarity, 0.3)).toBe("rare");
+  expect(pickWeightedWeaponRarity(weaponsByRarity, 0.59)).toBe("rare");
+  expect(pickWeightedWeaponRarity(weaponsByRarity, 0.6)).toBe("common");
+  expect(pickWeightedWeaponRarity(weaponsByRarity, 0.79)).toBe("common");
+  expect(pickWeightedWeaponRarity(weaponsByRarity, 0.8)).toBe("epic");
+  expect(pickWeightedWeaponRarity(weaponsByRarity, 0.94)).toBe("epic");
+  expect(pickWeightedWeaponRarity(weaponsByRarity, 0.95)).toBe("legendary");
+  expect(pickWeightedWeaponRarity(weaponsByRarity, 0.9999)).toBe("legendary");
+});
+
+test("weapon rarity weighting rebalances when some rarities are unavailable", () => {
+  const weaponsByRarity = new Map<string, string[]>([
+    ["common", ["Venator"]],
+    ["rare", ["Dolabra"]],
+  ]);
+
+  expect(pickWeightedWeaponRarity(weaponsByRarity, 0)).toBe("rare");
+  expect(pickWeightedWeaponRarity(weaponsByRarity, 0.59)).toBe("rare");
+  expect(pickWeightedWeaponRarity(weaponsByRarity, 0.6)).toBe("common");
+  expect(pickWeightedWeaponRarity(weaponsByRarity, 0.9999)).toBe("common");
 });
 
 test("arc bot labels provide german translations", () => {

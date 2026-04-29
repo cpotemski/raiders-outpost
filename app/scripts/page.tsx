@@ -42,6 +42,22 @@ export default async function ScriptsPage() {
         'Beispiel: "Item: Kaktusfeige" oder bei ungültiger rarity ein Hinweis mit verfügbaren Rarities',
       command: `!command add !item $(customapi "${requestOrigin}/scripts/item?rarity=$(queryescape $(1|all))")`,
     },
+    {
+      path: "/scripts/loadout",
+      description:
+        'Gibt ein zufälliges Loadout zurück. Mögliche Antworten sind "free", "normal", "ohne waffe" und "naked".',
+      output:
+        'Beispiel: "Loadout: normal"',
+      command: `!command add !loadout $(customapi ${requestOrigin}/scripts/loadout)`,
+    },
+    {
+      path: "/scripts/weapon",
+      description:
+        "Gibt eine zufällige Waffe zurück. Waffenstufen werden dabei entfernt, damit nur der Waffenname ausgegeben wird.",
+      output:
+        'Beispiel: "Waffe: Venator"',
+      command: `!command add !weapon $(customapi ${requestOrigin}/scripts/weapon)`,
+    },
   ];
 
   return (
