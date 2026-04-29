@@ -27,6 +27,13 @@ test("scripts page documents the available script endpoints", async ({ page }) =
   });
 });
 
+test("scripts page is accessible without login", async ({ page }) => {
+  await page.goto("/scripts");
+
+  await expect(page.getByTestId("scripts-page")).toBeVisible();
+  await expect(page.getByTestId("onboarding-step-account")).toBeHidden();
+});
+
 test("arc script endpoint returns plain text", async ({ page }) => {
   const response = await page.request.get("/scripts/arc");
   expect(response.ok()).toBeTruthy();

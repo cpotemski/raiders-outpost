@@ -10,7 +10,8 @@ import { ExpeditionResetNotice } from "@/components/expeditions/ExpeditionResetN
 export function RouteChrome() {
   const pathname = usePathname();
   const isAdmin = pathname === "/admin";
-  const isPublicProfile = pathname.startsWith("/public/");
+  const isPublicRoute =
+    pathname.startsWith("/public/") || pathname === "/scripts";
 
   if (isAdmin) {
     return null;
@@ -19,7 +20,7 @@ export function RouteChrome() {
   return (
     <>
       <IdentitySync />
-      {!isPublicProfile ? <AuthGate /> : null}
+      {!isPublicRoute ? <AuthGate /> : null}
       <TopNav />
       <ExpeditionResetNotice />
       <BackLinkBar />
