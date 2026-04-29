@@ -8,7 +8,7 @@ test("scripts page documents the available script endpoints", async ({ page }) =
   const scriptsUrl = new URL(page.url());
   const expectedArcCommand = `!command add !arc $(customapi ${scriptsUrl.origin}/scripts/arc)`;
   const expectedMapCommand = `!command add !map $(customapi ${scriptsUrl.origin}/scripts/map)`;
-  const expectedItemCommand = `!command add !item $(customapi ${scriptsUrl.origin}/scripts/item?rarity=$(queryescape $(1)))`;
+  const expectedItemCommand = `!command add !item $(customapi "${scriptsUrl.origin}/scripts/item?rarity=$(queryescape $(1|all))")`;
 
   await expect(page.getByTestId("scripts-page")).toBeVisible();
   await expect(page.getByText("Stream Endpunkte")).toBeVisible();
@@ -69,6 +69,16 @@ test("item script endpoint supports rarity filtering", async ({ page }) => {
 
   const text = await response.text();
   expect(text).toMatch(/^Item: .+$/);
+});
+
+test("item script endpoint treats StreamElements fallback rarity as no filter", async ({ page }) => {
+  const response = await page.request.get("/scripts/item?rarity=all");
+  expect(response.ok()).toBeTruthy();
+
+  const text = await response.text();
+  expect(text).toMatch(
+    /^(Item: .+|Aktuell konnten die Item-Daten nicht geladen werden\.)$/
+  );
 });
 
 test("item script endpoint treats unresolved chat placeholders as no rarity filter", async ({ page }) => {

@@ -3,6 +3,7 @@ import type { ArcItem } from "@/lib/arc-items";
 
 const normalizeRarity = (value: string) => value.trim().toLocaleLowerCase();
 const normalizeItemType = (value: string) => value.trim().toLocaleLowerCase();
+const scriptRarityPassthroughValues = new Set(["all"]);
 
 const normalizeScriptRarityInput = (value?: string) => {
   const trimmed = value?.trim();
@@ -15,6 +16,10 @@ const normalizeScriptRarityInput = (value?: string) => {
   // optional argument is omitted. Treat those as "no filter" instead of an
   // invalid rarity so `!item` still returns a random item.
   if (/^\$\(.+\)$/.test(trimmed)) {
+    return undefined;
+  }
+
+  if (scriptRarityPassthroughValues.has(trimmed.toLocaleLowerCase())) {
     return undefined;
   }
 

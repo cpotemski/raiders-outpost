@@ -37,10 +37,10 @@ export default async function ScriptsPage() {
     {
       path: "/scripts/item",
       description:
-        "Gibt ein zufälliges Item zurück. Mit einem optionalen Twitch-Argument wie !item rare wird auf diese Rarity gefiltert.",
+        "Gibt ein zufälliges Item zurück. Ohne Argument wird immer ein Random-Item gezogen, mit einem optionalen Twitch-Argument wie !item rare wird auf diese Rarity gefiltert.",
       output:
         'Beispiel: "Item: Kaktusfeige" oder bei ungültiger rarity ein Hinweis mit verfügbaren Rarities',
-      command: `!command add !item $(customapi ${requestOrigin}/scripts/item?rarity=$(queryescape $(1)))`,
+      command: `!command add !item $(customapi "${requestOrigin}/scripts/item?rarity=$(queryescape $(1|all))")`,
     },
   ];
 
