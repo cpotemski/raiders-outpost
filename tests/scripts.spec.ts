@@ -179,6 +179,7 @@ test("item script exclusions filter non-loot categories generically", async () =
       name: "Agave Juice",
       rarity: "Common",
       itemType: "Nature",
+      foundIn: "Nature",
       imageFile: null,
     },
     {
@@ -186,6 +187,7 @@ test("item script exclusions filter non-loot categories generically", async () =
       name: "Anvil Blueprint",
       rarity: "Rare",
       itemType: "Blueprint",
+      foundIn: "Industrial",
       imageFile: null,
     },
     {
@@ -193,6 +195,7 @@ test("item script exclusions filter non-loot categories generically", async () =
       name: "Blue Gate Village Key",
       rarity: "Epic",
       itemType: "Key",
+      foundIn: "Security",
       imageFile: null,
     },
     {
@@ -200,6 +203,7 @@ test("item script exclusions filter non-loot categories generically", async () =
       name: "Secret Meeting Info",
       rarity: "Rare",
       itemType: "Trinket",
+      foundIn: "Residential",
       imageFile: null,
     },
     {
@@ -227,6 +231,37 @@ test("item script exclusions filter non-loot categories generically", async () =
 
   expect(items).toHaveLength(1);
   expect(items[0]?.id).toBe("allowed");
+});
+
+test("item script exclusions require foundIn in addition to existing rules", async () => {
+  const items = getScriptEligibleItems([
+    {
+      id: "lootable",
+      name: "Plastic Parts",
+      rarity: "Common",
+      itemType: "Resource",
+      foundIn: "Commercial, Residential, Technological",
+      imageFile: null,
+    },
+    {
+      id: "crafted-only",
+      name: "Snap Hook",
+      rarity: "Legendary",
+      itemType: "Quick Use",
+      imageFile: null,
+    },
+    {
+      id: "blank-found-in",
+      name: "Mystery Scrap",
+      rarity: "Common",
+      itemType: "Resource",
+      foundIn: "   ",
+      imageFile: null,
+    },
+  ]);
+
+  expect(items).toHaveLength(1);
+  expect(items[0]?.id).toBe("lootable");
 });
 
 test("weapon name normalization strips tier suffixes only", () => {

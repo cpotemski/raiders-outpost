@@ -14,6 +14,7 @@ export type ArcItem = {
   name: string;
   rarity: string;
   itemType: string;
+  foundIn?: string;
   imageFile: string | null;
 };
 
@@ -43,6 +44,7 @@ type ArcItemSource = {
   name?: Record<string, string>;
   type?: string;
   rarity?: string;
+  foundIn?: string;
   imageFilename?: string;
   updatedAt?: string;
 };
@@ -117,6 +119,7 @@ const readArcItems = (locale: AppLocale) =>
           name: resolveName(item.name, locale, id),
           rarity: item.rarity ?? "Unknown",
           itemType: item.type ?? "Unknown",
+          foundIn: item.foundIn,
           imageFile,
           updatedAt: item.updatedAt,
         };

@@ -4,6 +4,7 @@ import { SCRIPT_WEAPON_ITEM_TYPES } from "@/lib/scripts/random-weapon";
 
 const normalizeRarity = (value: string) => value.trim().toLocaleLowerCase();
 const normalizeItemType = (value: string) => value.trim().toLocaleLowerCase();
+const hasLootSource = (item: ArcItem) => item.foundIn?.trim().length > 0;
 const scriptRarityPassthroughValues = new Set(["all"]);
 
 const normalizeScriptRarityInput = (value?: string) => {
@@ -47,6 +48,10 @@ const excludedItemTypes = new Set([
 ]);
 
 export const SCRIPT_ITEM_EXCLUSION_RULES: ScriptItemExclusionRule[] = [
+  {
+    id: "missing-found-in",
+    matches: (item) => !hasLootSource(item),
+  },
   {
     id: "excluded-item-types",
     matches: (item) => excludedItemTypes.has(normalizeItemType(item.itemType)),
