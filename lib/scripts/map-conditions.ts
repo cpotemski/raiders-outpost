@@ -343,3 +343,8 @@ export const getRandomMapAnnouncement = async (locale: AppLocale = "de") => {
   const snapshot = await getActiveMapConditionsSnapshot();
   return formatRandomMapAnnouncement(snapshot, Math.random, locale);
 };
+
+export const getRandomMapLabel = async (locale: AppLocale = "de") => {
+  const announcement = await getRandomMapAnnouncement(locale);
+  return announcement.replace(/^Map:\s*/, "");
+};

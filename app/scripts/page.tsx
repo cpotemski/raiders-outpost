@@ -20,6 +20,14 @@ export default async function ScriptsPage() {
   const requestOrigin = await getRequestOrigin();
   const endpoints: ScriptEndpoint[] = [
     {
+      path: "/scripts/challenge",
+      description:
+        'Kombiniert Map, Loadout, ARC und Item in einer Antwort. Bei "normal" wird zusaetzlich eine zufaellige Waffe gezogen, bei "free", "naked" und "ohne waffe" wird kein Waffen-Teil ausgegeben.',
+      output:
+        'Beispiel: "Challenge: Map: Raumhafen - Naechtliche Pluenderung | Loadout: normal | Waffe: Venator | ARC: Bastion | Item: Agave Juice"',
+      command: `!command add !challenge $(customapi ${requestOrigin}/scripts/challenge)`,
+    },
+    {
       path: "/scripts/arc",
       description:
         "Gibt einen zufälligen ARC zurück.",

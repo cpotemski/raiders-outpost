@@ -20,8 +20,10 @@ export const pickWeightedLoadout = (randomValue: number) => {
   return LOADOUT_OPTIONS[LOADOUT_OPTIONS.length - 1].value;
 };
 
+export const getRandomLoadout = () => pickWeightedLoadout(Math.random());
+
 export const getRandomLoadoutAnnouncement = () => {
-  const loadout = pickWeightedLoadout(Math.random());
+  const loadout = getRandomLoadout();
 
   return `Loadout: ${loadout}`;
 };

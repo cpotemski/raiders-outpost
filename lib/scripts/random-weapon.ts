@@ -1,7 +1,7 @@
 import { loadArcItems } from "@/lib/arc-items";
 import type { ArcItem } from "@/lib/arc-items";
 
-const WEAPON_ITEM_TYPES = new Set([
+export const SCRIPT_WEAPON_ITEM_TYPES = new Set([
   "assault rifle",
   "battle rifle",
   "hand cannon",
@@ -29,7 +29,7 @@ export const normalizeWeaponName = (name: string) =>
 
 export const isScriptWeaponAllowed = (item: ArcItem) =>
   item.name.trim().length > 0 &&
-  WEAPON_ITEM_TYPES.has(normalizeItemType(item.itemType));
+  SCRIPT_WEAPON_ITEM_TYPES.has(normalizeItemType(item.itemType));
 
 export const getScriptEligibleWeapons = (items: ArcItem[]) => {
   const names = new Set(
@@ -108,21 +108,29 @@ export const pickWeightedWeaponRarity = (
   return availableRarities[availableRarities.length - 1]?.rarity;
 };
 
-export const getRandomWeaponAnnouncement = async () => {
+export const getRandomWeaponName = async () => {
   const payload = await loadArcItems();
   const weaponsByRarity = getScriptEligibleWeaponsByRarity(payload.items);
   const rarity = pickWeightedWeaponRarity(weaponsByRarity, Math.random());
 
   if (!rarity) {
-    return "Aktuell konnten keine Waffen-Daten geladen werden.";
+    return undefined;
   }
 
   const weapons = weaponsByRarity.get(rarity) ?? [];
 
   if (!weapons.length) {
+    return undefined;
+  }
+
+  return weapons[Math.floor(Math.random() * weapons.length)];
+};
+
+export const getRandomWeaponAnnouncement = async () => {
+  const weaponName = await getRandomWeaponName();
+  if (!weaponName) {
     return "Aktuell konnten keine Waffen-Daten geladen werden.";
   }
 
-  const weapon = weapons[Math.floor(Math.random() * weapons.length)];
-  return `Waffe: ${weapon}`;
+  return `Waffe: ${weaponName}`;
 };

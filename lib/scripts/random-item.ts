@@ -1,5 +1,6 @@
 import { loadArcItems } from "@/lib/arc-items";
 import type { ArcItem } from "@/lib/arc-items";
+import { SCRIPT_WEAPON_ITEM_TYPES } from "@/lib/scripts/random-weapon";
 
 const normalizeRarity = (value: string) => value.trim().toLocaleLowerCase();
 const normalizeItemType = (value: string) => value.trim().toLocaleLowerCase();
@@ -36,7 +37,13 @@ type ScriptItemExclusionRule = {
   matches: (item: ArcItem) => boolean;
 };
 
-const excludedItemTypes = new Set(["blueprint", "key", "trinket"]);
+const excludedItemTypes = new Set([
+  "augment",
+  "blueprint",
+  "key",
+  "trinket",
+  ...SCRIPT_WEAPON_ITEM_TYPES,
+]);
 
 export const SCRIPT_ITEM_EXCLUSION_RULES: ScriptItemExclusionRule[] = [
   {
@@ -53,12 +60,12 @@ export const getScriptEligibleItems = (items: ArcItem[]) =>
     (item) => item.name.trim().length > 0 && isScriptItemAllowed(item)
   );
 
-export const getRandomItemAnnouncement = async (rarity?: string) => {
+export const getRandomScriptItemName = async (rarity?: string) => {
   const payload = await loadArcItems();
   const items = getScriptEligibleItems(payload.items);
 
   if (!items.length) {
-    return "Aktuell konnten keine Item-Daten geladen werden.";
+    return undefined;
   }
 
   const availableRarities = toUniqueSortedRarities(
@@ -76,8 +83,14 @@ export const getRandomItemAnnouncement = async (rarity?: string) => {
     return `Keine Items fuer rarity "${normalizedRarity}" gefunden. Verfuegbare Rarities: ${availableRarities.join(", ")}`;
   }
 
-  const randomItem =
-    filteredItems[Math.floor(Math.random() * filteredItems.length)];
+  return filteredItems[Math.floor(Math.random() * filteredItems.length)]?.name;
+};
 
-  return `Item: ${randomItem.name}`;
+export const getRandomItemAnnouncement = async (rarity?: string) => {
+  const itemName = await getRandomScriptItemName(rarity);
+  if (!itemName) {
+    return "Aktuell konnten keine Item-Daten geladen werden.";
+  }
+
+  return `Item: ${itemName}`;
 };

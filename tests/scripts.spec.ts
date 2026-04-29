@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { translateBotName } from "@/lib/arc-bot-labels";
 import { loadArcBots } from "@/lib/arc-bots";
+import { loadoutNeedsWeapon } from "@/lib/scripts/random-challenge";
 import { pickWeightedLoadout } from "@/lib/scripts/random-loadout";
 import { getScriptEligibleItems } from "@/lib/scripts/random-item";
 import {
@@ -18,6 +19,7 @@ test("scripts page documents the available script endpoints", async ({ page }) =
   const expectedItemCommand = `!command add !item $(customapi "${scriptsUrl.origin}/scripts/item?rarity=$(queryescape $(1|all))")`;
   const expectedLoadoutCommand = `!command add !loadout $(customapi ${scriptsUrl.origin}/scripts/loadout)`;
   const expectedWeaponCommand = `!command add !weapon $(customapi ${scriptsUrl.origin}/scripts/weapon)`;
+  const expectedChallengeCommand = `!command add !challenge $(customapi ${scriptsUrl.origin}/scripts/challenge)`;
 
   await expect(page.getByTestId("scripts-page")).toBeVisible();
   await expect(page.getByText("Stream Endpunkte")).toBeVisible();
@@ -26,16 +28,19 @@ test("scripts page documents the available script endpoints", async ({ page }) =
   await expect(page.locator("article").getByText("/scripts/item", { exact: true })).toBeVisible();
   await expect(page.locator("article").getByText("/scripts/loadout", { exact: true })).toBeVisible();
   await expect(page.locator("article").getByText("/scripts/weapon", { exact: true })).toBeVisible();
+  await expect(page.locator("article").getByText("/scripts/challenge", { exact: true })).toBeVisible();
   await expect(page.getByText(expectedArcCommand)).toBeVisible();
   await expect(page.getByText(expectedMapCommand)).toBeVisible();
   await expect(page.getByText(expectedItemCommand)).toBeVisible();
   await expect(page.getByText(expectedLoadoutCommand)).toBeVisible();
   await expect(page.getByText(expectedWeaponCommand)).toBeVisible();
+  await expect(page.getByText(expectedChallengeCommand)).toBeVisible();
   await expect(page.getByTestId("copy-command--scripts-arc")).toBeVisible();
   await expect(page.getByTestId("copy-command--scripts-map")).toBeVisible();
   await expect(page.getByTestId("copy-command--scripts-item")).toBeVisible();
   await expect(page.getByTestId("copy-command--scripts-loadout")).toBeVisible();
   await expect(page.getByTestId("copy-command--scripts-weapon")).toBeVisible();
+  await expect(page.getByTestId("copy-command--scripts-challenge")).toBeVisible();
 
   await page.getByTestId("scripts-page").screenshot({
     path: "test-results/scripts-page.png",
@@ -148,7 +153,26 @@ test("weapon script endpoint returns a plain text weapon name without tier suffi
   expect(text).not.toMatch(/^Waffe: .+ (I|II|III|IV)$/);
 });
 
-test("item script exclusions filter blueprints and keys generically", async () => {
+test("challenge script endpoint returns the combined plain text payload", async ({
+  page,
+}) => {
+  const response = await page.request.get("/scripts/challenge");
+  expect(response.ok()).toBeTruthy();
+
+  const text = await response.text();
+  expect(text).toMatch(
+    /^(Challenge: Map: .+ \| Loadout: normal \| Waffe: .+ \| ARC: .+ \| Item: .+|Challenge: Map: .+ \| Loadout: (free|ohne waffe|naked) \| ARC: .+ \| Item: .+|Aktuell konnten die Challenge-Daten nicht geladen werden\.)$/
+  );
+});
+
+test("challenge loadout rules only require a weapon for normal", () => {
+  expect(loadoutNeedsWeapon("normal")).toBeTruthy();
+  expect(loadoutNeedsWeapon("free")).toBeFalsy();
+  expect(loadoutNeedsWeapon("ohne waffe")).toBeFalsy();
+  expect(loadoutNeedsWeapon("naked")).toBeFalsy();
+});
+
+test("item script exclusions filter non-loot categories generically", async () => {
   const items = getScriptEligibleItems([
     {
       id: "allowed",
@@ -176,6 +200,20 @@ test("item script exclusions filter blueprints and keys generically", async () =
       name: "Secret Meeting Info",
       rarity: "Rare",
       itemType: "Trinket",
+      imageFile: null,
+    },
+    {
+      id: "augment",
+      name: "Combat MK. 1",
+      rarity: "Common",
+      itemType: "Augment",
+      imageFile: null,
+    },
+    {
+      id: "weapon",
+      name: "Venator I",
+      rarity: "Rare",
+      itemType: "Sniper Rifle",
       imageFile: null,
     },
   ]);
