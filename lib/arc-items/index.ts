@@ -24,7 +24,11 @@ export type ArcItemPayload = {
   items: ArcItem[];
 };
 
-type ArcItemWithMeta = ArcItem & { id: string; updatedAt: string | undefined };
+type ArcItemWithMeta = Omit<ArcItem, "id" | "foundIn"> & {
+  id: string;
+  foundIn: string | undefined;
+  updatedAt: string | undefined;
+};
 
 const DATA_DIR = path.join(
   process.cwd(),

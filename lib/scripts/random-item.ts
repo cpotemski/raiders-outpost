@@ -4,7 +4,7 @@ import { SCRIPT_WEAPON_ITEM_TYPES } from "@/lib/scripts/random-weapon";
 
 const normalizeRarity = (value: string) => value.trim().toLocaleLowerCase();
 const normalizeItemType = (value: string) => value.trim().toLocaleLowerCase();
-const hasLootSource = (item: ArcItem) => item.foundIn?.trim().length > 0;
+const hasLootSource = (item: ArcItem) => Boolean(item.foundIn?.trim());
 const scriptRarityPassthroughValues = new Set(["all"]);
 
 const normalizeScriptRarityInput = (value?: string) => {
