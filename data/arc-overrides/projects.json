@@ -27,6 +27,57 @@
     "name": {
       "de": "Expedition 4",
       "en": "Expedition 4"
-    }
+    },
+    "phases": [
+      {
+        "phase": 3,
+        "__replaceFields": ["requirementItemIds"],
+        "requirementItemIds": [
+          {
+            "itemId": "arc_motion_core",
+            "quantity": 20
+          },
+          {
+            "itemId": "speaker_component",
+            "quantity": 15
+          },
+          {
+            "itemId": "turbine_compressor",
+            "quantity": 5
+          },
+          {
+            "itemId": "exodus_modules",
+            "quantity": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "avian_alarm_project",
+    "phases": [
+      {
+        "phase": 5,
+        "__replaceFields": ["requirementItemIds"],
+        "requirementItemIds": [
+          {
+            "itemId": "turbine_compressor",
+            "quantity": 2
+          },
+          {
+            "itemId": "red_coral_jewelry",
+            "quantity": 3
+          },
+          {
+            "itemId": "roots",
+            "quantity": 4
+          },
+          {
+            "itemId": "leviathans_crown_ship_model",
+            "quantity": 1
+          }
+        ]
+      }
+    ]
   }
 ]

@@ -18,7 +18,7 @@ const cloneValue = <T>(value: T): T => {
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-const KEY_FIELDS = ["id", "slug", "stageKey", "itemId", "level"];
+const KEY_FIELDS = ["id", "slug", "stageKey", "itemId", "level", "phase"];
 
 const findKeyField = (value: unknown): string | undefined => {
   if (!isPlainObject(value)) return undefined;
@@ -81,12 +81,22 @@ const deepMerge = (base: unknown, override: unknown): unknown => {
   }
 
   if (isPlainObject(base) && isPlainObject(override)) {
+    const replaceFields = Array.isArray(override.__replaceFields)
+      ? override.__replaceFields.filter(
+          (field): field is string => typeof field === "string"
+        )
+      : [];
     const keys = new Set<string>([
       ...Object.keys(base),
       ...Object.keys(override),
     ]);
     const merged: Record<string, unknown> = {};
     for (const key of keys) {
+      if (key === "__replaceFields") continue;
+      if (replaceFields.includes(key)) {
+        merged[key] = cloneValue(override[key]);
+        continue;
+      }
       merged[key] = deepMerge(base[key], override[key]);
     }
     return merged;
