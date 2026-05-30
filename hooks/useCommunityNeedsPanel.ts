@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CommunityNeedsItem, CommunityNeedsMember } from "@/types/community";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
+import { stripBlueprintLabel } from "@/lib/item-labels";
 
 type UseCommunityNeedsPanelParams = {
   members: CommunityNeedsMember[];
@@ -17,6 +18,32 @@ const areSetValuesEqual = (left: Set<string>, right: Set<string>) => {
     if (!right.has(value)) return false;
   }
   return true;
+};
+
+const isBlueprintItem = (item: CommunityNeedsItem) =>
+  item.itemType.toLowerCase() === "blueprint" || /_blueprint$/i.test(item.itemId);
+
+const compareDisplayName = (left: string, right: string) =>
+  left.localeCompare(right, undefined, { sensitivity: "base" });
+
+const compareCommunityNeedItems = (
+  left: CommunityNeedsItem,
+  right: CommunityNeedsItem,
+  rarityOrder: Map<string, number>
+) => {
+  if (isBlueprintItem(left) && isBlueprintItem(right)) {
+    const byBlueprintName = compareDisplayName(
+      stripBlueprintLabel(left.displayName),
+      stripBlueprintLabel(right.displayName)
+    );
+    if (byBlueprintName !== 0) return byBlueprintName;
+    return compareDisplayName(left.displayName, right.displayName);
+  }
+
+  const rarityA = rarityOrder.get(left.rarity) ?? 99;
+  const rarityB = rarityOrder.get(right.rarity) ?? 99;
+  if (rarityA !== rarityB) return rarityA - rarityB;
+  return compareDisplayName(left.displayName, right.displayName);
 };
 
 export const useCommunityNeedsPanel = ({
@@ -191,12 +218,9 @@ export const useCommunityNeedsPanel = ({
     );
 
     return sortedGroups.map(([type, group]) => {
-      const sorted = group.slice().sort((a, b) => {
-        const rarityA = rarityOrder.get(a.rarity) ?? 99;
-        const rarityB = rarityOrder.get(b.rarity) ?? 99;
-        if (rarityA !== rarityB) return rarityA - rarityB;
-        return a.displayName.localeCompare(b.displayName);
-      });
+      const sorted = group
+        .slice()
+        .sort((a, b) => compareCommunityNeedItems(a, b, rarityOrder));
       return { type, items: sorted };
     });
   }, [items, selectedMembers, unknownLabel]);
