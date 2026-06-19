@@ -30,16 +30,27 @@ const ARC_ITEM_ID_ALIASES: Record<string, string> = {
   colorful_shoes_legendary: "colorful_shoes_silver",
 };
 
+const ARC_ITEM_ID_REVERSE_ALIASES = Object.entries(ARC_ITEM_ID_ALIASES).reduce<
+  Record<string, string[]>
+>((acc, [aliasId, canonicalId]) => {
+  acc[canonicalId] ??= [];
+  acc[canonicalId].push(aliasId);
+  return acc;
+}, {});
+
 export const resolveArcItemIdAlias = (itemId: string): string =>
   ARC_ITEM_ID_ALIASES[itemId] ?? itemId;
 
 export const getArcItemLookupKeys = (itemId: string): string[] => {
   const canonicalId = resolveArcItemIdAlias(itemId);
-  if (canonicalId === itemId) {
-    return [itemId];
+  const keys = new Set<string>([itemId, canonicalId]);
+  for (const aliasId of ARC_ITEM_ID_REVERSE_ALIASES[itemId] ?? []) {
+    keys.add(aliasId);
   }
-
-  return [itemId, canonicalId];
+  for (const aliasId of ARC_ITEM_ID_REVERSE_ALIASES[canonicalId] ?? []) {
+    keys.add(aliasId);
+  }
+  return [...keys];
 };
 
 type ArcItemWithMeta = Omit<ArcItem, "id" | "foundIn"> & {
