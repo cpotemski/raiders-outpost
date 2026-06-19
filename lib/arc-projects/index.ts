@@ -1,7 +1,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { unstable_cache } from "next/cache";
-import { loadArcItems } from "@/lib/arc-items";
+import {
+  getArcItemLookupKeys,
+  loadArcItems,
+} from "@/lib/arc-items";
 import { stripBlueprintLabel } from "@/lib/item-labels";
 import type { AppLocale } from "@/lib/locale";
 import {
@@ -206,7 +209,9 @@ const readArcProjects = (locale: AppLocale) =>
     for (const item of items.items) {
       const key = item.id ?? item.imageFile;
       if (key) {
-        itemNameMap.set(key, item.name);
+        for (const lookupKey of getArcItemLookupKeys(key)) {
+          itemNameMap.set(lookupKey, item.name);
+        }
       }
     }
 

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { loadArcProjects } from "@/lib/arc-projects";
-import { loadArcItems } from "@/lib/arc-items";
+import { getArcItemLookupKeys, loadArcItems } from "@/lib/arc-items";
 import { getCommunityForUser } from "@/lib/server/community";
 import type { AppLocale } from "@/lib/locale";
 import {
@@ -73,16 +73,22 @@ export const getProjectProgress = async (
   );
   const noticeActive = isExpeditionResetNoticeActive();
 
-  const itemMetaById = new Map(
-    arcItems.items.map((item) => [
-      item.id ?? item.imageFile ?? "",
-      {
+  const itemMetaById = new Map<string, {
+    imageFile: string | null;
+    rarity: string;
+    itemType: string;
+  }>();
+  for (const item of arcItems.items) {
+    const key = item.id ?? item.imageFile ?? "";
+    if (!key) continue;
+    for (const lookupKey of getArcItemLookupKeys(key)) {
+      itemMetaById.set(lookupKey, {
         imageFile: item.imageFile,
         rarity: item.rarity,
         itemType: item.itemType,
-      },
-    ])
-  );
+      });
+    }
+  }
 
   const projectItemIdByStage = new Map<string, Map<string, string>>();
   const projectSlugByItemId = new Map<string, string>();

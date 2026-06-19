@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { loadArcProjects } from "@/lib/arc-projects";
-import { loadArcItems } from "@/lib/arc-items";
+import { getArcItemLookupKeys, loadArcItems } from "@/lib/arc-items";
 import { getCommunitiesForUser } from "@/lib/server/community";
 import type { AppLocale } from "@/lib/locale";
 import { isExpeditionProjectSlug } from "@/lib/expeditions";
@@ -39,16 +39,22 @@ export const getCommunityNeeds = async (
     loadArcItems(locale),
   ]);
 
-  const itemMetaById = new Map(
-    arcItems.items.map((item) => [
-      item.id ?? item.imageFile ?? "",
-      {
+  const itemMetaById = new Map<string, {
+    itemType: string;
+    rarity: string;
+    imageFile: string | null;
+  }>();
+  for (const item of arcItems.items) {
+    const key = item.id ?? item.imageFile ?? "";
+    if (!key) continue;
+    for (const lookupKey of getArcItemLookupKeys(key)) {
+      itemMetaById.set(lookupKey, {
         itemType: item.itemType,
         rarity: item.rarity,
         imageFile: item.imageFile,
-      },
-    ])
-  );
+      });
+    }
+  }
   const expeditionSlugs = new Set(
     communityPayload.projects
       .filter((project) => isExpeditionProjectSlug(project.slug))

@@ -24,6 +24,24 @@ export type ArcItemPayload = {
   items: ArcItem[];
 };
 
+const ARC_ITEM_ID_ALIASES: Record<string, string> = {
+  colorful_shoes_rare: "colorful_shoes_red",
+  colorful_shoes_epic: "colorful_shoes_green",
+  colorful_shoes_legendary: "colorful_shoes_silver",
+};
+
+export const resolveArcItemIdAlias = (itemId: string): string =>
+  ARC_ITEM_ID_ALIASES[itemId] ?? itemId;
+
+export const getArcItemLookupKeys = (itemId: string): string[] => {
+  const canonicalId = resolveArcItemIdAlias(itemId);
+  if (canonicalId === itemId) {
+    return [itemId];
+  }
+
+  return [itemId, canonicalId];
+};
+
 type ArcItemWithMeta = Omit<ArcItem, "id" | "foundIn"> & {
   id: string;
   foundIn: string | undefined;
