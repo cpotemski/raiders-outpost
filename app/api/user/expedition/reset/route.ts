@@ -9,7 +9,7 @@ import {
   isExpeditionProjectSlug,
   sanitizeCompletedExpeditionSlugs,
 } from "@/lib/expeditions";
-import { EXPEDITION_RESET_CYCLE_ID } from "@/lib/expedition-reset";
+import { getExpeditionResetWindow } from "@/lib/expedition-reset";
 
 export const runtime = "nodejs";
 
@@ -45,11 +45,22 @@ export const POST = async (request: Request) => {
     return Response.json({ error: "Unknown token" }, { status: 404 });
   }
 
+  const locale = normalizeLocale(body?.locale ?? null);
+  const [projectsPayload, settings] = await Promise.all([
+    loadArcProjects(locale),
+    getAdminSettings(),
+  ]);
+  const expeditionReset = getExpeditionResetWindow(projectsPayload.projects);
+
+  if (mode === "dismiss" && !expeditionReset) {
+    return Response.json({ error: "No active expedition reset cycle" }, { status: 409 });
+  }
+
   if (mode === "dismiss") {
     const updated = await prisma.user.update({
       where: { id: user.id },
       data: {
-        expeditionResetDismissedCycle: EXPEDITION_RESET_CYCLE_ID,
+        expeditionResetDismissedCycle: expeditionReset!.cycleId,
       },
       select: {
         activeExpeditionSlug: true,
@@ -61,17 +72,11 @@ export const POST = async (request: Request) => {
     return Response.json({
       activeExpeditionSlug: updated.activeExpeditionSlug ?? null,
       dismissed:
-        updated.expeditionResetDismissedCycle === EXPEDITION_RESET_CYCLE_ID,
+        updated.expeditionResetDismissedCycle === expeditionReset!.cycleId,
       completed:
-        updated.expeditionResetCompletedCycle === EXPEDITION_RESET_CYCLE_ID,
+        updated.expeditionResetCompletedCycle === expeditionReset!.cycleId,
     });
   }
-
-  const locale = normalizeLocale(body?.locale ?? null);
-  const [projectsPayload, settings] = await Promise.all([
-    loadArcProjects(locale),
-    getAdminSettings(),
-  ]);
 
   await ensureProjects(projectsPayload);
 
@@ -143,8 +148,12 @@ export const POST = async (request: Request) => {
         inactiveProjectSlugs: Array.from(nextInactiveProjectSlugs).sort((a, b) =>
           a.localeCompare(b)
         ),
-        expeditionResetCompletedCycle: EXPEDITION_RESET_CYCLE_ID,
-        expeditionResetDismissedCycle: EXPEDITION_RESET_CYCLE_ID,
+        ...(expeditionReset
+          ? {
+              expeditionResetCompletedCycle: expeditionReset.cycleId,
+              expeditionResetDismissedCycle: expeditionReset.cycleId,
+            }
+          : {}),
       },
     });
   });

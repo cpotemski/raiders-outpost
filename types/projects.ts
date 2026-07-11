@@ -24,6 +24,9 @@ export type ProjectProgress = {
   kind: "workshop" | "project" | "blueprints";
   repeatable: boolean;
   timeLimitedUntil: string | null;
+  startAt: string | null;
+  endAt: string | null;
+  expeditionEndAt: string | null;
   stages: ProjectStageProgress[];
 };
 
@@ -43,5 +46,5 @@ export type ProjectProgressPayload = {
     dismissed: boolean;
     completed: boolean;
     showNotice: boolean;
-  };
+  } | null;
 };

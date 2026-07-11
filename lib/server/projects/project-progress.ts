@@ -11,10 +11,7 @@ import {
 import { isUserToggleProject } from "@/lib/project-categories";
 import { applyAdminProjectFilters, getAdminSettings } from "@/lib/server/admin-settings";
 import {
-  EXPEDITION_RESET_CYCLE_ID,
-  EXPEDITION_RESET_NOTICE_END_ISO,
-  EXPEDITION_RESET_NOTICE_START_ISO,
-  isExpeditionResetNoticeActive,
+  getExpeditionResetWindow,
 } from "@/lib/expedition-reset";
 import { ensureProjects, normalizeSlugList } from "@/lib/server/projects/sync";
 
@@ -71,7 +68,7 @@ export const getProjectProgress = async (
       toggleableProjectSlugs.has(slug)
     )
   );
-  const noticeActive = isExpeditionResetNoticeActive();
+  const expeditionReset = getExpeditionResetWindow(projectsPayload.projects);
 
   const itemMetaById = new Map<string, {
     imageFile: string | null;
@@ -253,24 +250,21 @@ export const getProjectProgress = async (
     expeditionMemberCountsBySlug,
     communityCountsByItemId,
     activeExpeditionSlug,
-    expeditionReset: {
-      cycleId: EXPEDITION_RESET_CYCLE_ID,
-      noticeStartIso: EXPEDITION_RESET_NOTICE_START_ISO,
-      noticeEndIso: EXPEDITION_RESET_NOTICE_END_ISO,
-      noticeActive,
+    expeditionReset: expeditionReset && {
+      ...expeditionReset,
       dismissed:
         activeUser?.expeditionResetDismissedCycle ===
-        EXPEDITION_RESET_CYCLE_ID,
+        expeditionReset.cycleId,
       completed:
         activeUser?.expeditionResetCompletedCycle ===
-        EXPEDITION_RESET_CYCLE_ID,
+        expeditionReset.cycleId,
       showNotice:
-        noticeActive &&
+        expeditionReset.noticeActive &&
         Boolean(activeExpeditionSlug) &&
         activeUser?.expeditionResetDismissedCycle !==
-          EXPEDITION_RESET_CYCLE_ID &&
+          expeditionReset.cycleId &&
         activeUser?.expeditionResetCompletedCycle !==
-          EXPEDITION_RESET_CYCLE_ID,
+          expeditionReset.cycleId,
     },
   };
 };

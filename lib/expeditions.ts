@@ -5,6 +5,8 @@ const EXPEDITION_SEQUENCE = [
   "expedition_project_s1",
   "expedition_project",
   "expedition_project_s3",
+  "expedition_project_s4",
+  "expedition_project_s5",
 ] as const;
 
 const getExpeditionSortKey = (slug: string) => {

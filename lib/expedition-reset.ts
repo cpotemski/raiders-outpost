@@ -1,17 +1,16 @@
-export const EXPEDITION_RESET_CYCLE_ID = "expedition-2026-05-11";
+import { isExpeditionProjectSlug } from "@/lib/expeditions";
 
-export const EXPEDITION_RESET_NOTICE_START_ISO = "2026-05-07T22:00:00.000Z";
-export const EXPEDITION_RESET_NOTICE_END_ISO = "2026-05-21T22:00:00.000Z";
+const EXPEDITION_RESET_NOTICE_LEAD_TIME_MS = 2 * 24 * 60 * 60 * 1000;
+const EXPEDITION_RESET_NOTICE_DURATION_MS = 14 * 24 * 60 * 60 * 1000;
 
-const getNow = () => {
-  const force =
-    process.env.EXPEDITION_RESET_FORCE?.trim().toLowerCase() ??
-    process.env.EXPEDITION_RESET_NOW?.trim().toLowerCase() ??
-    "";
-  if (force === "true" || force === "1" || force === "yes") {
-    return new Date(EXPEDITION_RESET_NOTICE_START_ISO);
-  }
+type ScheduledProject = {
+  slug: string;
+  startAt: string | null;
+  endAt: string | null;
+  expeditionEndAt: string | null;
+};
 
+export const getExpeditionResetNow = () => {
   const forced = process.env.EXPEDITION_RESET_NOW?.trim();
   if (forced) {
     const parsed = new Date(forced);
@@ -22,8 +21,49 @@ const getNow = () => {
   return new Date();
 };
 
-export const isExpeditionResetNoticeActive = (now = getNow()) => {
-  const start = new Date(EXPEDITION_RESET_NOTICE_START_ISO);
-  const end = new Date(EXPEDITION_RESET_NOTICE_END_ISO);
-  return now >= start && now < end;
+export const getExpeditionResetWindow = (
+  projects: ScheduledProject[],
+  now = getExpeditionResetNow()
+) => {
+  const force =
+    process.env.EXPEDITION_RESET_FORCE?.trim().toLowerCase() ?? "";
+  const forceActive = force === "true" || force === "1" || force === "yes";
+  const upcomingCycle = projects
+    .filter((project) => isExpeditionProjectSlug(project.slug))
+    .map((project) => ({
+      ...project,
+      expeditionEnd: project.expeditionEndAt
+        ? new Date(project.expeditionEndAt)
+        : null,
+    }))
+    .filter(
+      (project): project is typeof project & { expeditionEnd: Date } =>
+        Boolean(
+          project.expeditionEnd &&
+            !Number.isNaN(project.expeditionEnd.valueOf()) &&
+            (forceActive ||
+              now.valueOf() <
+                project.expeditionEnd.valueOf() +
+                  EXPEDITION_RESET_NOTICE_DURATION_MS)
+        )
+    )
+    .sort((a, b) => a.expeditionEnd.valueOf() - b.expeditionEnd.valueOf())[0];
+
+  if (!upcomingCycle) return null;
+
+  const noticeStart = new Date(
+    upcomingCycle.expeditionEnd.valueOf() - EXPEDITION_RESET_NOTICE_LEAD_TIME_MS
+  );
+  const noticeEnd = new Date(
+    upcomingCycle.expeditionEnd.valueOf() + EXPEDITION_RESET_NOTICE_DURATION_MS
+  );
+  const noticeActive =
+    forceActive || (now >= noticeStart && now < noticeEnd);
+
+  return {
+    cycleId: `${upcomingCycle.slug}-${upcomingCycle.expeditionEnd.toISOString()}`,
+    noticeStartIso: noticeStart.toISOString(),
+    noticeEndIso: noticeEnd.toISOString(),
+    noticeActive,
+  };
 };

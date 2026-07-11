@@ -48,7 +48,7 @@ const loadProjects = async (page: Page) => {
 
 const setCompletedExpeditions = async (
   page: Page,
-  completedExpeditionSlugs: string[]
+  completedExpeditionSlugs: readonly string[]
 ) => {
   const headers = await getTokenHeader(page);
   const response = await page.request.put(

@@ -33,6 +33,9 @@ export type ArcProject = {
   kind: "workshop" | "project" | "blueprints";
   repeatable: boolean;
   timeLimitedUntil: string | null;
+  startAt: string | null;
+  endAt: string | null;
+  expeditionEndAt: string | null;
   stages: ArcProjectStage[];
 };
 
@@ -54,6 +57,9 @@ const HIDEOUT_DIR = path.join(
 type ArcProjectSource = {
   id: string;
   disabled?: boolean;
+  startDate?: number;
+  endDate?: number;
+  expeditionEndDate?: number;
   name?: Record<string, string>;
   phases?: {
     name?: Record<string, string>;
@@ -79,6 +85,11 @@ const resolveName = (
 ) => {
   if (!name) return fallback;
   return name[locale] ?? name.en ?? name.de ?? fallback;
+};
+
+const unixTimestampToIso = (timestamp: number | undefined) => {
+  if (typeof timestamp !== "number" || !Number.isFinite(timestamp)) return null;
+  return new Date(timestamp * 1000).toISOString();
 };
 
 const buildBlueprintFallback = async (
@@ -109,6 +120,9 @@ const buildBlueprintFallback = async (
     kind: "blueprints",
     repeatable: false,
     timeLimitedUntil: null,
+    startAt: null,
+    endAt: null,
+    expeditionEndAt: null,
     stages: [
       {
         stageKey: "phase-1",
@@ -153,6 +167,9 @@ const mapHideoutProject = (
     kind: "workshop",
     repeatable: false,
     timeLimitedUntil: null,
+    startAt: null,
+    endAt: null,
+    expeditionEndAt: null,
     stages,
   };
 };
@@ -190,6 +207,9 @@ const mapProject = (
     kind: "project",
     repeatable: false,
     timeLimitedUntil: null,
+    startAt: unixTimestampToIso(project.startDate),
+    endAt: unixTimestampToIso(project.endDate),
+    expeditionEndAt: unixTimestampToIso(project.expeditionEndDate),
     stages,
   };
 };
