@@ -93,6 +93,32 @@ test("project toggles persist per user", async ({ page }) => {
   await expect(page.getByTestId(`project-card-link-${slug}`)).toHaveCount(0);
 });
 
+test("Phantom Targets is available with its new item images", async ({ page }) => {
+  await login(page, "PhantomTargetPilot");
+  await page.goto("/projects");
+
+  const slug = "phantom_targets_part_2_project";
+  await expect(page.getByTestId(`project-card-${slug}`)).toBeVisible();
+  await page.getByTestId(`project-card-link-${slug}`).click();
+  await expect(page).toHaveURL(new RegExp(`/projects/${slug}`));
+
+  const newItemIds = [
+    "glitched_arc_power_converter",
+    "glitched_arc_transmitter",
+    "glitched_arc_phased_array",
+    "glitched_arc_light_ring",
+    "glitched_arc_circuitry",
+  ];
+
+  for (const itemId of newItemIds) {
+    const image = page.locator(`[data-item-id="${itemId}"] img`);
+    await expect(image).toBeVisible();
+    await expect
+      .poll(() => image.evaluate((element: HTMLImageElement) => element.naturalWidth))
+      .toBeGreaterThan(0);
+  }
+});
+
 test("mobile project layout uses vertical stage rail", async ({ browser }) => {
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
